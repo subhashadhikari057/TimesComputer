@@ -1,5 +1,5 @@
 
-# 🖥️ Times Computer Automation
+# 🖥️ Times Computer 
 
 **TimesComputer** is a lightweight, fast, and locally hosted e-commerce system designed specifically for showcasing and selling laptops. Instead of using a traditional checkout system, it enables users to send direct WhatsApp messages with pre-filled order details — allowing fast, human-driven conversions.
 
