@@ -12,9 +12,9 @@ export const CreateAdminSchema = z.object({
 // ✅ Schema: Update Admin (partial, for PATCH)
 export const UpdateAdminSchema = z.object({
     name: z.string().min(1).optional(),
-    role: z.nativeEnum(Role).optional(),
-    isActive: z.boolean().optional(),
-});
+    role: z.enum(["ADMIN", "SUPERADMIN"]).optional(),
+    isActive: z.boolean().optional()
+}).strict();
 
 // ✅ Schema: Admin ID param (for validation if needed)
 export const AdminIdParamSchema = z.object({
@@ -23,5 +23,9 @@ export const AdminIdParamSchema = z.object({
 
 // ✅ Schema: Password Reset
 export const ResetPasswordSchema = z.object({
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    newPassword: z.string().min(6),
+    confirmPassword: z.string().min(6)
+}).refine(data => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"]
 });

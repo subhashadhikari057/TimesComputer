@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import prisma from "../prisma/client";
 
 type UserPayload = {
     id: string;
@@ -40,4 +41,11 @@ export const generateRefreshToken = (user: UserPayload): string => {
 
 export const verifyRefreshToken = (token: string): jwt.JwtPayload => {
     return jwt.verify(token, REFRESH_SECRET) as jwt.JwtPayload;
+};
+
+
+export const getAdminById = async (id: string) => {
+    return prisma.adminUser.findUnique({
+        where: { id }
+    });
 };

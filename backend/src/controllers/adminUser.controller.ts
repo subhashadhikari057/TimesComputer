@@ -13,6 +13,7 @@ import {
     countSuperadmins,
 } from "../services/adminUser.service";
 import { hashPassword } from "../services/auth.service";
+import { logAudit } from "../services/auditLog.service";
 
 // ✅ GET /admin/users
 export const getAdmins = async (_req: Request, res: Response) => {
@@ -23,10 +24,21 @@ export const getAdmins = async (_req: Request, res: Response) => {
 // ✅ POST /admin/users
 export const createAdminUser = async (req: Request, res: Response) => {
     const body = CreateAdminSchema.safeParse(req.body);
+
     if (!body.success) return res.status(400).json({ error: body.error.errors });
 
     try {
         const user = await createAdmin(body.data);
+        const currentUser = (req as any).user;
+        await logAudit({
+            actorId: currentUser?.id,
+            targetId: user.id,
+            action: "CREATE_ADMIN",
+            message: `Created admin: ${user.email}`,
+            ip: req.ip,
+            userAgent: req.headers["user-agent"]
+        });
+
         res.status(201).json({
             message: "Admin user created successfully",
             user: {
@@ -75,6 +87,16 @@ export const updateAdminUser = async (req: Request, res: Response) => {
     }
 
     await updateAdmin(id, body.data);
+
+    await logAudit({
+        actorId: currentUser?.id,
+        targetId: user.id,
+        action: "UPDATE_ADMIN",
+        message: `Updated admin: ${user.email}`,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+    });
+
     res.json({ message: "Admin user updated", updated: true });
 };
 
@@ -98,6 +120,16 @@ export const deleteAdminUser = async (req: Request, res: Response) => {
     }
 
     await deleteAdmin(id);
+
+    await logAudit({
+        actorId: currentUser?.id,
+        targetId: user.id,
+        action: "DELETE_ADMIN",
+        message: `Deleted admin: ${user.email}`,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+    });
+
     res.json({ message: "Admin user deleted" });
 };
 
@@ -110,8 +142,42 @@ export const resetAdminPassword = async (req: Request, res: Response) => {
     const user = await getAdminById(id);
     if (!user) return res.status(404).json({ message: "Admin not found" });
 
-    const hashed = await hashPassword(body.data.password);
+    const hashed = await hashPassword(body.data.newPassword);
     await updateAdmin(id, { password: hashed });
 
+    const currentUser = (req as any).user;
+
+    await logAudit({
+        actorId: currentUser?.id,
+        targetId: user.id,
+        action: "RESET_PASSWORD",
+        message: `Reset password for: ${user.email}`,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+    });
+
     res.json({ message: "Password reset successful" });
+};
+
+// ✅ GET /admin/users/:id
+export const getSingleAdmin = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const user = await getAdminById(id);
+        if (!user) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        res.json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            isActive: user.isActive,
+            createdAt: user.createdAt,
+        });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch admin", error: err });
+    }
 };

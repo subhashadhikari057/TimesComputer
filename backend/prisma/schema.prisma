@@ -8,13 +8,14 @@ datasource db {
 }
 
 model AdminUser {
-  id String @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
-  email     String   @unique
+  email     String     @unique
   password  String
-  role      Role     @default(ADMIN)
-  isActive  Boolean  @default(true) // ← NEW FIELD
-  createdAt DateTime @default(now())
+  role      Role       @default(ADMIN)
+  isActive  Boolean    @default(true) // ← NEW FIELD
+  createdAt DateTime   @default(now())
+  auditLogs AuditLog[] @relation("ActorRelation")
 }
 
 enum Role {
@@ -22,12 +23,24 @@ enum Role {
   ADMIN
 }
 
-
 model LoginLog {
-  id         String   @id @default(uuid())
-  email      String
-  ip         String
-  success    Boolean
-  userAgent  String?
-  createdAt  DateTime @default(now())
+  id        String   @id @default(uuid())
+  email     String
+  ip        String
+  success   Boolean
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String // Who performed the action
+  targetId  String? // Optional: user affected by the action
+  action    String // e.g., "CREATE_ADMIN", "DELETE_ADMIN"
+  message   String? // Optional readable log
+  ip        String? // Optional: client IP
+  userAgent String? // Optional: browser info
+  createdAt DateTime @default(now())
+
+  actor AdminUser @relation("ActorRelation", fields: [actorId], references: [id])
 }

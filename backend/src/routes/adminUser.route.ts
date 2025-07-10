@@ -5,8 +5,9 @@ import {
     updateAdminUser,
     deleteAdminUser,
     resetAdminPassword,
+    getSingleAdmin
 } from "../controllers/adminUser.controller";
-import { authenticate, isSuperadmin } from "../middlewares/auth.middleware";
+import { authenticate, authLimiter, isSuperadmin } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -26,6 +27,10 @@ router.patch("/:id", updateAdminUser);
 router.delete("/:id", deleteAdminUser);
 
 // Reset admin password
-router.patch("/:id/password", resetAdminPassword);
+router.patch("/:id/password", authLimiter, resetAdminPassword);
+
+
+router.get("/:id", getSingleAdmin);
+
 
 export default router;
