@@ -7,6 +7,7 @@ import helmet from 'helmet';
 // import csrf from 'csurf'; // ✅ NEW: CSRF middleware
 
 import authRoutes from './routes/auth.route';
+import adminUserRoutes from "./routes/adminUser.route";
 
 dotenv.config();
 
@@ -36,6 +37,8 @@ app.get('/api/csrf-token', (req, res) => {
 
 // ✅ Routes
 app.use('/api/auth', authRoutes);
+app.use("/admin/users", adminUserRoutes);
+
 
 // ✅ Health check
 app.get('/api/health', (_req, res) => {
