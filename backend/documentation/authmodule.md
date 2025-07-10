@@ -64,30 +64,15 @@ To prevent brute-force attacks:
 
 ### Base Url: http://localhost:8080/api/auth
 
-POST /auth/register
-Registers a new superadmin user, but only if no admin currently exists.
-▸ Middleware: authLimiter
-▸ Validation: RegisterSchema
+### 🔗 Auth Routes Overview
 
-POST /auth/login
-Authenticates the user using email and password. On success, it sets the access and refresh tokens as cookies.
-▸ Middleware: authLimiter
-▸ Validation: LoginSchema
-
-POST /auth/logout
-Logs out the user by clearing the authentication cookies.
-▸ Middleware: None
-▸ Validation: None
-
-POST /auth/refresh
-Issues a new access token by validating the refresh token stored in cookies. Also rotates the refresh token.
-▸ Middleware: None
-▸ Validation: None
-
-PATCH /auth/change-password
-Allows a logged-in user to change their password by verifying the old one.
-▸ Middleware: authenticate
-▸ Validation: ChangePasswordSchema
+| **Method** | **Endpoint**              | **Description**                          | **Middleware**      | **Validation Schema**     |
+|------------|---------------------------|------------------------------------------|----------------------|----------------------------|
+| POST       | `/auth/register`          | Register superadmin if none exists       | `authLimiter`        | `RegisterSchema`           |
+| POST       | `/auth/login`             | Login and set tokens in cookie           | `authLimiter`        | `LoginSchema`              |
+| POST       | `/auth/logout`            | Clear tokens                             | –                    | –                          |
+| POST       | `/auth/refresh`           | Rotate token, issue new access token     | –                    | –                          |
+| PATCH      | `/auth/change-password`   | Change password (requires login)         | `authenticate`       | `ChangePasswordSchema`     |
 
 
 
