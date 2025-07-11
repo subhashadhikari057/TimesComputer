@@ -11,16 +11,18 @@ export const addcategory = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Category name is required and must be a string.' });
         }
 
-        if (!req.file) {
-            return res.status(400).json({ error: 'Category image is required.' });
+        const files = req.files as Express.Multer.File[];
+
+        if (!files || files.length === 0) {
+            return res.status(400).json({ error: 'At least one image is required.' });
         }
 
-        const imagePath = req.file.path;
+        const imagePaths = files.map((file) => file.path);
 
         const category = await prisma.category.create({
             data: {
                 name,
-                image: imagePath,
+                images: imagePaths,
             },
         });
 

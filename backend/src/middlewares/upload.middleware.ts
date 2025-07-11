@@ -22,4 +22,4 @@ const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.
   }
 };
 
-export const upload = multer({ storage, fileFilter }).single('image');
+export const upload = multer({ storage, fileFilter }).array('images', 5);

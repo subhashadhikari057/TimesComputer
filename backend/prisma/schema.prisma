@@ -70,7 +70,7 @@ model Product {
 model Brand {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  image     String    @default("default-image.jpg")
+  images    String[]
   products  Product[]
   createdAt DateTime  @default(now())
 }
@@ -78,7 +78,7 @@ model Brand {
 model Category {
   id               Int        @id @default(autoincrement())
   name             String     @unique
-  image            String     @default("default-image.jpg")
+  images           String[]
   parentCategoryId Int?
   parentCategory   Category?  @relation("CategoryToCategory", fields: [parentCategoryId], references: [id])
   subCategories    Category[] @relation("CategoryToCategory")
