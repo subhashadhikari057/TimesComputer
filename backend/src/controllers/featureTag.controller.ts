@@ -101,11 +101,26 @@ export const deleteFeatureTag = async (req: Request, res: Response) => {
 export const getProductByFeatureTag = async (req: Request, res: Response) => {
     try {
         const tagId = parseInt(req.params.id);
+        if (isNaN(tagId)) {
+            return res.status(400).json({ error: "Invalid feature-tag ID." });
+        }
 
-        const product = await prisma.productFeatureTag.findMany({ where: { tagId }, include: { product: true } });
-        const productList = product.map(pft => pft.product);
-        res.status(200).json({ productList });
+        // Check if the feature tag exists
+        const featureTag = await prisma.featureTag.findUnique({ where: { id: tagId } });
+        if (!featureTag) {
+            return res.status(404).json({ error: "feature-tag not found." });
+        }
+
+        //  If color exists, fetch linked products
+        const products = await prisma.productFeatureTag.findMany({
+            where: { tagId },
+            include: { product: true }
+        });
+
+        const productList = products.map(pc => pc.product);
+        res.status(200).json({ message: "Products retrieved successfully.", data: productList });
     } catch (error: any) {
-        res.status(500).json({ error: error.message });
+        console.error("Get Product by feature-tag error:", error);
+        res.status(500).json({ error: "Failed to fetch products for feature tag." });
     }
-}
+};
