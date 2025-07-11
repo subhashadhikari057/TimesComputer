@@ -99,7 +99,7 @@ export const deleteBrand = async (req: Request, res: Response) => {
             where: { id }
         });
 
-        res.status(200).json({ message: "Brand updated successfully.", deleteBrand });
+        res.status(200).json({ message: "Brand delete successfully.", deleteBrand });
     } catch (error: any) {
         console.error("Delete brand error:", error);
         res.status(500).json({ error: "Failed to delete brand." });
