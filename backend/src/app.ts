@@ -13,6 +13,7 @@ import categoryRoutes from "./routes/category.route";
 import brandRoutes from "./routes/brand.route";
 import featureTagRoutes from "./routes/featureTag.route";
 import marketingTagRoutes from "./routes/marketingTags.route";
+import colorRoutes from "./routes/color.route";
 
 
 dotenv.config();
@@ -48,6 +49,7 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/brand", brandRoutes);
 app.use("/api/feature-tag", featureTagRoutes);
 app.use("/api/marketing-tag", marketingTagRoutes);
+app.use("/api/colors", colorRoutes);
 
 
 // ✅ Health check
