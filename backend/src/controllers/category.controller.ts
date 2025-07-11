@@ -3,7 +3,7 @@ import prisma from "../prisma/client";
 // Create a new category
 import { Request, Response } from 'express';
 
-export const addcategory = async (req: Request, res: Response) => {
+export const addCategory = async (req: Request, res: Response) => {
     try {
         const { name } = req.body;
 
@@ -36,7 +36,7 @@ export const addcategory = async (req: Request, res: Response) => {
 
 
 // Get all categorys
-export const getAllcategorys = async (_req: Request, res: Response) => {
+export const getAllCategorys = async (_req: Request, res: Response) => {
     try {
         const categorys = await prisma.category.findMany();
         res.status(200).json({ message: "categorys retrieved successfully.", data: categorys });
@@ -47,7 +47,7 @@ export const getAllcategorys = async (_req: Request, res: Response) => {
 };
 
 // Get a single category by ID
-export const getcategoryById = async (req: Request, res: Response) => {
+export const getCategoryById = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
@@ -64,7 +64,7 @@ export const getcategoryById = async (req: Request, res: Response) => {
 };
 
 // Update a category
-export const updatecategory = async (req: Request, res: Response) => {
+export const updateCategory = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
         const { name } = req.body;
@@ -91,7 +91,7 @@ export const updatecategory = async (req: Request, res: Response) => {
 };
 
 // Delete category
-export const deletecategory = async (req: Request, res: Response) => {
+export const deleteCategory = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
 
@@ -104,7 +104,7 @@ export const deletecategory = async (req: Request, res: Response) => {
             where: { id }
         });
 
-        res.status(200).json({ message: "category updated successfully.", deletecategory });
+        res.status(200).json({ message: "category deleted successfully.", deletecategory });
     } catch (error: any) {
         console.error("Delete category error:", error);
         res.status(500).json({ error: "Failed to delete category." });
