@@ -12,6 +12,8 @@ import adminUserRoutes from "./routes/adminUser.route";
 import categoryRoutes from "./routes/category.route";
 import brandRoutes from "./routes/brand.route";
 import featureTagRoutes from "./routes/featureTag.route";
+import marketingTagRoutes from "./routes/marketingTags.route";
+
 
 dotenv.config();
 
@@ -45,6 +47,7 @@ app.use("/admin/users", adminUserRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/brand", brandRoutes);
 app.use("/api/feature-tag", featureTagRoutes);
+app.use("/api/marketing-tag", marketingTagRoutes);
 
 
 // ✅ Health check
