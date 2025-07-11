@@ -44,3 +44,99 @@ model AuditLog {
 
   actor AdminUser @relation("ActorRelation", fields: [actorId], references: [id])
 }
+model Product {
+  id            Int                   @id @default(autoincrement())
+  name          String
+  slug          String                @unique
+  description   String?               // nullable
+  price         Float
+  stock         Int                   @default(0)
+  isPublished   Boolean               @default(true)
+  brochure      String?               // nullable
+  specs         Json
+  brandId       Int?
+  brand         Brand?                @relation(fields: [brandId], references: [id])
+  categoryId    Int?
+  category      Category?             @relation(fields: [categoryId], references: [id])
+  images        ProductImage[]
+  featureTags   ProductFeatureTag[]
+  marketingTags ProductMarketingTag[]
+  colors        ProductColor[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  image     String
+  products  Product[]
+  createdAt DateTime  @default(now())
+}
+
+model Category {
+  id               Int        @id @default(autoincrement())
+  name             String     @unique
+  image            String
+  parentCategoryId Int?
+  parentCategory   Category?  @relation("CategoryToCategory", fields: [parentCategoryId], references: [id])
+  subCategories    Category[] @relation("CategoryToCategory")
+  products         Product[]
+  createdAt        DateTime   @default(now())
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+}
+
+model FeatureTag {
+  id       Int                 @id @default(autoincrement())
+  name     String              @unique
+  products ProductFeatureTag[]
+}
+
+model MarketingTag {
+  id       Int                  @id @default(autoincrement())
+  name     String               @unique
+  products ProductMarketingTag[]
+}
+
+model ProductFeatureTag {
+  productId Int
+  tagId     Int
+
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       FeatureTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+}
+
+model ProductMarketingTag {
+  productId Int
+  tagId     Int
+
+  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       MarketingTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+}
+
+model Color {
+  id       Int            @id @default(autoincrement())
+  name     String         @unique
+  hexCode  String?
+  products ProductColor[]
+}
+
+model ProductColor {
+  productId Int
+  colorId   Int
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color     Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+
+  @@id([productId, colorId])
+}
