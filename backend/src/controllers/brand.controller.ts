@@ -4,13 +4,19 @@ import prisma from "../prisma/client";
 // Create a new brand
 export const addBrand = async (req: Request, res: Response) => {
     try {
-        const { name } = req.body;
+        const { name, image } = req.body;
 
-        if (!name) {
+        if (!name || typeof name !== "string") {
             return res.status(400).json({ error: "Brand name is required and must be a string." });
         }
 
-        const brand = await prisma.brand.create({ data: { name } });
+        if (!image || typeof image !== "string") {
+            return res.status(400).json({ error: "Brand image URL is required and must be a string." });
+        }
+
+        const brand = await prisma.brand.create({
+            data: { name, image },
+        });
 
         res.status(201).json({ message: "Brand created successfully.", data: brand });
     } catch (error: any) {
