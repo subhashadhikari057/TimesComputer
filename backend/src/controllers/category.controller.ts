@@ -1,0 +1,110 @@
+import prisma from "../prisma/client";
+
+// Create a new category
+import { Request, Response } from 'express';
+
+export const addcategory = async (req: Request, res: Response) => {
+    try {
+        const { name } = req.body;
+
+        if (!name || typeof name !== 'string') {
+            return res.status(400).json({ error: 'Category name is required and must be a string.' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ error: 'Category image is required.' });
+        }
+
+        const imagePath = req.file.path;
+
+        const category = await prisma.category.create({
+            data: {
+                name,
+                image: imagePath,
+            },
+        });
+
+        res.status(201).json({ message: 'Category created successfully.', data: category });
+    } catch (error) {
+        console.error('Create category error:', error);
+        res.status(500).json({ error: 'Internal server error.' });
+    }
+};
+
+
+
+// Get all categorys
+export const getAllcategorys = async (_req: Request, res: Response) => {
+    try {
+        const categorys = await prisma.category.findMany();
+        res.status(200).json({ message: "categorys retrieved successfully.", data: categorys });
+    } catch (error: any) {
+        console.error("Get all categorys error:", error);
+        res.status(500).json({ error: "Failed to retrieve categorys." });
+    }
+};
+
+// Get a single category by ID
+export const getcategoryById = async (req: Request, res: Response) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
+
+        const category = await prisma.category.findUnique({ where: { id } });
+
+        if (!category) return res.status(404).json({ error: "category not found." });
+
+        res.status(200).json({ message: "category retrieved successfully.", data: category });
+    } catch (error: any) {
+        console.error("Get category by ID error:", error);
+        res.status(500).json({ error: "Failed to retrieve category." });
+    }
+};
+
+// Update a category
+export const updatecategory = async (req: Request, res: Response) => {
+    try {
+        const id = parseInt(req.params.id);
+        const { name } = req.body;
+
+        if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
+
+        if (!name || typeof name !== "string") {
+            return res.status(400).json({ error: "category name is required and must be a string." });
+        }
+
+        const category = await prisma.category.findUnique({ where: { id } });
+        if (!category) return res.status(404).json({ error: "category not found." });
+
+        const updatedcategory = await prisma.category.update({
+            where: { id },
+            data: { name },
+        });
+
+        res.status(200).json({ message: "category updated successfully.", data: updatedcategory });
+    } catch (error: any) {
+        console.error("Update category error:", error);
+        res.status(500).json({ error: "Failed to update category." });
+    }
+};
+
+// Delete category
+export const deletecategory = async (req: Request, res: Response) => {
+    try {
+        const id = parseInt(req.params.id);
+
+        if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
+
+        const category = await prisma.category.findUnique({ where: { id } });
+        if (!category) return res.status(404).json({ error: "category not found." });
+
+        const deletecategory = await prisma.category.delete({
+            where: { id }
+        });
+
+        res.status(200).json({ message: "category updated successfully.", deletecategory });
+    } catch (error: any) {
+        console.error("Delete category error:", error);
+        res.status(500).json({ error: "Failed to delete category." });
+    }
+} 
