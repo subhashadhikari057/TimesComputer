@@ -44,15 +44,16 @@ model AuditLog {
 
   actor AdminUser @relation("ActorRelation", fields: [actorId], references: [id])
 }
+
 model Product {
   id            Int                   @id @default(autoincrement())
   name          String
   slug          String                @unique
-  description   String?               // nullable
+  description   String? // nullable
   price         Float
   stock         Int                   @default(0)
   isPublished   Boolean               @default(true)
-  brochure      String?               // nullable
+  brochure      String? // nullable
   specs         Json
   brandId       Int?
   brand         Brand?                @relation(fields: [brandId], references: [id])
@@ -69,7 +70,7 @@ model Product {
 model Brand {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  image     String
+  image     String    @default("default-image.jpg")
   products  Product[]
   createdAt DateTime  @default(now())
 }
@@ -77,7 +78,7 @@ model Brand {
 model Category {
   id               Int        @id @default(autoincrement())
   name             String     @unique
-  image            String
+  image            String     @default("default-image.jpg")
   parentCategoryId Int?
   parentCategory   Category?  @relation("CategoryToCategory", fields: [parentCategoryId], references: [id])
   subCategories    Category[] @relation("CategoryToCategory")
@@ -99,8 +100,8 @@ model FeatureTag {
 }
 
 model MarketingTag {
-  id       Int                  @id @default(autoincrement())
-  name     String               @unique
+  id       Int                   @id @default(autoincrement())
+  name     String                @unique
   products ProductMarketingTag[]
 }
 
@@ -108,8 +109,8 @@ model ProductFeatureTag {
   productId Int
   tagId     Int
 
-  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  tag       FeatureTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  product Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag     FeatureTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([productId, tagId])
 }
@@ -118,8 +119,8 @@ model ProductMarketingTag {
   productId Int
   tagId     Int
 
-  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  tag       MarketingTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  product Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag     MarketingTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([productId, tagId])
 }
@@ -135,8 +136,8 @@ model ProductColor {
   productId Int
   colorId   Int
 
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  color     Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
 
   @@id([productId, colorId])
 }
