@@ -8,6 +8,9 @@ import helmet from 'helmet';
 
 import authRoutes from './routes/auth.route';
 import adminUserRoutes from "./routes/adminUser.route";
+// import categoryRoutes from "./routes/category.route";
+import brandRoutes from "./routes/brand.route";
+// import productRoutes from "./routes/product.route";
 
 dotenv.config();
 
@@ -38,6 +41,9 @@ app.get('/api/csrf-token', (req, res) => {
 // ✅ Routes
 app.use('/api/auth', authRoutes);
 app.use("/admin/users", adminUserRoutes);
+// app.use("/api/category", categoryRoutes);
+app.use("/api/brand", brandRoutes);
+// app.use("/api/product", productRoutes);
 
 
 // ✅ Health check
