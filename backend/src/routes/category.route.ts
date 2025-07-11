@@ -1,13 +1,14 @@
 import express from "express";
-import { addcategory, deletecategory, getAllcategorys, getcategoryById, updatecategory } from "../controllers/category.controller";
+import { addCategory, deleteCategory, getAllCategorys, getCategoryById, updateCategory } from "../controllers/category.controller";
 import { upload } from '../middlewares/upload.middleware';
+import { authenticate, isAdmin } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
-router.route("/add").post(upload, addcategory);
-router.route("/get").get(getAllcategorys);
-router.route("/get/:id").get(getcategoryById);
-router.route("/update/:id").patch(updatecategory);
-router.route("/delete/:id").delete(deletecategory);
+router.route("/add").post(authenticate, isAdmin, upload, addCategory);
+router.route("/get").get(getAllCategorys);
+router.route("/get/:id").get(getCategoryById);
+router.route("/update/:id").patch(authenticate, isAdmin, updateCategory);
+router.route("/delete/:id").delete(authenticate, isAdmin, deleteCategory);
 
 export default router;
