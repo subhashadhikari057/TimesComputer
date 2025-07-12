@@ -11,7 +11,6 @@ export default function AdminLogin() {
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setErr({});
-
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
@@ -21,15 +20,15 @@ export default function AdminLogin() {
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!form.email) {
-      setErr((prev) => ({
-        ...prev,
-        email: "This field is required",
-      }));
+
+    const errors: LoginFormError = {};
+    if (!form.email.trim()) errors.email = "Email is required";
+    if (!form.password.trim()) errors.password = "Password is required";
+
+    if (Object.keys(errors).length) {
+      setErr(errors);
       return;
     }
-    // Handle form submission here
-    console.log("Form submitted:", form);
   }
 
   return (
@@ -61,7 +60,7 @@ export default function AdminLogin() {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               {err.email && (
@@ -87,7 +86,7 @@ export default function AdminLogin() {
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg text-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               {err.password && (
@@ -102,7 +101,7 @@ export default function AdminLogin() {
             <div>
               <button
                 type="submit"
-                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 cursor-pointer"
+                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-blue-500 focus:ring-offset-2 transition duration-200 cursor-pointer"
               >
                 Log In
               </button>
