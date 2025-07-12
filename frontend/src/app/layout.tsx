@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
 
+// Load Google Font with CSS variable
 const manrope = Manrope({
   subsets: ["latin"],
   variable: "--font-manrope",
@@ -18,9 +19,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="scroll-smooth overflow-x-hidden" // ✅ prevent mobile overflow
+      suppressHydrationWarning
+    >
       <body
-        className={`${manrope.variable} antialiased`}
+        className={`${manrope.variable} font-sans antialiased bg-white text-primary`}
       >
         {children}
       </body>

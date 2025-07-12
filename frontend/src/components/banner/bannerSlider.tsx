@@ -1,3 +1,4 @@
+// app/components/home/bannerSlider.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,11 +20,15 @@ export default function Carousel({
 }: CarouselProps) {
   const [curr, setCurr] = useState(0);
 
+  // Navigate to previous slide
   const prev = () =>
     setCurr((curr) => (curr === 0 ? slides.length - 1 : curr - 1));
+
+  // Navigate to next slide
   const next = () =>
     setCurr((curr) => (curr === slides.length - 1 ? 0 : curr + 1));
 
+  // Auto slide logic
   useEffect(() => {
     if (!autoSlide) return;
     const slideInterval = setInterval(next, autoSlideInterval);
@@ -31,18 +36,17 @@ export default function Carousel({
   }, [autoSlide, autoSlideInterval]);
 
   return (
-    <div className="overflow-hidden relative h-full">
-      {/* Slide container */}
+    // Outer wrapper: ensures it doesn't overflow screen width on mobile
+    <div className="relative w-full max-w-screen mx-auto aspect-[16/9] lg:h-full overflow-hidden">
+      {/* Slides container with horizontal scroll logic */}
       <div
         className="flex transition-transform ease-out duration-500 h-full"
         style={{ transform: `translateX(-${curr * 100}%)` }}
       >
         {slides.map((slide) => (
-          <div key={slide.id} className="min-w-full h-full relative">
-            <Link 
-              href={slide.link} 
-              className="block w-full h-full relative"
-            >
+          // Slide: ensure it doesn’t push past viewport width
+          <div key={slide.id} className="w-full h-full relative flex-shrink-0">
+            <Link href={slide.link} className="block w-full h-full relative">
               <Image
                 src={slide.imageUrl}
                 alt={slide.alt || "banner"}
@@ -55,7 +59,7 @@ export default function Carousel({
         ))}
       </div>
 
-      {/* Navigation arrows */}
+      {/* Navigation arrows (left/right) */}
       <div className="absolute inset-0 flex items-center justify-between p-4 pointer-events-none">
         <button
           onClick={prev}
@@ -71,15 +75,14 @@ export default function Carousel({
         </button>
       </div>
 
-      {/* Slide indicators */}
-      <div className="absolute bottom-4 right-0 left-0 pointer-events-none">
+      {/* Slide indicators (bottom center) */}
+      <div className="absolute bottom-4 left-0 right-0 pointer-events-none">
         <div className="flex items-center justify-center gap-2">
           {slides.map((_, i) => (
             <button
               key={i}
-              className={`transition-all w-3 h-3 bg-white rounded-full ${
-                curr === i ? "p-2" : "bg-opacity-50"
-              } pointer-events-auto`}
+              className={`transition-all w-3 h-3 bg-white rounded-full ${curr === i ? "p-2" : "bg-opacity-50"
+                } pointer-events-auto`}
               onClick={() => setCurr(i)}
               aria-label={`Go to slide ${i + 1}`}
             />
