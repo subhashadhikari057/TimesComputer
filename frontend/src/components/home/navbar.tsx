@@ -139,7 +139,7 @@ export default function Navbar() {
 
             {/* Only Twitter on mobile */}
             <div className="md:hidden">
-              <Twitter className="w-6 h-6" />
+              <FaWhatsapp className="w-6 h-6" />
             </div>
           </div>
 

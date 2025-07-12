@@ -59,28 +59,34 @@ export default function BannerSection() {
   return (
     <section className="grid grid-cols-4 grid-rows-2 gap-1 p-1 h-[500px]">
 
-      {/* 🎞️ Left Carousel: spans 2 cols and all 2 rows */}
-      <div className="col-span-2 row-span-2">
-        <Carousel
-          autoSlide
-          autoSlideInterval={3000}
-          slides={sliderBanners}
-        />
+      {/* 🎞️ Left Carousel: mobile-only */}
+      <div className="col-span-4 row-span-2 block md:hidden">
+        <Carousel autoSlide autoSlideInterval={3000} slides={sliderBanners} />
       </div>
 
-      {/* 📸 Top Right Banners (two square) */}
-      <div className="col-span-1 row-span-1">
-        <Adbanner banner={banners[0]} />
-      </div>
-      <div className="col-span-1 row-span-1">
-        <Adbanner banner={banners[1]} />
+      {/* 🖥️ Desktop layout: only shown on md and up */}
+      <div className="hidden md:grid md:grid-cols-4 md:grid-rows-2 md:gap-1 md:h-[500px] w-full col-span-4 row-span-2">
+
+        {/* Left side Carousel hidden on mobile */}
+        <div className="col-span-2 row-span-2">
+          {/* Carousel still loads for layout consistency, but hidden on small screens */}
+          <Carousel autoSlide autoSlideInterval={3000} slides={sliderBanners} />
+        </div>
+
+        {/* Top right banners */}
+        <div className="col-span-1 row-span-1">
+          <Adbanner banner={banners[0]} />
+        </div>
+        <div className="col-span-1 row-span-1">
+          <Adbanner banner={banners[1]} />
+        </div>
+
+        {/* Bottom wide banner */}
+        <div className="col-start-3 col-span-2 row-start-2 row-span-1">
+          <Adbanner banner={banners[2]} />
+        </div>
       </div>
 
-      {/* 📸 Bottom Right Banner (wide) */}
-      <div className="col-start-3 col-span-2 row-start-2 row-span-1">
-        <Adbanner banner={banners[2]} />
-      </div>
     </section>
-
   );
 }
