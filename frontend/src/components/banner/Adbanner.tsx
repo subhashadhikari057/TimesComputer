@@ -1,4 +1,5 @@
 // app/components/home/Adbanner.tsx
+
 "use client";
 
 import Image from "next/image";
@@ -11,15 +12,17 @@ interface AdbannerProps {
 
 export default function Adbanner({ banner }: AdbannerProps) {
   return (
-    // Wraps image inside a full-size clickable link
-    <Link href={banner.link} className="relative w-full h-full block">
-      <Image
-        src={banner.imageUrl}
-        alt={banner.alt || 'banner'}
-        fill
-        className="object-cover" // Ensures image fills box and crops correctly
-        unoptimized
-      />
-    </Link>
+    // ✅ Full clickable container that fully fills grid cell
+    <div className="relative w-full h-full">
+      <Link href={banner.link} className="block w-full h-full">
+        <Image
+          src={banner.imageUrl}
+          alt={banner.alt || "banner"}
+          fill // ✅ Makes image fill the parent div
+          className="object-cover" // ✅ Ensures image covers and crops well
+          unoptimized
+        />
+      </Link>
+    </div>
   );
 }

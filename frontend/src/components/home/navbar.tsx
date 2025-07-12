@@ -4,11 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "./dropdown";
 import { Input } from "../ui/input";
-import { Twitter, Search } from "lucide-react";
+import { Twitter, Facebook, Instagram, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import MobileSidebar from "../responsive/mobileSidebar";
+import { FaWhatsapp } from "react-icons/fa";
 
-// Laptop category options for dropdown
+
 const laptopCategories = [
   { label: "Gaming Laptops", value: "gaming" },
   { label: "Business Laptops", value: "business" },
@@ -17,7 +18,6 @@ const laptopCategories = [
   { label: "Macbooks", value: "macbooks" },
 ];
 
-// Main navigation links
 const navLinks = [
   { title: "Home", href: "/" },
   { title: "About", href: "/about" },
@@ -29,7 +29,6 @@ export default function Navbar() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
-  // Disable body scroll when sidebar is open
   useEffect(() => {
     document.body.style.overflow = isSidebarOpen ? "hidden" : "auto";
   }, [isSidebarOpen]);
@@ -48,8 +47,8 @@ export default function Navbar() {
             priority
           />
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-16 text-[16px] font-semibold">
+          {/* Desktop Nav Links */}
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-16 text-[16px] font-semibold">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -59,6 +58,14 @@ export default function Navbar() {
                 {link.title}
               </Link>
             ))}
+          </div>
+
+          {/* Right Contact Info - Desktop only */}
+          <div className="hidden md:flex flex-col text-right text-primary text-sm leading-tight">
+            <span className="font-semibold">Have Questions?</span>
+            <a href="tel:9808113344" className="text-lg font-semibold hover:underline">
+              9808113344
+            </a>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -85,18 +92,17 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Sidebar */}
+      {/* Sidebar */}
       <MobileSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         navLinks={navLinks}
       />
 
-      {/* Search + Category Bar */}
+      {/* Category + Search + Icons */}
       <section className="bg-primary">
-        <div className="w-full max-w-screen-xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-4 overflow-x-hidden">
-
-          {/* Category Dropdown */}
+        <div className="w-full max-w-screen-xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-4">
+          {/* Dropdown */}
           <div className="w-[160px] md:w-[180px] flex-shrink-0">
             <Dropdown
               options={laptopCategories}
@@ -105,16 +111,16 @@ export default function Navbar() {
             />
           </div>
 
-          {/* Search input (desktop only) */}
-          <div className="hidden md:block flex-1">
+          {/* Centered Search */}
+          <div className="hidden md:flex justify-center flex-1">
             <Input
               className="w-full max-w-[450px] h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
               placeholder="Search"
             />
           </div>
 
-          {/* Icons (search toggle + Twitter) */}
-          <div className="flex-shrink-0 flex items-center gap-4 text-white">
+          {/* Icons */}
+          <div className="flex items-center gap-4 text-white">
             {/* Mobile Search Icon */}
             <button
               className="md:hidden"
@@ -124,8 +130,17 @@ export default function Navbar() {
               <Search className="w-6 h-6" />
             </button>
 
-            {/* Twitter Icon */}
-            <Twitter className="w-6 h-6" />
+            {/* Show all icons on desktop */}
+            <div className="hidden md:flex items-center gap-6">
+              <Twitter className="w-6 h-6" />
+              <Facebook className="w-6 h-6" />
+              <FaWhatsapp className="w-6 h-6" />
+            </div>
+
+            {/* Only Twitter on mobile */}
+            <div className="md:hidden">
+              <Twitter className="w-6 h-6" />
+            </div>
           </div>
 
           {/* Mobile Search Input */}
