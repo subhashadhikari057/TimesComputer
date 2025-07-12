@@ -1,13 +1,20 @@
 // src/app.ts
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+
 // import csrf from 'csurf'; // ✅ NEW: CSRF middleware
 
 import authRoutes from './routes/auth.route';
 import adminUserRoutes from "./routes/adminUser.route";
+import categoryRoutes from "./routes/category.route";
+import brandRoutes from "./routes/brand.route";
+import featureTagRoutes from "./routes/featureTag.route";
+import marketingTagRoutes from "./routes/marketingTags.route";
+import colorRoutes from "./routes/color.route";
+
 
 dotenv.config();
 
@@ -38,6 +45,11 @@ app.get('/api/csrf-token', (req, res) => {
 // ✅ Routes
 app.use('/api/auth', authRoutes);
 app.use("/admin/users", adminUserRoutes);
+app.use("/api/category", categoryRoutes);
+app.use("/api/brand", brandRoutes);
+app.use("/api/feature-tag", featureTagRoutes);
+app.use("/api/marketing-tag", marketingTagRoutes);
+app.use("/api/colors", colorRoutes);
 
 
 // ✅ Health check

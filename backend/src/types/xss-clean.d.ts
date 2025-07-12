@@ -15,7 +15,8 @@ export async function updateAdmin(
         role: Role;
         isActive: boolean;
         password: string;
-    }>
+    }>,
+    file?: Express.Multer.File
 ) {
     // implementation
 }
