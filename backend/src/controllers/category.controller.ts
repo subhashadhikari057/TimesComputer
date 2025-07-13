@@ -11,6 +11,9 @@ export const addCategory = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Category name is required and must be a string.' });
         }
 
+        const categoryExist = await prisma.category.findUnique({ where: { name } });
+        if (categoryExist) return res.status(409).json({ message: "Category exit already." });
+
         const files = req.files as Express.Multer.File[];
 
         if (!files || files.length === 0) {
@@ -69,11 +72,12 @@ export const updateCategory = async (req: Request, res: Response) => {
         const id = parseInt(req.params.id);
         const { name } = req.body;
 
-        if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
-
         if (!name || typeof name !== "string") {
             return res.status(400).json({ error: "category name is required and must be a string." });
         }
+
+        const existCategory = await prisma.category.findUnique({ where: { name } });
+        if (existCategory) return res.status(409).json({ message: "Category exist already." });
 
         const category = await prisma.category.findUnique({ where: { id } });
         if (!category) return res.status(404).json({ error: "category not found." });
