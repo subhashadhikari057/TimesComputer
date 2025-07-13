@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import {
-    createProductService,
+    // createProductService,
     deleteProductService,
     getAllProductsService,
     getProductByIdService,
@@ -10,6 +10,7 @@ import {
 } from '../services/product.service';
 import { CreateProductSchema, UpdateProductSchema } from '../validations/product.schema';
 import prisma from '../prisma/client';
+import { Prisma } from '@prisma/client';
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
@@ -59,16 +60,110 @@ export const getProductBySlug = async (req: Request, res: Response) => {
     }
 };
 
-
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const data = CreateProductSchema.parse(req.body);
-        const product = await createProductService(data);
-        res.status(201).json(product);
-    } catch (error) {
-        handleError(res, error);
+        const body = req.body;
+
+        // Convert and validate values
+        body.price = Number(body.price);
+        body.stock = Number(body.stock);
+        body.brandId = isNaN(Number(body.brandId)) ? null : Number(body.brandId);
+        body.categoryId = isNaN(Number(body.categoryId)) ? null : Number(body.categoryId);
+        body.isPublished = body.isPublished === 'true';
+        body.slug = body.slug?.toLowerCase().replace(/\s+/g, '-');
+
+        // Handle optional values
+        body.brochure = !body.brochure || body.brochure.trim() === '' ? null : body.brochure;
+        body.specs = body.specs ? JSON.parse(body.specs) : {};
+        body.featureTagIds = body.featureTagIds ? JSON.parse(body.featureTagIds) : [];
+        body.marketingTagIds = body.marketingTagIds ? JSON.parse(body.marketingTagIds) : [];
+        body.colorIds = body.colorIds ? JSON.parse(body.colorIds) : [];
+
+        // ✅ Validate with Zod after transformation
+        const data = CreateProductSchema.parse(body);
+        const {
+            name,
+            slug,
+            description,
+            price,
+            stock,
+            isPublished,
+            brochure,
+            specs,
+            brandId,
+            categoryId,
+            featureTagIds,
+            marketingTagIds,
+            colorIds,
+        } = data;
+
+        const productExist = await prisma.product.findUnique({ where: { slug } });
+        if (productExist)
+            return res.status(409).json({ message: 'Product already exists.' });
+
+        const files = req.files as Express.Multer.File[];
+        if (!files || files.length === 0) {
+            return res.status(400).json({ error: 'At least one image is required.' });
+        }
+        const imagePaths = files.map((file) => file.path);
+
+        // 1. Create product first without featureTags, marketingTags, colors
+        const product = await prisma.product.create({
+            data: {
+                name,
+                slug,
+                description,
+                price,
+                stock,
+                isPublished,
+                brochure,
+                specs: specs as Prisma.InputJsonValue,
+                brandId,
+                categoryId,
+                images: imagePaths,
+            },
+        });
+
+        // 2. Create relations manually by inserting into join tables
+        if (featureTagIds && featureTagIds.length > 0) {
+            await prisma.productFeatureTag.createMany({
+                data: featureTagIds.map((tagId: number) => ({
+                    productId: product.id,
+                    tagId,
+                })),
+                skipDuplicates: true,
+            });
+        }
+
+        if (marketingTagIds && marketingTagIds.length > 0) {
+            await prisma.productMarketingTag.createMany({
+                data: marketingTagIds.map((tagId: number) => ({
+                    productId: product.id,
+                    tagId,
+                })),
+                skipDuplicates: true,
+            });
+        }
+
+        if (colorIds && colorIds.length > 0) {
+            await prisma.productColor.createMany({
+                data: colorIds.map((colorId: number) => ({
+                    productId: product.id,
+                    colorId,
+                })),
+                skipDuplicates: true,
+            });
+        }
+
+        res.status(201).json({ message: 'Product created successfully.', data: product });
+    } catch (error: any) {
+        console.error('Create product error:', error.message);
+        res.status(500).json({ error: 'Internal server error.' });
     }
 };
+
+
+
 
 export const updateProduct = async (req: Request, res: Response) => {
     try {

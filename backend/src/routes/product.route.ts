@@ -7,15 +7,16 @@ import {
     updateProduct,
     deleteProduct,
 } from '../controllers/product.controller';
+import { upload } from '../middlewares/upload.middleware';
 
 const router = Router();
 
-router.get('/', getAllProducts);
+router.get('/get', getAllProducts);
 router.get('/slug/:slug', getProductBySlug);
-router.get('/:id', getProductById);
-router.post('/', createProduct);
-router.put('/:id', updateProduct);
-router.delete('/:id', deleteProduct);
+router.get('/get/:id', getProductById);
+router.post('/add', upload, createProduct);
+router.put('/update/:id', updateProduct);
+router.delete('/delete/:id', deleteProduct);
 
 
 export default router;

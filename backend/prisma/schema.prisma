@@ -55,17 +55,18 @@ model Product {
   isPublished   Boolean               @default(true)
   brochure      String? // nullable
   specs         Json
-  views         Int @default(0)
+  views         Int                   @default(0)
   brandId       Int?
   brand         Brand?                @relation(fields: [brandId], references: [id])
   categoryId    Int?
   category      Category?             @relation(fields: [categoryId], references: [id])
-  images        ProductImage[]
+  images        String[]
   featureTags   ProductFeatureTag[]
   marketingTags ProductMarketingTag[]
   colors        ProductColor[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
+  ProductImage  ProductImage[]
 }
 
 model Brand {

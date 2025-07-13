@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../prisma/client';
+import { Request } from 'express';
 
 export const getAllProductsService = async (query: any) => {
   const { isPublished } = query;
@@ -29,49 +30,6 @@ export const getProductBySlugService = (slug: string) => {
   });
 };
 
-export const createProductService = async (data: any) => {
-  const {
-    name, slug, description, price, stock, isPublished,
-    brochure, specs, brandId, categoryId,
-    images, featureTagIds, marketingTagIds, colorIds
-  } = data;
-
-  return prisma.product.create({
-    data: {
-      name,
-      slug,
-      description,
-      price,
-      stock,
-      isPublished,
-      brochure,
-      specs,
-      brand: brandId ? { connect: { id: brandId } } : undefined,
-      category: categoryId ? { connect: { id: categoryId } } : undefined,
-      images: images?.length ? {
-        createMany: {
-          data: images.map((img: { url: string }) => ({ url: img.url })),
-        },
-      } : undefined,
-      featureTags: featureTagIds?.length ? {
-        createMany: {
-          data: featureTagIds.map((tagId: number) => ({ tagId })),
-        },
-      } : undefined,
-      marketingTags: marketingTagIds?.length ? {
-        createMany: {
-          data: marketingTagIds.map((tagId: number) => ({ tagId })),
-        },
-      } : undefined,
-      colors: colorIds?.length ? {
-        createMany: {
-          data: colorIds.map((colorId: number) => ({ colorId })),
-        },
-      } : undefined,
-    },
-    include: productIncludes,
-  });
-};
 
 export const updateProductService = async (id: number, data: any) => {
   const {
@@ -93,15 +51,6 @@ export const updateProductService = async (id: number, data: any) => {
     category: categoryId !== undefined ? (categoryId === null ? { disconnect: true } : { connect: { id: categoryId } }) : undefined,
     updatedAt: new Date(),
   };
-
-  if (images !== undefined) {
-    await prisma.productImage.deleteMany({ where: { productId: id } });
-    updateData.images = {
-      createMany: {
-        data: images.map((img: { url: string }) => ({ url: img.url })),
-      },
-    };
-  }
 
   if (featureTagIds !== undefined) {
     await prisma.productFeatureTag.deleteMany({ where: { productId: id } });
