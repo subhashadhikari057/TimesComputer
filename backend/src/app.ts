@@ -14,6 +14,7 @@ import brandRoutes from "./routes/brand.route";
 import featureTagRoutes from "./routes/featureTag.route";
 import marketingTagRoutes from "./routes/marketingTags.route";
 import colorRoutes from "./routes/color.route";
+import productRoutes from "./routes/product.route";
 
 
 dotenv.config();
@@ -50,6 +51,7 @@ app.use("/api/brand", brandRoutes);
 app.use("/api/feature-tag", featureTagRoutes);
 app.use("/api/marketing-tag", marketingTagRoutes);
 app.use("/api/colors", colorRoutes);
+app.use("/api/product", productRoutes);
 
 
 // ✅ Health check
