@@ -55,6 +55,7 @@ model Product {
   isPublished   Boolean               @default(true)
   brochure      String? // nullable
   specs         Json
+  views         Int @default(0)
   brandId       Int?
   brand         Brand?                @relation(fields: [brandId], references: [id])
   categoryId    Int?
@@ -76,14 +77,11 @@ model Brand {
 }
 
 model Category {
-  id               Int        @id @default(autoincrement())
-  name             String     @unique
-  images           String[]
-  parentCategoryId Int?
-  parentCategory   Category?  @relation("CategoryToCategory", fields: [parentCategoryId], references: [id])
-  subCategories    Category[] @relation("CategoryToCategory")
-  products         Product[]
-  createdAt        DateTime   @default(now())
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  images    String[]
+  products  Product[]
+  createdAt DateTime  @default(now())
 }
 
 model ProductImage {
