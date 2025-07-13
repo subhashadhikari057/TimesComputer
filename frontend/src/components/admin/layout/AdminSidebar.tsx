@@ -38,13 +38,11 @@ export default function Sidebar({
     itemId: string
   ) => {
     if (hasSubmenu) {
-      // Allow multiple submenus to be open
       toggleSubmenu(itemId);
     } else if (href && href !== "#") {
       setIsNavigating(true);
       try {
-        await router.push(href);
-        // Close sidebar on mobile after navigation
+         router.push(href);
         if (window.innerWidth < 1024) {
           setSidebarOpen(false);
         }

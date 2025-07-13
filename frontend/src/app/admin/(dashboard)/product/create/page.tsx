@@ -14,6 +14,13 @@ import {
   X,
   Plus,
   Trash2,
+  Bold,
+  Italic,
+  Underline,
+  Link,
+  List,
+  AlignLeft,
+  Image,
 } from "lucide-react";
 
 interface ProductFormData {
@@ -53,6 +60,10 @@ export default function CreateProductPage() {
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>([
     { key: "", value: "" },
   ]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Rich text editor state
+  const [descriptionFocused, setDescriptionFocused] = useState(false);
 
   // Mock data - replace with actual API calls
   const brands = [
@@ -150,6 +161,8 @@ export default function CreateProductPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    
     // Convert specs array to object
     const specsObject = specs.reduce((acc, spec) => {
       if (spec.key && spec.value) {
@@ -168,7 +181,16 @@ export default function CreateProductPage() {
     };
 
     console.log("Product data:", submitData);
-    // Here you would send the data to your API
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      // Here you would send the data to your API
+    }, 2000);
+  };
+
+  const formatText = (command: string) => {
+    document.execCommand(command, false);
   };
 
   return (

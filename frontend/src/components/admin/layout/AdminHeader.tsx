@@ -9,6 +9,8 @@ import {
   UserCircle,
   Moon,
   MoreVertical,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -41,10 +43,14 @@ export default function Header({
           {/* Sidebar toggle */}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg cursor-pointer"
+            className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg cursor-pointer transition-colors hover:bg-gray-50"
             aria-label="Toggle Sidebar"
           >
-            <Menu size={20} />
+            {sidebarOpen ? (
+              <ChevronLeft size={20} />
+            ) : (
+              <ChevronRight size={20} />
+            )}
           </button>
 
           {/* Center title */}
