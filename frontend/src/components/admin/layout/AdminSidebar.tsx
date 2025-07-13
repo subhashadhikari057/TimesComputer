@@ -1,7 +1,7 @@
 "use client";
 
 import { X, ChevronDown, ChevronRight } from "lucide-react";
-import { menuItems, otherMenuItems, MenuItem } from "../data/menuItems";
+import { menuItems, otherMenuItems, MenuItem } from "@/app/admin/(dashboard)/dashboard/data/menuItems";
 
 interface SidebarProps {
   sidebarOpen: boolean;
