@@ -1,3 +1,4 @@
+import StatCard from "@/components/admin/dashboard/Statcards";
 import {
   Users,
   ShoppingCart,
@@ -45,34 +46,16 @@ export default function DashboardPage() {
         {/* Left Section - Stats Cards in 2x2 Grid */}
         <div className="lg:col-span-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
-            {stats.map((stat, index) => {
-              const IconComponent = stat.icon;
-              return (
-                <div
-                  key={index}
-                  className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow min-h-[160px]"
-                >
-                  <div className="flex items-center justify-between h-full">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-600 mb-1">
-                        {stat.title}
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {stat.value}
-                      </p>
-                      <p className="text-sm text-green-600 mt-1">
-                        {stat.change}
-                      </p>
-                    </div>
-                    <div
-                      className={`p-3 rounded-full bg-gray-50 ${stat.color}`}
-                    >
-                      <IconComponent className="w-6 h-6" />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {stats.map((stat, index) => (
+              <StatCard
+                key={index}
+                title={stat.title}
+                value={stat.value}
+                change={stat.change}
+                Icon={stat.icon}
+                color={stat.color}
+              />
+            ))}
           </div>
         </div>
 
@@ -115,34 +98,12 @@ export default function DashboardPage() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Top Products
           </h3>
-            <div className="flex-1 bg-gray-50 rounded-lg flex items-center justify-center p-4">
+          <div className="flex-1 bg-gray-50 rounded-lg flex items-center justify-center p-4">
             <div className="text-center">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
               <p className="text-gray-500 text-sm">Top Products</p>
             </div>
           </div>
-          {/* <div className="space-y-3">
-            {["Product A", "Product B", "Product C", "Product D"].map(
-              (product, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                      <Package className="w-4 h-4 text-green-600" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-900">
-                      {product}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-600">
-                    {(index + 1) * 45} sales
-                  </span>
-                </div>
-              )
-            )}
-          </div> */}
         </div>
 
         {/* Bottom Right */}

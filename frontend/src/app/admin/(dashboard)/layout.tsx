@@ -11,23 +11,39 @@ interface LayoutProps {
 }
 
 export default function DashboardLayout({ children }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to true for desktop
   const [activeMenus, setActiveMenus] = useState<string[]>(["dashboard"]);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   // Set initial sidebar state based on screen size (only on mount)
   useEffect(() => {
+    setIsMounted(true);
     const setInitialState = () => {
       if (window.innerWidth >= 1024) {
-        // lg breakpoint
+        // lg breakpoint - keep sidebar open for desktop
         setSidebarOpen(true);
       } else {
+        // Mobile - start closed
         setSidebarOpen(false);
       }
     };
     // Set initial state only
     setInitialState();
   }, []);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return (
+      <div className="flex h-screen bg-gray-100">
+        <div className="w-72 bg-white border-r border-gray-200"></div>
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+          <div className="h-16 bg-white border-b border-gray-200"></div>
+          <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
+        </div>
+      </div>
+    );
+  }
 
   const toggleSubmenu = (menu: string) => {
     setActiveMenus((prev) =>
