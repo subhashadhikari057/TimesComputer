@@ -11,6 +11,9 @@ export const addCategory = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Category name is required and must be a string.' });
         }
 
+        const categoryExist = await prisma.category.findUnique({ where: { name } });
+        if (categoryExist) return res.status(409).json({ message: "Category exit already." });
+
         const files = req.files as Express.Multer.File[];
 
         if (!files || files.length === 0) {
