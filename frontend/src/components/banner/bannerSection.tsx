@@ -57,36 +57,38 @@ const sliderBanners: Banner[] = [
 
 export default function BannerSection() {
   return (
-    <section className="grid grid-cols-4 grid-rows-2 gap-1 p-1 h-[500px]">
+   <div>
+     <section className="grid grid-cols-4 grid-rows-2 gap-1 p-1 ">
 
-      {/* 🎞️ Left Carousel: mobile-only */}
-      <div className="col-span-4 row-span-2 block md:hidden">
-        <Carousel autoSlide autoSlideInterval={3000} slides={sliderBanners} />
-      </div>
+{/* 🎞️ Left Carousel: mobile-only */}
+<div className="col-span-4 row-span-2 block lg:hidden">
+  <Carousel autoSlide autoSlideInterval={3000} slides={sliderBanners} />
+</div>
 
-      {/* 🖥️ Desktop layout: only shown on md and up */}
-      <div className="hidden md:grid md:grid-cols-4 md:grid-rows-2 md:gap-1 md:h-[500px] w-full col-span-4 row-span-2">
+{/* 🖥️ Desktop layout: only shown on md and up */}
+<div className="hidden lg:grid lg:grid-cols-4 lg:grid-rows-2 lg:gap-1 lg:h-[500px] w-full col-span-4 row-span-2">
 
-        {/* Left side Carousel hidden on mobile */}
-        <div className="col-span-2 row-span-2">
-          {/* Carousel still loads for layout consistency, but hidden on small screens */}
-          <Carousel autoSlide autoSlideInterval={3000} slides={sliderBanners} />
-        </div>
+  {/* Left side Carousel hidden on mobile */}
+  <div className="col-span-2 row-span-2">
+    {/* Carousel still loads for layout consistency, but hidden on small screens */}
+    <Carousel autoSlide autoSlideInterval={3000} slides={sliderBanners} />
+  </div>
 
-        {/* Top right banners */}
-        <div className="col-span-1 row-span-1">
-          <Adbanner banner={banners[0]} />
-        </div>
-        <div className="col-span-1 row-span-1">
-          <Adbanner banner={banners[1]} />
-        </div>
+  {/* Top right banners */}
+  <div className="col-span-1 row-span-1">
+    <Adbanner banner={banners[0]} />
+  </div>
+  <div className="col-span-1 row-span-1">
+    <Adbanner banner={banners[1]} />
+  </div>
 
-        {/* Bottom wide banner */}
-        <div className="col-start-3 col-span-2 row-start-2 row-span-1">
-          <Adbanner banner={banners[2]} />
-        </div>
-      </div>
+  {/* Bottom wide banner */}
+  <div className="col-start-3 col-span-2 row-start-2 row-span-1">
+    <Adbanner banner={banners[2]} />
+  </div>
+</div>
 
-    </section>
+</section>
+   </div>
   );
 }
