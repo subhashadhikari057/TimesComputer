@@ -4,17 +4,17 @@ import prisma from "../prisma/client";
 // Create a new Color
 export const addColor = async (req: Request, res: Response) => {
     try {
-        const { name } = req.body;
+        const { name, hexCode } = req.body;
 
-        if (!name) {
-            return res.status(400).json({ error: "Color name is required." });
+        if (!name || !hexCode) {
+            return res.status(400).json({ error: "All field are required." });
         }
 
         const colorExist = await prisma.color.findUnique({ where: { name } });
         if (colorExist) return res.status(409).json({ message: "color exit already." });
 
         const Color = await prisma.color.create({
-            data: { name, },
+            data: { name, hexCode },
         });
 
         res.status(201).json({ message: "Color created successfully.", data: Color });
@@ -56,12 +56,12 @@ export const getColorById = async (req: Request, res: Response) => {
 export const updateColor = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
-        const { name } = req.body;
+        const { name, hexCode } = req.body;
 
         if (isNaN(id)) return res.status(400).json({ error: "Invalid Color ID." });
 
-        if (!name || typeof name !== "string") {
-            return res.status(400).json({ error: "Color name is required and must be a string." });
+        if (!name || !hexCode) {
+            return res.status(400).json({ error: "All field are required." });
         }
 
         const Color = await prisma.color.findUnique({ where: { id } });
@@ -69,7 +69,7 @@ export const updateColor = async (req: Request, res: Response) => {
 
         const updatedColor = await prisma.color.update({
             where: { id },
-            data: { name },
+            data: { name, hexCode },
         });
 
         res.status(200).json({ message: "Color updated successfully.", data: updatedColor });

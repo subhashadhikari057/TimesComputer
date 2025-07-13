@@ -10,6 +10,9 @@ export const addBrand = async (req: Request, res: Response) => {
             return res.status(400).json({ error: "Brand name is required and must be a string." });
         }
 
+        const brandExist = await prisma.brand.findUnique({ where: { name } });
+        if (brandExist) return res.status(409).json({ message: "Brand already exist." });
+
 
         const files = req.files as Express.Multer.File[];
 
@@ -69,6 +72,10 @@ export const updateBrand = async (req: Request, res: Response) => {
         if (!name || typeof name !== "string") {
             return res.status(400).json({ error: "Brand name is required and must be a string." });
         }
+
+
+        const brandExist = await prisma.brand.findUnique({ where: { name } });
+        if (brandExist) return res.status(409).json({ message: "Brand already exist." });
 
         const brand = await prisma.brand.findUnique({ where: { id } });
         if (!brand) return res.status(404).json({ error: "Brand not found." });
