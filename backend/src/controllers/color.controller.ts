@@ -10,6 +10,9 @@ export const addColor = async (req: Request, res: Response) => {
             return res.status(400).json({ error: "Color name is required." });
         }
 
+        const colorExist = await prisma.color.findUnique({ where: { name } });
+        if (colorExist) return res.status(409).json({ message: "color exit already." });
+
         const Color = await prisma.color.create({
             data: { name, },
         });

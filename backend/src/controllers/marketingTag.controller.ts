@@ -10,6 +10,9 @@ export const addMarketingTag = async (req: Request, res: Response) => {
             return res.status(400).json({ error: "MarketingTag name is required." });
         }
 
+        const marketingTagExist = await prisma.marketingTag.findUnique({ where: { name } });
+        if (marketingTagExist) return res.status(409).json({ message: "Marketing tag exit already." });
+
         const MarketingTag = await prisma.marketingTag.create({
             data: { name, },
         });

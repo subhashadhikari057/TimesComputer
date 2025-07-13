@@ -10,6 +10,9 @@ export const addfeatureTag = async (req: Request, res: Response) => {
             return res.status(400).json({ error: "featureTag name is required." });
         }
 
+        const featureTagExist = await prisma.featureTag.findUnique({ where: { name } });
+        if (featureTagExist) return res.status(409).json({ message: "Feature tag exit already." });
+
         const featureTag = await prisma.featureTag.create({
             data: { name, },
         });
