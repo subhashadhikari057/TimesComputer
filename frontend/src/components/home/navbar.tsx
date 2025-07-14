@@ -36,7 +36,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
       {/* Top Nav */}
-      <nav className="w-full h-16 flex items-center justify-between text-primary">
+      <nav className="w-full h-14 flex items-center justify-between text-primary">
         <div className="w-full max-w-screen-xl mx-auto px-4 flex items-center justify-between">
           {/* Logo */}
           <Image
@@ -100,7 +100,7 @@ export default function Navbar() {
       />
 
       {/* Category + Search + Icons */}
-      <section className="bg-primary">
+      <section className="bg-primary h-14">
         <div className="w-full max-w-screen-xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-4">
           {/* Dropdown */}
           <div className="w-[160px] md:w-[180px] flex-shrink-0">
