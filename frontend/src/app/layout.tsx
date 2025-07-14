@@ -4,8 +4,9 @@ import "./globals.css";
 
 // Load Google Font with CSS variable
 const manrope = Manrope({
-  subsets: ["latin"],
   variable: "--font-manrope",
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -21,11 +22,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className="scroll-smooth overflow-x-hidden" // ✅ prevent mobile overflow
+      className="scroll-smooth"
       suppressHydrationWarning
     >
       <body
-        className={`${manrope.variable} font-sans antialiased bg-white text-primary`}
+        className={`${manrope.variable} font-manrope antialiased bg-white text-primary`}
       >
         {children}
       </body>

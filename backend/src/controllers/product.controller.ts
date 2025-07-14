@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
+import slugify from 'slugify';
 import {
     // createProductService,
     deleteProductService,
@@ -40,7 +41,6 @@ export const getProductById = async (req: Request, res: Response) => {
     }
 };
 
-
 export const getProductBySlug = async (req: Request, res: Response) => {
     try {
         const { slug } = req.params;
@@ -62,103 +62,25 @@ export const getProductBySlug = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const body = req.body;
-
-        // Convert and validate values
-        body.price = Number(body.price);
-        body.stock = Number(body.stock);
-        body.brandId = isNaN(Number(body.brandId)) ? null : Number(body.brandId);
-        body.categoryId = isNaN(Number(body.categoryId)) ? null : Number(body.categoryId);
-        body.isPublished = body.isPublished === 'true';
-        body.slug = body.slug?.toLowerCase().replace(/\s+/g, '-');
-
-        // Handle optional values
-        body.brochure = !body.brochure || body.brochure.trim() === '' ? null : body.brochure;
-        body.specs = body.specs ? JSON.parse(body.specs) : {};
-        body.featureTagIds = body.featureTagIds ? JSON.parse(body.featureTagIds) : [];
-        body.marketingTagIds = body.marketingTagIds ? JSON.parse(body.marketingTagIds) : [];
-        body.colorIds = body.colorIds ? JSON.parse(body.colorIds) : [];
-
-        // ✅ Validate with Zod after transformation
-        const data = CreateProductSchema.parse(body);
-        const {
-            name,
-            slug,
-            description,
-            price,
-            stock,
-            isPublished,
-            brochure,
-            specs,
-            brandId,
-            categoryId,
-            featureTagIds,
-            marketingTagIds,
-            colorIds,
-        } = data;
-
-        const productExist = await prisma.product.findUnique({ where: { slug } });
-        if (productExist)
-            return res.status(409).json({ message: 'Product already exists.' });
-
-        const files = req.files as Express.Multer.File[];
-        if (!files || files.length === 0) {
-            return res.status(400).json({ error: 'At least one image is required.' });
-        }
-        const imagePaths = files.map((file) => file.path);
-
-        // 1. Create product first without featureTags, marketingTags, colors
-        const product = await prisma.product.create({
-            data: {
-                name,
-                slug,
-                description,
-                price,
-                stock,
-                isPublished,
-                brochure,
-                specs: specs as Prisma.InputJsonValue,
-                brandId,
-                categoryId,
-                images: imagePaths,
-            },
+        const slug = slugify(req.body.name, { lower: true, strict: true });
+        const parsedData = CreateProductSchema.parse({
+            ...req.body,
+            price: parseFloat(req.body.price),
+            stock: parseInt(req.body.stock),
+            isPublished: req.body.isPublished === 'true',
+            brandId: req.body.brandId ? parseInt(req.body.brandId) : null,
+            categoryId: req.body.categoryId ? parseInt(req.body.categoryId) : null,
+            featureTagIds: req.body.featureTagIds ? JSON.parse(req.body.featureTagIds) : [],
+            marketingTagIds: req.body.marketingTagIds ? JSON.parse(req.body.marketingTagIds) : [],
+            colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : [],
+            specs: req.body.specs ? JSON.parse(req.body.specs) : null,
+            images: (req.files as Express.Multer.File[]).map(f => f.path),
         });
 
-        // 2. Create relations manually by inserting into join tables
-        if (featureTagIds && featureTagIds.length > 0) {
-            await prisma.productFeatureTag.createMany({
-                data: featureTagIds.map((tagId: number) => ({
-                    productId: product.id,
-                    tagId,
-                })),
-                skipDuplicates: true,
-            });
-        }
-
-        if (marketingTagIds && marketingTagIds.length > 0) {
-            await prisma.productMarketingTag.createMany({
-                data: marketingTagIds.map((tagId: number) => ({
-                    productId: product.id,
-                    tagId,
-                })),
-                skipDuplicates: true,
-            });
-        }
-
-        if (colorIds && colorIds.length > 0) {
-            await prisma.productColor.createMany({
-                data: colorIds.map((colorId: number) => ({
-                    productId: product.id,
-                    colorId,
-                })),
-                skipDuplicates: true,
-            });
-        }
-
-        res.status(201).json({ message: 'Product created successfully.', data: product });
-    } catch (error: any) {
-        console.error('Create product error:', error.message);
-        res.status(500).json({ error: 'Internal server error.' });
+        const product = await createProductService({ ...parsedData, slug });
+        res.status(201).json(product);
+    } catch (error) {
+        handleError(res, error);
     }
 };
 
@@ -170,8 +92,23 @@ export const updateProduct = async (req: Request, res: Response) => {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
 
-        const data = UpdateProductSchema.parse(req.body);
-        const product = await updateProductService(id, data);
+        const parsedData = UpdateProductSchema.parse({
+            ...req.body,
+            price: req.body.price ? parseFloat(req.body.price) : undefined,
+            stock: req.body.stock ? parseInt(req.body.stock) : undefined,
+            isPublished: req.body.isPublished === 'true',
+            brandId: req.body.brandId ? parseInt(req.body.brandId) : undefined,
+            categoryId: req.body.categoryId ? parseInt(req.body.categoryId) : undefined,
+            featureTagIds: req.body.featureTagIds ? JSON.parse(req.body.featureTagIds) : undefined,
+            marketingTagIds: req.body.marketingTagIds ? JSON.parse(req.body.marketingTagIds) : undefined,
+            colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : undefined,
+            specs: req.body.specs ? JSON.parse(req.body.specs) : undefined,
+            images: req.files && Array.isArray(req.files)
+                ? (req.files as Express.Multer.File[]).map(f => f.path)
+                : undefined,
+        });
+
+        const product = await updateProductService(id, parsedData);
         res.status(200).json(product);
     } catch (error) {
         handleError(res, error);
@@ -190,7 +127,6 @@ export const deleteProduct = async (req: Request, res: Response) => {
     }
 };
 
-// --- Shared error handler ---
 const handleError = (res: Response, error: any) => {
     if (error instanceof ZodError) {
         return res.status(400).json({ message: 'Validation error', errors: error.errors });

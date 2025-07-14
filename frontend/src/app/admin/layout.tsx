@@ -5,8 +5,7 @@ export default function AdminLayout({
 }>) {
   return (
     <>
-    {/* {children} */}
-    this is Admin Layout
+      {children}
     </>
   );
 }

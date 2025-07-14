@@ -30,7 +30,6 @@ export const getProductBySlugService = (slug: string) => {
   });
 };
 
-
 export const updateProductService = async (id: number, data: any) => {
   const {
     name, slug, description, price, stock, isPublished,
@@ -47,8 +46,12 @@ export const updateProductService = async (id: number, data: any) => {
     isPublished,
     brochure,
     specs,
-    brand: brandId !== undefined ? (brandId === null ? { disconnect: true } : { connect: { id: brandId } }) : undefined,
-    category: categoryId !== undefined ? (categoryId === null ? { disconnect: true } : { connect: { id: categoryId } }) : undefined,
+    brand: brandId !== undefined
+      ? brandId === null ? { disconnect: true } : { connect: { id: brandId } }
+      : undefined,
+    category: categoryId !== undefined
+      ? categoryId === null ? { disconnect: true } : { connect: { id: categoryId } }
+      : undefined,
     updatedAt: new Date(),
   };
 
@@ -93,7 +96,6 @@ export const deleteProductService = (id: number) => {
 const productIncludes = {
   brand: true,
   category: true,
-  images: true,
   featureTags: {
     include: { tag: true },
   },
