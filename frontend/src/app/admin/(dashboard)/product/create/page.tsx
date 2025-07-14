@@ -7,6 +7,7 @@ import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import DefaultNumberInput from "@/components/form/form-elements/DefaultNumberInput";
 import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
+import PhotoUpload from "@/components/admin/product/photoUpload";
 
 interface ProductFormData {
   name: string;
@@ -161,14 +162,13 @@ export default function CreateProductPage() {
                 title="Basic Information"
                 desc="Add the basic details of your product"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   <DefaultInput
                     label="Product Name"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Enter product name"
-                    className="md:col-span-2"
                     required
                   />
 
@@ -178,10 +178,26 @@ export default function CreateProductPage() {
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Enter product description"
-                    className="md:col-span-2"
                     rows={4}
                   />
                 </div>
+              </ComponentCard>
+
+              {/* Product Images -  */}
+              <ComponentCard
+                title="Product Images"
+                desc="Upload product images (up to 10 images)"
+              >
+                <PhotoUpload
+                  images={images}
+                  imagePreviews={imagePreviews}
+                  onImageUpload={handleImageUpload}
+                  onRemoveImage={removeImage}
+                  maxImages={10}
+                  maxSizeText="up to 10MB each"
+                  acceptedFormats="PNG, JPG, GIF"
+                  uploadText="Click to upload product images"
+                />
               </ComponentCard>
             </div>
 
@@ -192,7 +208,7 @@ export default function CreateProductPage() {
                 title="Pricing & Inventory"
                 desc="Set pricing and stock information"
               >
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-6">
                   <DefaultNumberInput
                     label="Price"
                     name="price"
