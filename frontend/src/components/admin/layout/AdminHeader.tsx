@@ -70,7 +70,7 @@ export default function Header({
   return (
     <>
       {/* Header  */}
-      <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-999">
+      <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-[999]">
         <div className="flex items-center justify-between w-full px-4 py-4">
           {/* Sidebar toggle */}
           <button
@@ -119,7 +119,7 @@ export default function Header({
 
                 {userDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200"
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1  border border-gray-200"
                     role="menu"
                   >
                     <DropdownItem
@@ -167,7 +167,7 @@ export default function Header({
 
       {/* Mobile dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg relative z-50">
+        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg relative">
           <div className="px-4 py-4 space-y-4">
             <MobileMenuItem
               label="Theme"
@@ -225,7 +225,7 @@ export default function Header({
       {/* Desktop user dropdown overlay - only on desktop */}
       {userDropdownOpen && (
         <div
-          className="fixed inset-0 z-40 hidden md:block"
+          className="fixed inset-0 z-[25] hidden md:block"
           onClick={() => setUserDropdownOpen(false)}
         />
       )}

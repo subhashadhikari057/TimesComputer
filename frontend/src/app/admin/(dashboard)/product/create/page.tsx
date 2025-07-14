@@ -148,7 +148,7 @@ export default function CreateProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 ">
       {/* Main Content with bottom padding for sticky footer */}
       <div className="pb-24">
         <div className="p-6">
@@ -249,7 +249,7 @@ export default function CreateProductPage() {
       </div>
 
       {/* Floating Action Card */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2">
         <div className="bg-white rounded-lg shadow-2xl border border-gray-200 px-6 py-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm text-gray-500">

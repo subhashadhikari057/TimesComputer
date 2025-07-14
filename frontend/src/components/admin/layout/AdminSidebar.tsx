@@ -42,7 +42,7 @@ export default function Sidebar({
     } else if (href && href !== "#") {
       setIsNavigating(true);
       try {
-         router.push(href);
+        router.push(href);
         if (window.innerWidth < 1024) {
           setSidebarOpen(false);
         }
@@ -121,12 +121,16 @@ export default function Sidebar({
             {isSubmenuExpanded ? (
               <ChevronDown
                 size={16}
-                className={`${isHighlighted ? "text-blue-600" : "text-gray-600"} transition-transform duration-200`}
+                className={`${
+                  isHighlighted ? "text-blue-600" : "text-gray-600"
+                } transition-transform duration-200`}
               />
             ) : (
               <ChevronRight
                 size={16}
-                className={`${isHighlighted ? "text-blue-600" : "text-gray-600"} transition-transform duration-200`}
+                className={`${
+                  isHighlighted ? "text-blue-600" : "text-gray-600"
+                } transition-transform duration-200`}
               />
             )}
           </button>
@@ -192,27 +196,23 @@ export default function Sidebar({
 
   return (
     <>
-   
-      {sidebarOpen && (
-        <div
-          className="fixed inset-y-0 bg-white  lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      
 
       <div
-        className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out group
+        className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out
           ${
             sidebarOpen
               ? "w-3/4 md:w-72 translate-x-0"
               : "w-20 -translate-x-full lg:translate-x-0 lg:hover:w-72"
           }
-          fixed left-0 z-40 lg:relative lg:z-auto overflow-hidden`}
+          fixed left-0 lg:relative z-50 lg:z-auto overflow-hidden`}
         onMouseEnter={() => !sidebarOpen && setIsHovered(true)}
         onMouseLeave={() => !sidebarOpen && setIsHovered(false)}
       >
-        <div className={`${isExpanded ? "min-w-72" : "min-w-20"} transition-all duration-300`}>
+        <div
+          className={`${
+            isExpanded ? "min-w-72" : "min-w-20"
+          } transition-all duration-300`}
+        >
           <div className="flex items-center justify-between h-16 px-4 pt-4">
             {isExpanded ? (
               <>
@@ -237,22 +237,30 @@ export default function Sidebar({
           <nav className="mt-6 px-4">
             {isExpanded && (
               <div className="mb-3">
-                <p className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
-                  sidebarOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                } transition-opacity duration-300`}>
+                <p
+                  className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
+                    sidebarOpen
+                      ? "opacity-100"
+                      : "opacity-0 group-hover:opacity-100"
+                  } transition-opacity duration-300`}
+                >
                   Menu
                 </p>
               </div>
             )}
-            
+
             <div className="space-y-2">
               {menuItems.map(renderMenuItem)}
 
               {isExpanded && (
                 <div className="pt-4">
-                  <p className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
-                    sidebarOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                  } transition-opacity duration-300`}>
+                  <p
+                    className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
+                      sidebarOpen
+                        ? "opacity-100"
+                        : "opacity-0 group-hover:opacity-100"
+                    } transition-opacity duration-300`}
+                  >
                     Others
                   </p>
                 </div>
@@ -275,7 +283,7 @@ export default function Sidebar({
             transform: translateY(0);
           }
         }
-        
+
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
         }

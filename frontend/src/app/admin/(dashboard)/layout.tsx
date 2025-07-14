@@ -57,6 +57,14 @@ export default function DashboardLayout({ children }: LayoutProps) {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
       </div>
+
+      {/* Overlay for mobile when sidebar is open */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }
