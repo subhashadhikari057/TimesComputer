@@ -28,8 +28,9 @@ const Footer: FC = () => {
               className="mb-2"
             />
             <p className="text-xs leading-relaxed">
-              Built on a simple idea — buying a laptop shouldn't be complicated.
+              Built on a simple idea — buying a laptop shouldn&apos;t be complicated.
             </p>
+
             <div className="flex space-x-3 mt-3 text-lg">
               <Link href="#"><FaInstagram className="text-primary" /></Link>
               <Link href="#"><FaFacebook className="text-primary" /></Link>
