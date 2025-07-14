@@ -1,6 +1,7 @@
 "use client";
 
 import { Upload, X } from "lucide-react";
+import Image from "next/image";
 
 interface PhotoUploadProps {
   images: File[];
@@ -58,9 +59,11 @@ export default function PhotoUpload({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {imagePreviews.map((preview, index) => (
             <div key={index} className="relative group">
-              <img
+              <Image
                 src={preview}
                 alt={`Preview ${index + 1}`}
+                width={100}
+                height={100}
                 className="w-full h-24 object-cover rounded-lg border border-gray-200"
               />
               <button

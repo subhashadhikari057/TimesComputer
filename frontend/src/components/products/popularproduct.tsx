@@ -4,11 +4,6 @@ import ProductCard from "./productcard";
 import { Product } from "../../../types/product";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEffect, useState } from "react";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Grid } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/grid';
-import 'swiper/css/navigation';
 
 function PopularProductsSection() {
   const products: Product[] = [
