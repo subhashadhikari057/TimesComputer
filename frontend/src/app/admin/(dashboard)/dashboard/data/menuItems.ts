@@ -2,14 +2,14 @@ import {
   LayoutDashboard,
   User,
   FileText,
-  BarChart3,
   Lock,
+  LucideIcon,
 } from "lucide-react";
 
 export interface MenuItem {
   id: string;
   label: string;
-  icon: any;
+  icon: LucideIcon;
   hasSubmenu: boolean;
   href?: string;
   subItems?: { label: string; href: string }[];

@@ -1,11 +1,10 @@
 // app/components/home/bannerSlider.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Banner } from "../../../types/banner";
+import { Banner } from "../../../../types/banner";
 
 interface CarouselProps {
   autoSlide?: boolean;
@@ -28,15 +27,17 @@ export default function Carousel({
     setCurr((curr) => (curr === 0 ? slides.length - 1 : curr - 1));
 
   // Navigate to next slide
-  const next = () =>
-    setCurr((curr) => (curr === slides.length - 1 ? 0 : curr + 1));
+  const next = useCallback(() =>
+    setCurr((curr) => (curr === slides.length - 1 ? 0 : curr + 1)),
+    [slides.length]
+  );
 
   // Auto slide logic
   useEffect(() => {
     if (!autoSlide) return;
     const slideInterval = setInterval(next, autoSlideInterval);
     return () => clearInterval(slideInterval);
-  }, [autoSlide, autoSlideInterval]);
+  }, [autoSlide, autoSlideInterval, next]);
 
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {

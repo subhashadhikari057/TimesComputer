@@ -1,0 +1,70 @@
+# Dependencies
+package-lock.json
+package.json
+!*/package-lock.json
+!*/package.json
+node_modules/
+.pnp/
+.pnp.js
+
+# Testing
+coverage/
+
+# Next.js (Frontend)
+.next/
+out/
+build/
+dist/
+.vercel/
+
+# Production
+build/
+dist/
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local env files
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+
+# Backend specific
+backend/dist/
+backend/build/
+backend/coverage/
+backend/uploads/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Prisma
+backend/prisma/migrations/
+backend/prisma/*.db
+backend/prisma/.env
+
+# Logs
+logs/
+*.log
+
+# Cache directories
+.cache/
+.temp/
+

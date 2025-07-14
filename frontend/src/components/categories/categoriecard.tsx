@@ -27,7 +27,7 @@ export const CategoryCard = ({ image, title, onClick, className = "" }: { image:
           </div>
         </div>
         
-        <h3 className="text-gray-800 font-medium text-sm md:text-[22px] group-hover:text-blue-600 transition-colors duration-300">
+        <h3 className="text-gray-800 font-medium text-sm md:text-lg group-hover:text-blue-600 transition-colors duration-300">
           {title}
         </h3>
       </div>      

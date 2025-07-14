@@ -1,6 +1,6 @@
 export interface Product {
-    category: any;
-    tag: any;
+    category: string | undefined;
+    tag: string | undefined;
     id: number;
     image: string;
     rating: number;

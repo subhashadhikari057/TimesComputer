@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Menu,
   ChevronDown,
   Bell,
   Settings,
