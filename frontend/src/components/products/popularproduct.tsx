@@ -102,13 +102,13 @@ function PopularProductsSection() {
     },
   ];
 
-const isMobile = useMediaQuery("(max-width: 768px)");
-const initialCount = isMobile ? 4 : 8;
-const stepCount = 4;
-const [visibleCount, setVisibleCount] = useState(initialCount);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const initialCount = isMobile ? 4 : 8;
+  const stepCount = 4;
+  const [visibleCount, setVisibleCount] = useState(initialCount);
 
 
-useEffect(() => {
+  useEffect(() => {
     // Reset visible count when screen size changes
     setVisibleCount(isMobile ? 4 : 8);
   }, [isMobile]);
@@ -127,32 +127,32 @@ useEffect(() => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:py-8">
-    <h2 className="text-2xl font-semibold text-gray-900 mb-8">Featured Products</h2>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-8">Popular Products</h2>
 
-    <div
-      className={`
+      <div
+        className={`
         grid gap-4
         grid-cols-2
         sm:grid-cols-2
         md:grid-cols-4
       `}
-    >
-      {products.slice(0, visibleCount).map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </div>
-
-    {products.length > initialCount && (
-      <div className="mt-6 text-center">
-        <button
-          onClick={handleViewToggle}
-          className="text-primary font-semibold hover:underline"
-        >
-          {isFullyExpanded ? "View Less" : "View More"}
-        </button>
+      >
+        {products.slice(0, visibleCount).map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
-    )}
-  </div>
+
+      {products.length > initialCount && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleViewToggle}
+            className="text-primary font-semibold hover:underline"
+          >
+            {isFullyExpanded ? "View Less" : "View More"}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
