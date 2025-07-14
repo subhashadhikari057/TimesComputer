@@ -21,8 +21,8 @@ export const register = async (req: Request, res: Response) => {
 
     const { name, email, password } = body.data;
 
-    const existingAdmins = await prisma.adminUser.count();
-    if (existingAdmins > 0) {
+    const existingAdmins = await prisma.adminUser.findUnique({ where: { email } });
+    if (existingAdmins) {
         return res.status(403).json({ message: "Superadmin already exists." });
     }
 

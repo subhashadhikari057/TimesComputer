@@ -1,116 +1,88 @@
-import prisma from "../prisma/client";
+// controllers/category.controller.ts
 
-// Create a new category
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
+import {
+    addCategoryService,
+    getAllCategoryService,
+    getCategoryByIdService,
+    updateCategoryService,
+    deleteCategoryService,
+} from "../services/category.service";
 
 export const addCategory = async (req: Request, res: Response) => {
     try {
         const { name } = req.body;
-
-        if (!name || typeof name !== 'string') {
-            return res.status(400).json({ error: 'Category name is required and must be a string.' });
-        }
-
-        const categoryExist = await prisma.category.findUnique({ where: { name } });
-        if (categoryExist) return res.status(409).json({ message: "Category exit already." });
-
         const files = req.files as Express.Multer.File[];
 
-        if (!files || files.length === 0) {
-            return res.status(400).json({ error: 'At least one image is required.' });
+        if (!name || typeof name !== 'string') {
+            return res.status(400).json({ error: "Category name is required and must be a string." });
         }
 
-        const imagePaths = files.map((file) => file.path);
+        if (!files || files.length === 0) {
+            return res.status(400).json({ error: "At least one image is required." });
+        }
 
-        const category = await prisma.category.create({
-            data: {
-                name,
-                images: imagePaths,
-            },
-        });
+        const imagePaths = files.map(file => file.path);
+        const category = await addCategoryService({ name, imagePaths });
 
-        res.status(201).json({ message: 'Category created successfully.', data: category });
-    } catch (error) {
-        console.error('Create category error:', error);
-        res.status(500).json({ error: 'Internal server error.' });
+        res.status(201).json({ message: "Category created successfully.", data: category });
+    } catch (error: any) {
+        if (error.message.includes("exists")) {
+            return res.status(409).json({ error: error.message });
+        }
+        res.status(500).json({ error: "Internal server error", details: error.message });
     }
 };
 
-
-
-// Get all categorys
 export const getAllCategorys = async (_req: Request, res: Response) => {
     try {
-        const categorys = await prisma.category.findMany();
-        res.status(200).json({ message: "categorys retrieved successfully.", data: categorys });
+        const categories = await getAllCategoryService();
+        res.status(200).json({ message: "Categories retrieved successfully.", data: categories });
     } catch (error: any) {
-        console.error("Get all categorys error:", error);
-        res.status(500).json({ error: "Failed to retrieve categorys." });
+        res.status(500).json({ error: "Internal server error", details: error.message });
     }
 };
 
-// Get a single category by ID
 export const getCategoryById = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
 
-        const category = await prisma.category.findUnique({ where: { id } });
-
-        if (!category) return res.status(404).json({ error: "category not found." });
-
-        res.status(200).json({ message: "category retrieved successfully.", data: category });
+        const category = await getCategoryByIdService(id);
+        res.status(200).json({ message: "Category retrieved successfully.", data: category });
     } catch (error: any) {
-        console.error("Get category by ID error:", error);
-        res.status(500).json({ error: "Failed to retrieve category." });
+        const status = error.message === "Category not found." ? 404 : 500;
+        res.status(status).json({ error: error.message });
     }
 };
 
-// Update a category
 export const updateCategory = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
         const { name } = req.body;
 
-        if (!name || typeof name !== "string") {
-            return res.status(400).json({ error: "category name is required and must be a string." });
+        if (!name || typeof name !== 'string') {
+            return res.status(400).json({ error: "Category name is required and must be a string." });
         }
 
-        const existCategory = await prisma.category.findUnique({ where: { name } });
-        if (existCategory) return res.status(409).json({ message: "Category exist already." });
-
-        const category = await prisma.category.findUnique({ where: { id } });
-        if (!category) return res.status(404).json({ error: "category not found." });
-
-        const updatedcategory = await prisma.category.update({
-            where: { id },
-            data: { name },
-        });
-
-        res.status(200).json({ message: "category updated successfully.", data: updatedcategory });
+        const updatedCategory = await updateCategoryService(id, name);
+        res.status(200).json({ message: "Category updated successfully.", data: updatedCategory });
     } catch (error: any) {
-        console.error("Update category error:", error);
-        res.status(500).json({ error: "Failed to update category." });
+        const status = error.message.includes("not found") ? 404 :
+            error.message.includes("already exists") ? 409 : 500;
+        res.status(status).json({ error: error.message });
     }
 };
 
-// Delete category
 export const deleteCategory = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
-
         if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
 
-        const category = await prisma.category.findUnique({ where: { id } });
-        if (!category) return res.status(404).json({ error: "category not found." });
-
-        const deletecategory = await prisma.category.delete({
-            where: { id }
-        });
-
-        res.status(200).json({ message: "category deleted successfully.", deletecategory });
+        const deleted = await deleteCategoryService(id);
+        res.status(200).json({ message: "Category deleted successfully.", data: deleted });
     } catch (error: any) {
-        console.error("Delete category error:", error);
-        res.status(500).json({ error: "Failed to delete category." });
+        const status = error.message === "Category not found." ? 404 : 500;
+        res.status(status).json({ error: error.message });
     }
-} 
+};

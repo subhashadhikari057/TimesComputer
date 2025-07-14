@@ -1,15 +1,15 @@
 "use client";
 
+import Header from "@/components/admin/layout/AdminHeader";
+import Sidebar from "@/components/admin/layout/AdminSidebar";
 import { useState, useEffect } from "react";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to true for desktop
   const [activeMenus, setActiveMenus] = useState<string[]>(["dashboard"]);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
@@ -17,9 +17,10 @@ export default function DashboardLayout({ children }: LayoutProps) {
   useEffect(() => {
     const setInitialState = () => {
       if (window.innerWidth >= 1024) {
-        // lg breakpoint
+        // lg breakpoint - keep sidebar open for desktop
         setSidebarOpen(true);
       } else {
+        // Mobile - start closed
         setSidebarOpen(false);
       }
     };
