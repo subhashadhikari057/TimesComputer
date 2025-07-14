@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ZodError } from 'zod';
 import slugify from 'slugify';
 import {
-    createProductService,
+    // createProductService,
     deleteProductService,
     getAllProductsService,
     getProductByIdService,
@@ -11,6 +11,7 @@ import {
 } from '../services/product.service';
 import { CreateProductSchema, UpdateProductSchema } from '../validations/product.schema';
 import prisma from '../prisma/client';
+import { Prisma } from '@prisma/client';
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
@@ -82,6 +83,9 @@ export const createProduct = async (req: Request, res: Response) => {
         handleError(res, error);
     }
 };
+
+
+
 
 export const updateProduct = async (req: Request, res: Response) => {
     try {
