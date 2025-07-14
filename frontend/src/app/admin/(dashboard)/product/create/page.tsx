@@ -15,6 +15,13 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import ComponentCard from "@/components/common/ComponentsCard";
+import DefaultInput from "@/components/form/form-elements/DefaultInput";
+import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
+import DefaultNumberInput from "@/components/form/form-elements/DefaultNumberInput";
+import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
+import DefaultSelect from "@/components/form/form-elements/DefaultSelect";
+import FileUpload from "@/components/form/form-elements/FileUpload";
 
 interface ProductFormData {
   name: string;
@@ -180,425 +187,107 @@ export default function CreateProductPage() {
         <p className="text-gray-600">Add a new product to your inventory</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Basic Information */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-2 mb-4">
-            <Package className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Basic Information
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Product Name *
-              </label>
-              <input
-                type="text"
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 xl:grid-cols-5 gap-6"
+      >
+        {/* Product Details Section - Takes 3/4 of space */}
+        <div className="xl:col-span-3 space-y-6">
+          {/* Basic Information */}
+          <ComponentCard
+            title="Basic Information"
+            desc="Add the basic details of your product"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <DefaultInput
+                label="Product Name"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter product name"
                 required
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Slug *
-              </label>
-              <input
-                type="text"
+              <DefaultInput
+                label="Slug"
                 name="slug"
                 value={formData.slug}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="product-slug"
                 required
+                helpText="URL-friendly version of the product name"
               />
-            </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
+              <DefaultTextarea
+                label="Description"
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter product description"
+                className="md:col-span-2"
+                rows={4}
               />
             </div>
-          </div>
+          </ComponentCard>
         </div>
 
-        {/* Pricing & Inventory */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-2 mb-4">
-            <DollarSign className="w-5 h-5 text-green-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Pricing & Inventory
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price *
-              </label>
-              <input
-                type="number"
+        {/* Pricing & Actions Section - Takes 1/4 of space */}
+        <div className="xl:col-span-2 space-y-6">
+          {/* Pricing & Inventory */}
+          <ComponentCard
+            title="Pricing & Inventory"
+            desc="Set pricing and stock information"
+          >
+            <div className="space-y-4">
+              <DefaultNumberInput
+                label="Price"
                 name="price"
                 value={formData.price}
                 onChange={handleInputChange}
-                min="0"
-                step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                min={0}
+                step={0.01}
                 placeholder="0.00"
                 required
+                helpText="Enter the selling price"
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Stock Quantity *
-              </label>
-              <input
-                type="number"
+              <DefaultNumberInput
+                label="Stock Quantity"
                 name="stock"
                 value={formData.stock}
                 onChange={handleInputChange}
-                min="0"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                min={0}
                 placeholder="0"
                 required
+                helpText="Available quantity in inventory"
+              />
+
+              <DefaultCheckbox
+                label="Published"
+                name="isPublished"
+                checked={formData.isPublished}
+                onChange={handleCheckboxChange}
+                helpText="Make this product visible to customers"
               />
             </div>
+          </ComponentCard>
 
-            <div className="flex items-center">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  name="isPublished"
-                  checked={formData.isPublished}
-                  onChange={handleCheckboxChange}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  Published
-                </span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Category & Brand */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-2 mb-4">
-            <Building2 className="w-5 h-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Category & Brand
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Brand
-              </label>
-              <select
-                name="brandId"
-                value={formData.brandId || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    brandId: e.target.value ? Number(e.target.value) : null,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select a brand</option>
-                {brands.map((brand) => (
-                  <option key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                name="categoryId"
-                value={formData.categoryId || ""}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    categoryId: e.target.value ? Number(e.target.value) : null,
-                  }))
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Product Images */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-2 mb-4">
-            <Upload className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              Product Images
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                id="image-upload"
-              />
-              <label
-                htmlFor="image-upload"
-                className="inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
-              >
-                <Upload className="w-4 h-4" />
-                <span>Upload Images</span>
-              </label>
-            </div>
-
-            {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Specifications */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <FileText className="w-5 h-5 text-orange-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Specifications
-              </h2>
-            </div>
+          {/* Submit Button */}
+          <div className="space-y-3">
+            <button
+              type="submit"
+              className="w-full inline-flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            >
+              <Save className="w-4 h-4" />
+              <span>Create Product</span>
+            </button>
             <button
               type="button"
-              onClick={addSpec}
-              className="inline-flex items-center space-x-2 px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="w-full px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
             >
-              <Plus className="w-4 h-4" />
-              <span>Add Spec</span>
+              Cancel
             </button>
           </div>
-
-          <div className="space-y-3">
-            {specs.map((spec, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={spec.key}
-                  onChange={(e) =>
-                    handleSpecChange(index, "key", e.target.value)
-                  }
-                  placeholder="Specification name"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <input
-                  type="text"
-                  value={spec.value}
-                  onChange={(e) =>
-                    handleSpecChange(index, "value", e.target.value)
-                  }
-                  placeholder="Specification value"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                {specs.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeSpec(index)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Tags & Colors */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Feature Tags */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center space-x-2 mb-4">
-              <Tag className="w-5 h-5 text-cyan-600" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Feature Tags
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {featureTags.map((tag) => (
-                <label key={tag.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedFeatureTags.includes(tag.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedFeatureTags((prev) => [...prev, tag.id]);
-                      } else {
-                        setSelectedFeatureTags((prev) =>
-                          prev.filter((id) => id !== tag.id)
-                        );
-                      }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">{tag.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Marketing Tags */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center space-x-2 mb-4">
-              <Tag className="w-5 h-5 text-pink-600" />
-              <h3 className="text-lg font-semibold text-gray-900">
-                Marketing Tags
-              </h3>
-            </div>
-            <div className="space-y-2">
-              {marketingTags.map((tag) => (
-                <label key={tag.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedMarketingTags.includes(tag.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedMarketingTags((prev) => [...prev, tag.id]);
-                      } else {
-                        setSelectedMarketingTags((prev) =>
-                          prev.filter((id) => id !== tag.id)
-                        );
-                      }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">{tag.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Colors */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <div className="flex items-center space-x-2 mb-4">
-              <Palette className="w-5 h-5 text-emerald-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Colors</h3>
-            </div>
-            <div className="space-y-2">
-              {colors.map((color) => (
-                <label key={color.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedColors.includes(color.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedColors((prev) => [...prev, color.id]);
-                      } else {
-                        setSelectedColors((prev) =>
-                          prev.filter((id) => id !== color.id)
-                        );
-                      }
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className="w-4 h-4 rounded border border-gray-300"
-                      style={{ backgroundColor: color.hexCode }}
-                    ></div>
-                    <span className="text-sm text-gray-700">{color.name}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Brochure */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-2 mb-4">
-            <FolderOpen className="w-5 h-5 text-yellow-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Brochure</h2>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Brochure URL
-            </label>
-            <input
-              type="url"
-              name="brochure"
-              value={formData.brochure}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="https://example.com/brochure.pdf"
-            />
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="inline-flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <Save className="w-4 h-4" />
-            <span>Create Product</span>
-          </button>
         </div>
       </form>
     </div>
