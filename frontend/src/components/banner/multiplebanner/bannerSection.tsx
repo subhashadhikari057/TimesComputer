@@ -1,9 +1,9 @@
 // app/components/home/BannerSection.tsx
 
 import React from "react";
-import Carousel from "./bannerSlider";
+import Carousel from "../multiplebanner/bannerSlider";
 import Adbanner from "./Adbanner";
-import { Banner } from "../../../types/banner";
+import { Banner } from "../../../../types/banner";
 
 // Right banners
 const banners: Banner[] = [

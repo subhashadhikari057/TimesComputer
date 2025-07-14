@@ -12,6 +12,7 @@
   --color-secondary: var(--secondary);
   --font-sans: var(--font-manrope);
   --font-manrope: var(--font-manrope);
+  --color-muted-background: var(--muted-background);
 }
 
 :root {
@@ -21,6 +22,7 @@
   --muted-border: #E3E3E3;
   --primary: #1455AC;
   --secondary: #3B82F6;
+  --muted-background: #F8F8F8;
 }
 
 html {
