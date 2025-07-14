@@ -7,6 +7,7 @@ import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import DefaultNumberInput from "@/components/form/form-elements/DefaultNumberInput";
 import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
+import PhotoUpload from "@/components/admin/product/photoUpload";
 
 interface ProductFormData {
   name: string;
@@ -67,15 +68,6 @@ export default function CreateProductPage() {
       ...prev,
       [name]: type === "number" ? Number(value) : value,
     }));
-
-    // Auto-generate slug from name
-    if (name === "name") {
-      const slug = value
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/\s+/g, "-");
-      setFormData((prev) => ({ ...prev, slug }));
-    }
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,14 +155,14 @@ export default function CreateProductPage() {
             onSubmit={handleSubmit}
             className="grid grid-cols-1 xl:grid-cols-5 gap-6"
           >
-            {/* Product Details Section - Takes 3/4 of space */}
+            {/* Product Details Section - Takes 3/5 of space */}
             <div className="xl:col-span-3 space-y-6">
               {/* Basic Information */}
               <ComponentCard
                 title="Basic Information"
                 desc="Add the basic details of your product"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   <DefaultInput
                     label="Product Name"
                     name="name"
@@ -180,37 +172,43 @@ export default function CreateProductPage() {
                     required
                   />
 
-                  <DefaultInput
-                    label="Slug"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleInputChange}
-                    placeholder="product-slug"
-                    required
-                    helpText="URL-friendly version of the product name"
-                  />
-
                   <DefaultTextarea
                     label="Description"
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     placeholder="Enter product description"
-                    className="md:col-span-2"
                     rows={4}
                   />
                 </div>
               </ComponentCard>
+
+              {/* Product Images -  */}
+              <ComponentCard
+                title="Product Images"
+                desc="Upload product images (up to 10 images)"
+              >
+                <PhotoUpload
+                  images={images}
+                  imagePreviews={imagePreviews}
+                  onImageUpload={handleImageUpload}
+                  onRemoveImage={removeImage}
+                  maxImages={10}
+                  maxSizeText="up to 10MB each"
+                  acceptedFormats="PNG, JPG, GIF"
+                  uploadText="Click to upload product images"
+                />
+              </ComponentCard>
             </div>
 
-            {/* Pricing & Actions Section - Takes 1/4 of space */}
+            {/* Pricing & Actions Section - Takes 2/5 of space */}
             <div className="xl:col-span-2 space-y-6">
               {/* Pricing & Inventory */}
               <ComponentCard
                 title="Pricing & Inventory"
                 desc="Set pricing and stock information"
               >
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-6">
                   <DefaultNumberInput
                     label="Price"
                     name="price"
