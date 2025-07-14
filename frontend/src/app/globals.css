@@ -1,8 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Custom variant for dark mode */
 @custom-variant dark (&:is(.dark *));
 
+/* Theme variable mapping */
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,9 +14,11 @@
   --color-secondary: var(--secondary);
   --font-sans: var(--font-manrope);
   --font-manrope: var(--font-manrope);
+  --color-muted-foreground2: var(--muted-foreground2);
   --color-muted-background: var(--muted-background);
 }
 
+/* Root color definitions */
 :root {
   --background: #ffffff;
   --foreground: #000;
@@ -22,14 +26,16 @@
   --muted-border: #E3E3E3;
   --primary: #1455AC;
   --secondary: #3B82F6;
+  --muted-foreground2: #252525;
   --muted-background: #F8F8F8;
 }
+
+/* Base styles */
 html {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-manrope), system-ui, sans-serif;
 }
-
 
 body {
   background: var(--background);
@@ -38,4 +44,25 @@ body {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
+}
+
+/* Footer gradient line */
+.footer {
+  position: relative;
+}
+.footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    #3B82F6,
+    #1d4ed8,
+    #3B82F6,
+    transparent
+  );
 }

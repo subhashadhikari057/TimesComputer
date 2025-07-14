@@ -5,6 +5,7 @@ import TopCategories from '@/components/categories/categorysection';
 import { UpperSingleBannerSection, LowerSingleBannerSection } from '@/components/banner/singlebanner/SingleBannerSection';
 import { PopularProductsSection } from '@/components/products/popularproduct';
 import BrandScroller from '@/components/home/BrandScroller';
+import Blog from '@/components/blog/blog';
 
 const HomePage = () => {
   return (
@@ -16,6 +17,7 @@ const HomePage = () => {
       <PopularProductsSection />
       <LowerSingleBannerSection />
       <BrandScroller />
+      <Blog />
     </div>
   );
 };
