@@ -61,7 +61,7 @@ export default function PhotoUpload({
               <img
                 src={preview}
                 alt={`Preview ${index + 1}`}
-                className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                className="w-full h-24 object-cover rounded-lg border border-gray-200 "
               />
               <button
                 type="button"

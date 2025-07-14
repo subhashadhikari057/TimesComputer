@@ -8,6 +8,8 @@ import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import DefaultNumberInput from "@/components/form/form-elements/DefaultNumberInput";
 import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
 import PhotoUpload from "@/components/admin/product/photoUpload";
+import SpecificationsManager from "@/components/admin/product/specification";
+import BrandCategorySelector from "@/components/admin/product/brandCategory";
 
 interface ProductFormData {
   name: string;
@@ -73,6 +75,18 @@ export default function CreateProductPage() {
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setFormData((prev) => ({ ...prev, [name]: checked }));
+  };
+
+  const handleBrandChange = (brandId: number | null) => {
+    setFormData((prev) => ({ ...prev, brandId }));
+  };
+
+  const handleCategoryChange = (categoryId: number | null) => {
+    setFormData((prev) => ({ ...prev, categoryId }));
+  };
+
+  const handleSpecificationsChange = (newSpecs: { key: string; value: string }[]) => {
+    setSpecs(newSpecs);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,7 +197,7 @@ export default function CreateProductPage() {
                 </div>
               </ComponentCard>
 
-              {/* Product Images -  */}
+              {/* Product Images */}
               <ComponentCard
                 title="Product Images"
                 desc="Upload product images (up to 10 images)"
@@ -199,6 +213,12 @@ export default function CreateProductPage() {
                   uploadText="Click to upload product images"
                 />
               </ComponentCard>
+
+              {/* Specifications */}
+              <SpecificationsManager
+                specifications={specs}
+                onSpecificationsChange={handleSpecificationsChange}
+              />
             </div>
 
             {/* Pricing & Actions Section - Takes 2/5 of space */}
@@ -241,6 +261,16 @@ export default function CreateProductPage() {
                   />
                 </div>
               </ComponentCard>
+
+              {/* Brand & Category */}
+              <BrandCategorySelector
+                brands={brands}
+                categories={categories}
+                selectedBrandId={formData.brandId}
+                selectedCategoryId={formData.categoryId}
+                onBrandChange={handleBrandChange}
+                onCategoryChange={handleCategoryChange}
+              />
             </div>
           </form>
         </div>
