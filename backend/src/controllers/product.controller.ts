@@ -64,7 +64,6 @@ export const createProduct = async (req: Request, res: Response) => {
         const slug = slugify(req.body.name, { lower: true, strict: true });
         const parsedData = CreateProductSchema.parse({
             ...req.body,
-            slug,
             price: parseFloat(req.body.price),
             stock: parseInt(req.body.stock),
             isPublished: req.body.isPublished === 'true',
@@ -77,7 +76,7 @@ export const createProduct = async (req: Request, res: Response) => {
             images: (req.files as Express.Multer.File[]).map(f => f.path),
         });
 
-        const product = await createProductService(parsedData);
+        const product = await createProductService({ ...parsedData, slug });
         res.status(201).json(product);
     } catch (error) {
         handleError(res, error);
