@@ -67,15 +67,6 @@ export default function CreateProductPage() {
       ...prev,
       [name]: type === "number" ? Number(value) : value,
     }));
-
-    // Auto-generate slug from name
-    if (name === "name") {
-      const slug = value
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, "")
-        .replace(/\s+/g, "-");
-      setFormData((prev) => ({ ...prev, slug }));
-    }
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -163,7 +154,7 @@ export default function CreateProductPage() {
             onSubmit={handleSubmit}
             className="grid grid-cols-1 xl:grid-cols-5 gap-6"
           >
-            {/* Product Details Section - Takes 3/4 of space */}
+            {/* Product Details Section - Takes 3/5 of space */}
             <div className="xl:col-span-3 space-y-6">
               {/* Basic Information */}
               <ComponentCard
@@ -177,17 +168,8 @@ export default function CreateProductPage() {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Enter product name"
+                    className="md:col-span-2"
                     required
-                  />
-
-                  <DefaultInput
-                    label="Slug"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleInputChange}
-                    placeholder="product-slug"
-                    required
-                    helpText="URL-friendly version of the product name"
                   />
 
                   <DefaultTextarea
@@ -203,7 +185,7 @@ export default function CreateProductPage() {
               </ComponentCard>
             </div>
 
-            {/* Pricing & Actions Section - Takes 1/4 of space */}
+            {/* Pricing & Actions Section - Takes 2/5 of space */}
             <div className="xl:col-span-2 space-y-6">
               {/* Pricing & Inventory */}
               <ComponentCard
