@@ -11,7 +11,7 @@ export interface MenuItem {
   label: string;
   icon: any;
   hasSubmenu: boolean;
-  isActive: boolean;
+  href?: string;
   subItems?: { label: string; href: string }[];
 }
 
@@ -21,31 +21,16 @@ export const menuItems: MenuItem[] = [
     label: "Dashboard",
     icon: LayoutDashboard,
     hasSubmenu: false,
-    isActive: true,
-  },
-  {
-    id: "overview",
-    label: "Overview",
-    icon: BarChart3,
-    hasSubmenu: true,
-    isActive: false,
-    subItems: [
-      { label: "Analytics", href: "#" },
-      { label: "Reports", href: "#" },
-      { label: "Statistics", href: "#" },
-    ],
+    href: "/admin/dashboard",
   },
   {
     id: "product",
     label: "Product",
     icon: FileText,
     hasSubmenu: true,
-    isActive: false,
     subItems: [
-      { label: "Create Product", href: "#" },
-      { label: "View Products", href: "#" },
-      { label: "Edit Product", href: "#" },
-      { label: "Delete Product", href: "#" },
+      { label: "Create Product", href: "/admin/product/create" },
+      { label: "View Products", href: "/admin/product/view" },
     ],
   },
   {
@@ -53,7 +38,6 @@ export const menuItems: MenuItem[] = [
     label: "User Profile",
     icon: User,
     hasSubmenu: true,
-    isActive: false,
   },
 ];
 
@@ -63,6 +47,5 @@ export const otherMenuItems: MenuItem[] = [
     label: "Authentication",
     icon: Lock,
     hasSubmenu: true,
-    isActive: false,
   },
 ];
