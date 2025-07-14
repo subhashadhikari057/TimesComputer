@@ -48,26 +48,16 @@ export const createProductService = async (data: any) => {
       specs,
       brand: brandId ? { connect: { id: brandId } } : undefined,
       category: categoryId ? { connect: { id: categoryId } } : undefined,
-      images: images?.length ? {
-        createMany: {
-          data: images.map((img: { url: string }) => ({ url: img.url })),
-        },
-      } : undefined,
-      featureTags: featureTagIds?.length ? {
-        createMany: {
-          data: featureTagIds.map((tagId: number) => ({ tagId })),
-        },
-      } : undefined,
-      marketingTags: marketingTagIds?.length ? {
-        createMany: {
-          data: marketingTagIds.map((tagId: number) => ({ tagId })),
-        },
-      } : undefined,
-      colors: colorIds?.length ? {
-        createMany: {
-          data: colorIds.map((colorId: number) => ({ colorId })),
-        },
-      } : undefined,
+      images,
+      featureTags: featureTagIds?.length
+        ? { createMany: { data: featureTagIds.map((tagId: number) => ({ tagId })) } }
+        : undefined,
+      marketingTags: marketingTagIds?.length
+        ? { createMany: { data: marketingTagIds.map((tagId: number) => ({ tagId })) } }
+        : undefined,
+      colors: colorIds?.length
+        ? { createMany: { data: colorIds.map((colorId: number) => ({ colorId })) } }
+        : undefined,
     },
     include: productIncludes,
   });
@@ -89,18 +79,17 @@ export const updateProductService = async (id: number, data: any) => {
     isPublished,
     brochure,
     specs,
-    brand: brandId !== undefined ? (brandId === null ? { disconnect: true } : { connect: { id: brandId } }) : undefined,
-    category: categoryId !== undefined ? (categoryId === null ? { disconnect: true } : { connect: { id: categoryId } }) : undefined,
+    brand: brandId !== undefined
+      ? brandId === null ? { disconnect: true } : { connect: { id: brandId } }
+      : undefined,
+    category: categoryId !== undefined
+      ? categoryId === null ? { disconnect: true } : { connect: { id: categoryId } }
+      : undefined,
     updatedAt: new Date(),
   };
 
   if (images !== undefined) {
-    await prisma.productImage.deleteMany({ where: { productId: id } });
-    updateData.images = {
-      createMany: {
-        data: images.map((img: { url: string }) => ({ url: img.url })),
-      },
-    };
+    updateData.images = images;
   }
 
   if (featureTagIds !== undefined) {
@@ -144,7 +133,6 @@ export const deleteProductService = (id: number) => {
 const productIncludes = {
   brand: true,
   category: true,
-  images: true,
   featureTags: {
     include: { tag: true },
   },
