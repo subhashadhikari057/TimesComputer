@@ -4,7 +4,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Banner } from "../../../types/banner";
+import { Banner } from "../../../../types/banner";
 
 interface AdbannerProps {
   banner: Banner;

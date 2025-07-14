@@ -13,7 +13,7 @@ model AdminUser {
   email     String     @unique
   password  String
   role      Role       @default(ADMIN)
-  isActive  Boolean    @default(true) // ← NEW FIELD
+  isActive  Boolean    @default(true)
   createdAt DateTime   @default(now())
   auditLogs AuditLog[] @relation("ActorRelation")
 }
@@ -55,17 +55,18 @@ model Product {
   isPublished   Boolean               @default(true)
   brochure      String? // nullable
   specs         Json
-  views         Int @default(0)
+  views         Int                   @default(0)
   brandId       Int?
   brand         Brand?                @relation(fields: [brandId], references: [id])
   categoryId    Int?
   category      Category?             @relation(fields: [categoryId], references: [id])
-  images        ProductImage[]
+  images        String[]
   featureTags   ProductFeatureTag[]
   marketingTags ProductMarketingTag[]
   colors        ProductColor[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
+  ProductImage  ProductImage[]
 }
 
 model Brand {
@@ -82,13 +83,6 @@ model Category {
   images    String[]
   products  Product[]
   createdAt DateTime  @default(now())
-}
-
-model ProductImage {
-  id        Int     @id @default(autoincrement())
-  productId Int
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  url       String
 }
 
 model FeatureTag {

@@ -1,107 +1,60 @@
 import { Request, Response } from "express";
+import {
+    addColorService,
+    getAllColorsService,
+    getColorByIdService,
+    updateColorService,
+    deleteColorService,
+} from "../services/color.service";
+
 import prisma from "../prisma/client";
 
-// Create a new Color
 export const addColor = async (req: Request, res: Response) => {
     try {
-        const { name, hexCode } = req.body;
-
-        if (!name || !hexCode) {
-            return res.status(400).json({ error: "All field are required." });
-        }
-
-        const colorExist = await prisma.color.findUnique({ where: { name } });
-        if (colorExist) return res.status(409).json({ message: "color exit already." });
-
-        const Color = await prisma.color.create({
-            data: { name, hexCode },
-        });
-
-        res.status(201).json({ message: "Color created successfully.", data: Color });
+        const color = await addColorService(req.body);
+        res.status(201).json({ message: "Color created successfully.", data: color });
     } catch (error: any) {
-        console.error("Create Color error:", error);
-        res.status(500).json({ error: "Internal server error." });
+        res.status(error.status || 500).json({ error: error.message || "Internal Server Error" });
     }
 };
 
-// Get all Colors
 export const getAllColors = async (_req: Request, res: Response) => {
     try {
-        const Colors = await prisma.color.findMany();
-        res.status(200).json({ message: "Colors retrieved successfully.", data: Colors });
+        const colors = await getAllColorsService();
+        res.status(200).json({ message: "Colors retrieved successfully.", data: colors });
     } catch (error: any) {
-        console.error("Get all Colors error:", error);
-        res.status(500).json({ error: "Failed to retrieve Colors." });
+        res.status(error.status || 500).json({ error: error.message || "Failed to retrieve colors." });
     }
 };
 
-// Get a single Color by ID
 export const getColorById = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(req.params.id);
-        if (isNaN(id)) return res.status(400).json({ error: "Invalid Color ID." });
-
-        const Color = await prisma.color.findUnique({ where: { id } });
-
-        if (!Color) return res.status(404).json({ error: "Color not found." });
-
-        res.status(200).json({ message: "Color retrieved successfully.", data: Color });
+        const color = await getColorByIdService(Number(req.params.id));
+        res.status(200).json({ message: "Color retrieved successfully.", data: color });
     } catch (error: any) {
-        console.error("Get Color by ID error:", error);
-        res.status(500).json({ error: "Failed to retrieve Color." });
+        res.status(error.status || 500).json({ error: error.message || "Failed to retrieve color." });
     }
 };
 
-// Update a Color
 export const updateColor = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(req.params.id);
-        const { name, hexCode } = req.body;
-
-        if (isNaN(id)) return res.status(400).json({ error: "Invalid Color ID." });
-
-        if (!name || !hexCode) {
-            return res.status(400).json({ error: "All field are required." });
-        }
-
-        const Color = await prisma.color.findUnique({ where: { id } });
-        if (!Color) return res.status(404).json({ error: "Color not found." });
-
-        const updatedColor = await prisma.color.update({
-            where: { id },
-            data: { name, hexCode },
-        });
-
+        const updatedColor = await updateColorService(Number(req.params.id), req.body);
         res.status(200).json({ message: "Color updated successfully.", data: updatedColor });
     } catch (error: any) {
-        console.error("Update Color error:", error);
-        res.status(500).json({ error: "Failed to update Color." });
+        res.status(error.status || 500).json({ error: error.message || "Failed to update color." });
     }
 };
 
-// Delete Color
 export const deleteColor = async (req: Request, res: Response) => {
     try {
-        const id = parseInt(req.params.id);
-
-        if (isNaN(id)) return res.status(400).json({ error: "Invalid Color ID." });
-
-        const Color = await prisma.color.findUnique({ where: { id } });
-        if (!Color) return res.status(404).json({ error: "Color not found." });
-
-        const deleteColor = await prisma.color.delete({
-            where: { id }
-        });
-
-        res.status(200).json({ message: "Color deleted successfully.", deleteColor });
+        const deletedColor = await deleteColorService(Number(req.params.id));
+        res.status(200).json({ message: "Color deleted successfully.", data: deletedColor });
     } catch (error: any) {
-        console.error("Delete Color error:", error);
-        res.status(500).json({ error: "Failed to delete Color." });
+        res.status(error.status || 500).json({ error: error.message || "Failed to delete color." });
     }
-}
+};
 
-//  Get Product linked to a Color
-export const getProductByColor = async (req: Request, res: Response) => {
+export const getProductByColorId = async (req: Request, res: Response) => {
     try {
         const colorId = parseInt(req.params.id);
         if (isNaN(colorId)) {
