@@ -192,14 +192,15 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile overlay */}
+   
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-y-0 bg-white  lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
       
+
       <div
         className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out group
           ${
@@ -207,7 +208,7 @@ export default function Sidebar({
               ? "w-3/4 md:w-72 translate-x-0"
               : "w-20 -translate-x-full lg:translate-x-0 lg:hover:w-72"
           }
-          fixed left-0 z-50 lg:relative lg:z-auto overflow-hidden`}
+          fixed left-0 z-40 lg:relative lg:z-auto overflow-hidden`}
         onMouseEnter={() => !sidebarOpen && setIsHovered(true)}
         onMouseLeave={() => !sidebarOpen && setIsHovered(false)}
       >

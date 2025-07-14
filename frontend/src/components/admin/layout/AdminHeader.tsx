@@ -29,20 +29,52 @@ export default function Header({
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Close all menus/dropdowns
+  const closeAllMenus = () => {
+    setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
+  };
+
+  // Handle mobile menu toggle
+  const handleMobileMenuToggle = () => {
+    setUserDropdownOpen(false); // Close user dropdown when opening mobile menu
+    // Close sidebar on mobile when opening mobile menu to prevent overlay conflicts
+    if (window.innerWidth < 1024 && sidebarOpen) {
+      setSidebarOpen(false);
+    }
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  // Handle sidebar toggle
+  const handleSidebarToggle = () => {
+    closeAllMenus(); // Close all menus when toggling sidebar
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Handle user dropdown toggle
+  const handleUserDropdownToggle = () => {
+    setMobileMenuOpen(false); // Close mobile menu when opening user dropdown
+    // Close sidebar on mobile when opening user dropdown to prevent overlay conflicts
+    if (window.innerWidth < 1024 && sidebarOpen) {
+      setSidebarOpen(false);
+    }
+    setUserDropdownOpen(!userDropdownOpen);
+  };
+
   const Avatar = (
     <div className="w-10 h-10 border border-gray-300 rounded-full overflow-hidden flex items-center justify-center">
       {/* Replace with <Image /> when integrating user avatar */}
       <div className="w-full h-full rounded-full bg-gray-100" />
     </div>
   );
-
   return (
     <>
-      <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-50">
+      {/* Header  */}
+      <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-999">
         <div className="flex items-center justify-between w-full px-4 py-4">
           {/* Sidebar toggle */}
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={handleSidebarToggle}
             className="flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg cursor-pointer transition-colors hover:bg-gray-50"
             aria-label="Toggle Sidebar"
           >
@@ -73,7 +105,7 @@ export default function Header({
               {/* User dropdown */}
               <div className="relative">
                 <button
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  onClick={handleUserDropdownToggle}
                   className="flex items-center space-x-2 p-2 rounded-lg"
                   aria-haspopup="true"
                   aria-expanded={userDropdownOpen}
@@ -87,13 +119,35 @@ export default function Header({
 
                 {userDropdownOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border"
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200"
                     role="menu"
                   >
-                    <DropdownItem icon={UserCircle} text="Edit Profile" />
-                    <DropdownItem icon={Settings} text="Account Settings" />
+                    <DropdownItem
+                      icon={UserCircle}
+                      text="Edit Profile"
+                      onClick={() => {
+                        alert("Edit Profile");
+                        setUserDropdownOpen(false);
+                      }}
+                    />
+                    <DropdownItem
+                      icon={Settings}
+                      text="Account Settings"
+                      onClick={() => {
+                        alert("Account Settings");
+                        setUserDropdownOpen(false);
+                      }}
+                    />
                     <hr className="my-1 border-gray-100" />
-                    <DropdownItem icon={LogOut} text="Log Out" danger />
+                    <DropdownItem
+                      icon={LogOut}
+                      text="Log Out"
+                      danger
+                      onClick={() => {
+                        alert("Log Out");
+                        setUserDropdownOpen(false);
+                      }}
+                    />
                   </div>
                 )}
               </div>
@@ -101,7 +155,7 @@ export default function Header({
 
             {/* Mobile toggle */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={handleMobileMenuToggle}
               className="md:hidden flex items-center justify-center w-10 h-10 text-gray-500 border border-gray-200 rounded-lg"
               aria-label="Open mobile menu"
             >
@@ -113,30 +167,67 @@ export default function Header({
 
       {/* Mobile dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg z-40">
+        <div className="md:hidden bg-white border-b border-gray-200 shadow-lg relative z-50">
           <div className="px-4 py-4 space-y-4">
-            <MobileMenuItem label="Theme" icon={<Moon size={18} />} />
-            <MobileMenuItem label="Notifications" icon={<Bell size={18} />} />
+            <MobileMenuItem
+              label="Theme"
+              icon={<Moon size={18} />}
+              onClick={() => {
+                alert("Theme toggle placeholder");
+                setMobileMenuOpen(false);
+              }}
+            />
+            <MobileMenuItem
+              label="Notifications"
+              icon={<Bell size={18} />}
+              onClick={() => {
+                alert("Notifications placeholder");
+                setMobileMenuOpen(false);
+              }}
+            />
             <div className="border-t border-gray-200 pt-4">
-              <div className="flex items-center space-x-3 mb-3">{Avatar}
+              <div className="flex items-center space-x-3 mb-3">
+                {Avatar}
                 <span className="text-sm font-medium text-gray-700">Asmit</span>
               </div>
               <div className="space-y-2">
-                <DropdownItem icon={UserCircle} text="Edit Profile" />
-                <DropdownItem icon={Settings} text="Account Settings" />
-                <DropdownItem icon={LogOut} text="Log Out" danger />
+                <DropdownItem
+                  icon={UserCircle}
+                  text="Edit Profile"
+                  onClick={() => {
+                    alert("Edit Profile");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <DropdownItem
+                  icon={Settings}
+                  text="Account Settings"
+                  onClick={() => {
+                    alert("Account Settings");
+                    setMobileMenuOpen(false);
+                  }}
+                />
+                <DropdownItem
+                  icon={LogOut}
+                  text="Log Out"
+                  danger
+                  onClick={() => {
+                    alert("Log Out");
+                    setMobileMenuOpen(false);
+                  }}
+                />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Overlays */}
+      {/* Desktop user dropdown overlay - only on desktop */}
       {userDropdownOpen && (
-        <div className="fixed inset-0 z-30" onClick={() => setUserDropdownOpen(false)} />
-      )}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-20" onClick={() => setMobileMenuOpen(false)} />
+        <div
+          className="fixed inset-0 z-40 hidden md:block"
+          onClick={() => setUserDropdownOpen(false)}
+        />
       )}
     </>
   );
@@ -144,10 +235,7 @@ export default function Header({
 
 function IconButton({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <button
-      className="p-1 rounded-lg"
-      aria-label={label}
-    >
+    <button className="p-1 rounded-lg" aria-label={label}>
       <div className="w-10 h-10 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100">
         {icon}
       </div>
@@ -159,16 +247,20 @@ function DropdownItem({
   icon: Icon,
   text,
   danger,
+  onClick,
 }: {
   icon: React.ElementType;
   text: string;
   danger?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
-      onClick={() => alert(`${text} clicked`)} // placeholder action
+      onClick={onClick || (() => alert("test"))} // fallback to original behavior
       className={`flex items-center space-x-3 px-4 py-2 text-sm w-full text-left ${
-        danger ? "text-red-600 hover:bg-red-50" : "text-gray-700 hover:bg-gray-100"
+        danger
+          ? "text-red-600 hover:bg-red-50"
+          : "text-gray-700 hover:bg-gray-100"
       }`}
     >
       <Icon size={16} />
@@ -180,14 +272,19 @@ function DropdownItem({
 function MobileMenuItem({
   label,
   icon,
+  onClick,
 }: {
   label: string;
   icon: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <button
+      className="flex items-center justify-between w-full py-2 px-1 hover:bg-gray-50 rounded-lg"
+      onClick={onClick}
+    >
       <span className="text-sm font-medium text-gray-700">{label}</span>
-      <button className="p-2 rounded-lg hover:bg-gray-100">{icon}</button>
-    </div>
+      <div className="p-2 rounded-lg hover:bg-gray-100">{icon}</div>
+    </button>
   );
 }

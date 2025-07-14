@@ -1,27 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Package,
-  Upload,
-  DollarSign,
-  FileText,
-  Tag,
-  Palette,
-  Building2,
-  FolderOpen,
-  Save,
-  X,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Save } from "lucide-react";
 import ComponentCard from "@/components/common/ComponentsCard";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import DefaultNumberInput from "@/components/form/form-elements/DefaultNumberInput";
 import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
-import DefaultSelect from "@/components/form/form-elements/DefaultSelect";
-import FileUpload from "@/components/form/form-elements/FileUpload";
 
 interface ProductFormData {
   name: string;
@@ -31,7 +16,6 @@ interface ProductFormData {
   stock: number;
   isPublished: boolean;
   brochure: string;
-  specs: Record<string, any>;
   brandId: number | null;
   categoryId: number | null;
 }
@@ -45,7 +29,6 @@ export default function CreateProductPage() {
     stock: 0,
     isPublished: true,
     brochure: "",
-    specs: {},
     brandId: null,
     categoryId: null,
   });
@@ -72,24 +55,6 @@ export default function CreateProductPage() {
     { id: 1, name: "Laptops" },
     { id: 2, name: "Smartphones" },
     { id: 3, name: "Tablets" },
-  ];
-
-  const featureTags = [
-    { id: 1, name: "Wireless" },
-    { id: 2, name: "Waterproof" },
-    { id: 3, name: "Fast Charging" },
-  ];
-
-  const marketingTags = [
-    { id: 1, name: "Best Seller" },
-    { id: 2, name: "New Arrival" },
-    { id: 3, name: "Limited Edition" },
-  ];
-
-  const colors = [
-    { id: 1, name: "Black", hexCode: "#000000" },
-    { id: 2, name: "White", hexCode: "#FFFFFF" },
-    { id: 3, name: "Blue", hexCode: "#0066CC" },
   ];
 
   const handleInputChange = (
@@ -137,26 +102,9 @@ export default function CreateProductPage() {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSpecChange = (
-    index: number,
-    field: "key" | "value",
-    value: string
-  ) => {
-    setSpecs((prev) =>
-      prev.map((spec, i) => (i === index ? { ...spec, [field]: value } : spec))
-    );
-  };
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-  const addSpec = () => {
-    setSpecs((prev) => [...prev, { key: "", value: "" }]);
-  };
-
-  const removeSpec = (index: number) => {
-    setSpecs((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     // Convert specs array to object
     const specsObject = specs.reduce((acc, spec) => {
       if (spec.key && spec.value) {
@@ -178,118 +126,159 @@ export default function CreateProductPage() {
     // Here you would send the data to your API
   };
 
+  const handleDiscard = () => {
+    // Reset form or navigate away
+    setFormData({
+      name: "",
+      slug: "",
+      description: "",
+      price: 0,
+      stock: 0,
+      isPublished: true,
+      brochure: "",
+      brandId: null,
+      categoryId: null,
+    });
+    setImages([]);
+    setImagePreviews([]);
+    setSelectedFeatureTags([]);
+    setSelectedMarketingTags([]);
+    setSelectedColors([]);
+    setSpecs([{ key: "", value: "" }]);
+  };
+
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Create New Product
-        </h1>
-        <p className="text-gray-600">Add a new product to your inventory</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Content with bottom padding for sticky footer */}
+      <div className="pb-24">
+        <div className="p-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Create New Product
+            </h1>
+            <p className="text-gray-600">Add a new product to your inventory</p>
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-1 xl:grid-cols-5 gap-6"
+          >
+            {/* Product Details Section - Takes 3/4 of space */}
+            <div className="xl:col-span-3 space-y-6">
+              {/* Basic Information */}
+              <ComponentCard
+                title="Basic Information"
+                desc="Add the basic details of your product"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DefaultInput
+                    label="Product Name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter product name"
+                    required
+                  />
+
+                  <DefaultInput
+                    label="Slug"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleInputChange}
+                    placeholder="product-slug"
+                    required
+                    helpText="URL-friendly version of the product name"
+                  />
+
+                  <DefaultTextarea
+                    label="Description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Enter product description"
+                    className="md:col-span-2"
+                    rows={4}
+                  />
+                </div>
+              </ComponentCard>
+            </div>
+
+            {/* Pricing & Actions Section - Takes 1/4 of space */}
+            <div className="xl:col-span-2 space-y-6">
+              {/* Pricing & Inventory */}
+              <ComponentCard
+                title="Pricing & Inventory"
+                desc="Set pricing and stock information"
+              >
+                <div className="space-y-4">
+                  <DefaultNumberInput
+                    label="Price"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    min={0}
+                    step={0.01}
+                    placeholder="0.00"
+                    required
+                    helpText="Enter the selling price"
+                  />
+
+                  <DefaultNumberInput
+                    label="Stock Quantity"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleInputChange}
+                    min={0}
+                    placeholder="0"
+                    required
+                    helpText="Available quantity in inventory"
+                  />
+
+                  <DefaultCheckbox
+                    label="Published"
+                    name="isPublished"
+                    checked={formData.isPublished}
+                    onChange={handleCheckboxChange}
+                    helpText="Make this product visible to customers"
+                  />
+                </div>
+              </ComponentCard>
+            </div>
+          </form>
+        </div>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 xl:grid-cols-5 gap-6"
-      >
-        {/* Product Details Section - Takes 3/4 of space */}
-        <div className="xl:col-span-3 space-y-6">
-          {/* Basic Information */}
-          <ComponentCard
-            title="Basic Information"
-            desc="Add the basic details of your product"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <DefaultInput
-                label="Product Name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Enter product name"
-                required
-              />
-
-              <DefaultInput
-                label="Slug"
-                name="slug"
-                value={formData.slug}
-                onChange={handleInputChange}
-                placeholder="product-slug"
-                required
-                helpText="URL-friendly version of the product name"
-              />
-
-              <DefaultTextarea
-                label="Description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Enter product description"
-                className="md:col-span-2"
-                rows={4}
-              />
+      {/* Floating Action Card */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+        <div className="bg-white rounded-lg shadow-2xl border border-gray-200 px-6 py-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <span>Last saved: Never</span>
             </div>
-          </ComponentCard>
-        </div>
 
-        {/* Pricing & Actions Section - Takes 1/4 of space */}
-        <div className="xl:col-span-2 space-y-6">
-          {/* Pricing & Inventory */}
-          <ComponentCard
-            title="Pricing & Inventory"
-            desc="Set pricing and stock information"
-          >
-            <div className="space-y-4">
-              <DefaultNumberInput
-                label="Price"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                min={0}
-                step={0.01}
-                placeholder="0.00"
-                required
-                helpText="Enter the selling price"
-              />
+            <div className="h-4 w-px bg-gray-300"></div>
 
-              <DefaultNumberInput
-                label="Stock Quantity"
-                name="stock"
-                value={formData.stock}
-                onChange={handleInputChange}
-                min={0}
-                placeholder="0"
-                required
-                helpText="Available quantity in inventory"
-              />
+            <div className="flex items-center space-x-3">
+              <button
+                type="button"
+                onClick={handleDiscard}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+              >
+                Discard
+              </button>
 
-              <DefaultCheckbox
-                label="Published"
-                name="isPublished"
-                checked={formData.isPublished}
-                onChange={handleCheckboxChange}
-                helpText="Make this product visible to customers"
-              />
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Product
+              </button>
             </div>
-          </ComponentCard>
-
-          {/* Submit Button */}
-          <div className="space-y-3">
-            <button
-              type="submit"
-              className="w-full inline-flex items-center justify-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-            >
-              <Save className="w-4 h-4" />
-              <span>Create Product</span>
-            </button>
-            <button
-              type="button"
-              className="w-full px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
-            >
-              Cancel
-            </button>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
