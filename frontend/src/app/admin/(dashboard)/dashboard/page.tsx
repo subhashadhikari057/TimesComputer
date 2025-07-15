@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
         {/* Right Section - Analytics Overview */}
         <div className="lg:col-span-1">
-          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm h-full min-h-[348px] flex flex-col">
+          <div className="bg-white border border-gray-300 rounded-lg p-6  h-full  flex flex-col hover:shadow-md transition-shadow">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Analytics Overview
             </h3>
@@ -81,7 +81,7 @@ export default function DashboardPage() {
       {/* Bottom Section - Full Width Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bottom Left */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col">
+        <div className="bg-white border border-gray-300 rounded-lg p-6  flex flex-col hover:shadow-md transition-shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Recent Activity
           </h3>
@@ -94,7 +94,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Bottom Center */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm flex flex-col">
+        <div className="bg-white border border-gray-300 rounded-lg p-6 flex flex-col hover:shadow-md transition-shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Top Products
           </h3>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Bottom Right */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <div className="bg-white border border-gray-300 rounded-lg p-6 hover:shadow-md transition-shadow">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Recent Orders
           </h3>
