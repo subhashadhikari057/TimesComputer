@@ -74,18 +74,18 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.currency} {product.price.toLocaleString()}
           </span>
 
-          {/* <a
+          <a
             href="#"
             className="flex items-center gap-1 text-[11px] sm:text-sm text-blue-600 hover:underline"
           >
             View
             <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
-          </a> */}
+          </a>
 
-          <button className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1 rounded-md flex items-center gap-1 transition-all duration-200 cursor-pointer">
+          {/* <button className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] sm:text-xs font-medium px-2.5 sm:px-3 py-1 rounded-md flex items-center gap-1 transition-all duration-200 cursor-pointer">
             view
             <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

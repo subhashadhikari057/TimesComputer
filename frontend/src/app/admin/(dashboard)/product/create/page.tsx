@@ -7,6 +7,7 @@ import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import DefaultNumberInput from "@/components/form/form-elements/DefaultNumberInput";
 import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
+import DefaultSelect from "@/components/form/form-elements/DefaultSelect";
 import PhotoUpload from "@/components/admin/product/photoUpload";
 import BrandCategorySelector from "@/components/admin/product/brandCategory";
 import Specifications from "@/components/admin/product/specification";
@@ -154,7 +155,7 @@ export default function CreateProductPage() {
         acc[spec.key] = spec.value;
       }
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, string>);
 
     const submitData = {
       ...formData,
@@ -256,6 +257,26 @@ export default function CreateProductPage() {
                 desc="Set pricing and stock information"
               >
                 <div className="grid grid-cols-1 gap-6">
+                  <DefaultSelect
+                    label="Brand"
+                    name="brandId"
+                    value={formData.brandId?.toString() || ""}
+                    onChange={handleInputChange}
+                    required
+                    options={brands.map(brand => ({ id: brand.id, name: brand.name }))}
+                    placeholder="Select a brand"
+                  />
+
+                  <DefaultSelect
+                    label="Category"
+                    name="categoryId"
+                    value={formData.categoryId?.toString() || ""}
+                    onChange={handleInputChange}
+                    required
+                    options={categories.map(category => ({ id: category.id, name: category.name }))}
+                    placeholder="Select a category"
+                  />
+
                   <DefaultNumberInput
                     label="Price"
                     name="price"

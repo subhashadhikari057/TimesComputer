@@ -58,7 +58,7 @@ export default function Component() {
     const startTimeRef = useRef<number | undefined>(undefined)
     const pausedTimeRef = useRef<number>(0)
 
-    const SCROLL_SPEED = 50
+    const SCROLL_SPEED = 35
 
     // Measure actual brand card width (responsive)
     useEffect(() => {

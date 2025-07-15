@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "../form/form-elements/dropdown";
 import { Input } from "../ui/input";
-import { Twitter, Facebook, Instagram, Search } from "lucide-react";
+import { Twitter, Facebook, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
