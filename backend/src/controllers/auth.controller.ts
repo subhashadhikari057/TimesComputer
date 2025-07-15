@@ -97,6 +97,7 @@ export const login = async (req: Request, res: Response) => {
         httpOnly: true,
         secure: process.env.COOKIE_SECURE === "true",
         sameSite: "strict" as const,
+        path: '/',
     };
 
     res
@@ -114,7 +115,22 @@ export const login = async (req: Request, res: Response) => {
 
 // ✅ POST /auth/logout — Clears cookies
 export const logout = async (_req: Request, res: Response) => {
-    res.clearCookie("token").clearCookie("refreshToken").json({ message: "Logged out" });
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.COOKIE_SECURE === "true",
+        sameSite: "strict",
+        path: "/",
+    });
+
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.COOKIE_SECURE === "true",
+        sameSite: "strict",
+        path: "/",
+    });
+
+    return res.json({ message: "Logout Successful." });
+
 };
 
 // ✅ POST /auth/refresh — Validates and rotates refresh token
