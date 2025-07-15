@@ -1,4 +1,3 @@
-import { useState } from "react";
 import ComponentCard from "@/components/common/ComponentsCard";
 
 interface Brand {
