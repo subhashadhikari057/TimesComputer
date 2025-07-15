@@ -8,8 +8,9 @@ import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import DefaultNumberInput from "@/components/form/form-elements/DefaultNumberInput";
 import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
 import PhotoUpload from "@/components/admin/product/photoUpload";
-import SpecificationsManager from "@/components/admin/product/specification";
 import BrandCategorySelector from "@/components/admin/product/brandCategory";
+import Specifications from "@/components/admin/product/specification";
+import Variant from "@/components/admin/product/variant";
 
 interface ProductFormData {
   name: string;
@@ -21,6 +22,27 @@ interface ProductFormData {
   brochure: string;
   brandId: number | null;
   categoryId: number | null;
+}
+
+interface VariantOption {
+  id: string;
+  name: string;
+  value: string;
+}
+
+interface VariantGroup {
+  id: string;
+  name: string;
+  options: VariantOption[];
+}
+
+interface VariantCombination {
+  id: string;
+  combination: { [groupId: string]: string };
+  price: number;
+  stock: number;
+  sku: string;
+  isEnabled: boolean;
 }
 
 export default function CreateProductPage() {
@@ -46,6 +68,10 @@ export default function CreateProductPage() {
   const [specs, setSpecs] = useState<{ key: string; value: string }[]>([
     { key: "", value: "" },
   ]);
+  const [variants, setVariants] = useState<VariantGroup[]>([]);
+  const [variantCombinations, setVariantCombinations] = useState<
+    VariantCombination[]
+  >([]);
 
   // Mock data - replace with actual API calls
   const brands = [
@@ -85,8 +111,20 @@ export default function CreateProductPage() {
     setFormData((prev) => ({ ...prev, categoryId }));
   };
 
-  const handleSpecificationsChange = (newSpecs: { key: string; value: string }[]) => {
+  const handleSpecificationsChange = (
+    newSpecs: { key: string; value: string }[]
+  ) => {
     setSpecs(newSpecs);
+  };
+
+  const handleVariantsChange = (newVariants: VariantGroup[]) => {
+    setVariants(newVariants);
+  };
+
+  const handleVariantCombinationsChange = (
+    newCombinations: VariantCombination[]
+  ) => {
+    setVariantCombinations(newCombinations);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,6 +164,8 @@ export default function CreateProductPage() {
       featureTags: selectedFeatureTags,
       marketingTags: selectedMarketingTags,
       colors: selectedColors,
+      variants,
+      variantCombinations,
     };
 
     console.log("Product data:", submitData);
@@ -151,10 +191,12 @@ export default function CreateProductPage() {
     setSelectedMarketingTags([]);
     setSelectedColors([]);
     setSpecs([{ key: "", value: "" }]);
+    setVariants([]);
+    setVariantCombinations([]);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 ">
+    <div className="min-h-screen bg-gray-50 relative">
       {/* Main Content with bottom padding for sticky footer */}
       <div className="pb-24">
         <div className="p-6">
@@ -215,9 +257,17 @@ export default function CreateProductPage() {
               </ComponentCard>
 
               {/* Specifications */}
-              <SpecificationsManager
+              <Specifications
                 specifications={specs}
                 onSpecificationsChange={handleSpecificationsChange}
+              />
+
+              {/* Variants */}
+              <Variant
+                variants={variants}
+                variantCombinations={variantCombinations}
+                onVariantsChange={handleVariantsChange}
+                onCombinationsChange={handleVariantCombinationsChange}
               />
             </div>
 
@@ -277,20 +327,18 @@ export default function CreateProductPage() {
       </div>
 
       {/* Floating Action Card */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2">
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
         <div className="bg-white rounded-lg shadow-2xl border border-gray-200 px-6 py-4">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-40">
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <span>Last saved: Never</span>
             </div>
-
-            <div className="h-4 w-px bg-gray-300"></div>
 
             <div className="flex items-center space-x-3">
               <button
                 type="button"
                 onClick={handleDiscard}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-gray-100 transition-all duration-200"
               >
                 Discard
               </button>
@@ -298,7 +346,7 @@ export default function CreateProductPage() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-900 border border-transparent rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Product

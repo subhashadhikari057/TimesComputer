@@ -57,7 +57,7 @@ export default function BrandCategorySelector({
             name="brand"
             value={selectedBrandId || ""}
             onChange={handleBrandChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-white"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 hover:border-gray-300 transition-all duration-200"
           >
             <option value="">Select a brand</option>
             {brands.map((brand) => (
@@ -81,7 +81,7 @@ export default function BrandCategorySelector({
             name="category"
             value={selectedCategoryId || ""}
             onChange={handleCategoryChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 bg-white"
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 hover:border-gray-300 transition-all duration-200"
           >
             <option value="">Select a category</option>
             {categories.map((category) => (
