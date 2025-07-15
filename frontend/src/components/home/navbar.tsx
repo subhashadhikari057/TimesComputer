@@ -145,7 +145,7 @@ export default function Navbar() {
               placeholder="Select Categories"
               value={currentCategory}
               onChange={handleCategoryChange}
-              allowDeselect={false}
+              allowDeselect={true}
             />
           </div>
 

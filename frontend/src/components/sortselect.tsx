@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
-import Dropdown from './home/dropdown'
+import Dropdown from './form/form-elements/dropdown';
 
 const sortOptions = [
   { label: "Featured", value: "featured" },
@@ -19,13 +19,17 @@ export default function SortSelect({ sort: initialSort }: SortSelectProps) {
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const router = useRouter()
-  const sort = searchParams.get('sort') || initialSort || 'featured' // Always default to featured
+  const sort = searchParams.get('sort') || initialSort || undefined // Allow undefined for showing placeholder
 
   const handleSortChange = (value: string | undefined) => {
     const params = new URLSearchParams(searchParams.toString())
     
-    // Always ensure a sort value is set, defaulting to featured
-    params.set('sort', value || 'featured')
+    if (value === undefined) {
+      params.delete('sort') // Remove sort parameter when clearing
+    } else {
+      params.set('sort', value)
+    }
+    
     params.set('page', '1') // Reset to first page when changing sort
     
     router.push(`${pathname}?${params.toString()}`)
@@ -37,7 +41,7 @@ export default function SortSelect({ sort: initialSort }: SortSelectProps) {
       placeholder="Sort by"
       value={sort}
       onChange={handleSortChange}
-      allowDeselect={false} // Prevent deselection
+      allowDeselect={true}
     />
   )
 }

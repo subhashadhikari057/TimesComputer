@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Package,
   Search,
@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import Link from "next/link";
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 // Mock data - replace with actual API calls
 const mockProducts = [
@@ -70,9 +71,17 @@ export default function ViewProductsPage() {
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterBrand, setFilterBrand] = useState("all");
   const [sortBy, setSortBy] = useState("name");
+  const [loading, setLoading] = useState(true);
 
   const categories = ["all", "Laptops", "Smartphones", "Tablets"];
   const brands = ["all", "Apple", "Samsung", "Dell"];
+
+  useEffect(() => {
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   const filteredProducts = mockProducts
     .filter((product) => {
@@ -99,6 +108,10 @@ export default function ViewProductsPage() {
           return 0;
       }
     });
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="p-6">

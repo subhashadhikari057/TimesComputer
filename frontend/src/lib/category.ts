@@ -1,39 +1,94 @@
 import { Product } from "../../types/product";
+import { brandsConfig } from "./getproducts";
 
-const productImages = [
-  "/products/Frame 68.png",
-  "/products/Frame 134.png",
-  "/products/Frame 135.png",
-  "/products/Frame 136.png"
-];
+interface FilterOptions {
+  priceRange?: { min: number; max: number };
+  brands?: string[];
+  [key: string]: any;
+}
 
 export async function getProductsByCategory(
   category: string,
   sort: string = "featured",
   page: number = 1,
+  filters: FilterOptions = {},
   limit: number = 15
 ): Promise<Product[]> {
-  // Simulated full product list with enhanced data
-  const allProducts = Array.from({ length: 30 }).map((_, i) => {
-    const basePrice = 100 + (i % 10) * 15;
-    const hasDiscount = i % 4 === 0; // Every 4th product has a discount
-    const discountPercent = hasDiscount ? 0.1 + (i % 3) * 0.05 : 0; // 10-20% discount
-    const price = hasDiscount ? Math.round(basePrice * (1 - discountPercent)) : basePrice;
-    
-    return {
-      id: i + 1,
-      title: `${category} Product ${i + 1}`,
-      price: price.toString(),  // You can keep as string if you want
-      currency: 'Rs',
-      image: productImages[i % productImages.length], // Cycle through available product images
-      rating: 3 + (i % 3), // Rating between 3-5
-      reviews: 10 + (i % 50), // Review count between 10-59
-      category: category,   // use passed category param here
-      tag: hasDiscount ? 'Sale' : undefined
-    };
+  // Generate products based on brand configurations for this category
+  const allProducts: Product[] = [];
+  let id = 1;
+
+  brandsConfig.forEach(brandConfig => {
+    // Skip if brands filter is applied and this brand is not included
+    if (filters.brands && filters.brands.length > 0 && !filters.brands.includes(brandConfig.name)) {
+      return;
+    }
+
+    // Get the category config if it exists for this brand
+    const categoryConfig = brandConfig.categories[category];
+    if (!categoryConfig) return;
+
+    categoryConfig.models.forEach(model => {
+      // Generate 2-3 variants for each model
+      const variants = Math.floor(Math.random() * 2) + 2; // 2-3 variants
+      
+      for (let i = 0; i < variants; i++) {
+        const { min, max } = categoryConfig.priceRange;
+        // Generate price within the brand-category specific range
+        const basePrice = Math.floor(min + Math.random() * (max - min));
+        const hasDiscount = Math.random() < 0.25; // 25% chance of discount
+        const discountPercent = hasDiscount ? 0.1 + Math.random() * 0.15 : 0; // 10-25% discount
+        const price = hasDiscount ? Math.round(basePrice * (1 - discountPercent)) : basePrice;
+
+        // Skip if price is outside the filtered range
+        if (filters.priceRange) {
+          if (price < filters.priceRange.min || price > filters.priceRange.max) {
+            return;
+          }
+        }
+
+        // Generate specs-based variant name
+        const specs = i === 0 ? "Base" : i === 1 ? "Advanced" : "Premium";
+        
+        // Apply additional filters
+        let passesFilters = true;
+        Object.entries(filters).forEach(([key, values]) => {
+          if (key !== 'priceRange' && key !== 'brands' && Array.isArray(values) && values.length > 0) {
+            // Add filter logic based on the specific filter key
+            switch(key) {
+              case 'processor':
+                if (!values.some(v => model.toLowerCase().includes(v.toLowerCase()))) {
+                  passesFilters = false;
+                }
+                break;
+              case 'memory':
+              case 'storage':
+              case 'graphics':
+                // These would be handled if we had the actual specs
+                break;
+            }
+          }
+        });
+
+        if (!passesFilters) return;
+
+        allProducts.push({
+          id: id++,
+          title: `${brandConfig.name} ${model} ${specs}`,
+          price: price.toString(),
+          currency: "Rs",
+          image: "/products/Frame 68.png",
+          rating: Math.floor(3.5 + Math.random() * 1.5 * 10) / 10, // Rating between 3.5-5.0
+          reviews: Math.floor(10 + Math.random() * 90), // Reviews between 10-99
+          category: category,
+          brand: brandConfig.name,
+          tag: hasDiscount ? "Sale" : undefined,
+        });
+      }
+    });
   });
 
-  // Sort logic
+  // Sorting logic
   let sortedProducts = [...allProducts];
   switch (sort) {
     case "price-low-high":
@@ -50,12 +105,11 @@ export async function getProductsByCategory(
       break;
     case "featured":
     default:
-      // Sort by rating then reviews
       sortedProducts.sort((a, b) => {
         if (a.rating !== b.rating) {
-          return b.rating - a.rating; 
+          return b.rating - a.rating; // Higher rating first
         }
-        return b.reviews - a.reviews;
+        return b.reviews - a.reviews; // More reviews first
       });
       break;
   }

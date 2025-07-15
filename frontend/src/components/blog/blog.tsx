@@ -68,8 +68,7 @@ const Blog: React.FC = () => {
         }}
         className="w-full"
       >
-        <CarouselPrevious className="hidden sm:flex absolute left-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
-
+        <CarouselPrevious className="hidden sm:flex md:left-[-10px] lg:absolute left-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
         <CarouselContent className="m-2 flex gap-6">
           {blogs.map((blog, index) => (
             <CarouselItem
@@ -99,7 +98,7 @@ const Blog: React.FC = () => {
           ))}
         </CarouselContent>
 
-        <CarouselNext className="hidden sm:flex absolute right-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
+        <CarouselNext className="hidden sm:flex md:right-[-10px] lg:absolute right-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
       </Carousel>
     </section>
   );

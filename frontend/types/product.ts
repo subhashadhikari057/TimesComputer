@@ -8,4 +8,5 @@ export interface Product {
     title: string;
     price: string;
     currency: string;
+    brand: string;
 }
