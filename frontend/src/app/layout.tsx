@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
 
 // Load Google Font with CSS variable
 const manrope = Manrope({
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} font-manrope antialiased bg-white text-primary`}
       >
+        <Toaster duration={2000} position="top-center" richColors/>
         {children}
       </body>
     </html>

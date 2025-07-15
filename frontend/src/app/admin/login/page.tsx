@@ -1,13 +1,28 @@
 "use client";
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, LoaderCircleIcon } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+interface LoginForm {
+  email: string;
+  password: string;
+}
+
+interface LoginFormError {
+  email?: string;
+  password?: string;
+  general?: string;
+}
 
 export default function AdminLogin() {
+  const router = useRouter();
   const [err, setErr] = useState<LoginFormError>({});
   const [form, setForm] = useState<LoginForm>({
     email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setErr({});
@@ -29,6 +44,15 @@ export default function AdminLogin() {
       setErr(errors);
       return;
     }
+
+    setIsLoading(true);
+    // Simulate login API call
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success("Login successful!");
+      // Redirect to admin dashboard
+      router.push("/admin/dashboard");
+    }, 2000);
   }
 
   return (
@@ -101,9 +125,17 @@ export default function AdminLogin() {
             <div>
               <button
                 type="submit"
-                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-blue-500 focus:ring-offset-2 transition duration-200 cursor-pointer"
+                disabled={isLoading}
+                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-blue-500 focus:ring-offset-2 transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                Log In
+                {isLoading ? (
+                  <>
+                    <LoaderCircleIcon className="mr-2 animate-spin" size={18} />
+                    Logging in...
+                  </>
+                ) : (
+                  "Log In"
+                )}
               </button>
             </div>
           </form>
