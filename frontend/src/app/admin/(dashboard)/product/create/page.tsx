@@ -84,6 +84,19 @@ export default function CreateProductPage() {
   ]);
   const [selectedColorIds, setSelectedColorIds] = useState<number[]>([]);
 
+  // Dummy data for brands and categories (replace with API data as needed)
+  const brands = [
+    { id: 1, name: "Brand A" },
+    { id: 2, name: "Brand B" },
+    { id: 3, name: "Brand C" },
+  ];
+
+  const categories = [
+    { id: 1, name: "Category X" },
+    { id: 2, name: "Category Y" },
+    { id: 3, name: "Category Z" },
+  ];
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -263,7 +276,7 @@ export default function CreateProductPage() {
                     value={formData.brandId?.toString() || ""}
                     onChange={handleInputChange}
                     required
-                    options={brands.map(brand => ({ id: brand.id, name: brand.name }))}
+                    options={brands.map((brand: { id: any; name: any; }) => ({ id: brand.id, name: brand.name }))}
                     placeholder="Select a brand"
                   />
 
@@ -273,7 +286,7 @@ export default function CreateProductPage() {
                     value={formData.categoryId?.toString() || ""}
                     onChange={handleInputChange}
                     required
-                    options={categories.map(category => ({ id: category.id, name: category.name }))}
+                    options={categories.map((category: { id: any; name: any; }) => ({ id: category.id, name: category.name }))}
                     placeholder="Select a category"
                   />
 
