@@ -66,7 +66,6 @@ model Product {
   colors        ProductColor[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
-  ProductImage  ProductImage[]
 }
 
 model Brand {
@@ -132,4 +131,9 @@ model ProductColor {
   color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
 
   @@id([productId, colorId])
+}
+
+model AdBanner {
+  id     Int      @id @default(autoincrement())
+  images String[]
 }
