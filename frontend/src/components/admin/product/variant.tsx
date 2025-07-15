@@ -17,6 +17,7 @@ interface VariantGroup {
   options: VariantOption[];
 }
 
+
 interface VariantCombination {
   id: string;
   combination: { [groupId: string]: string };
