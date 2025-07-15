@@ -15,6 +15,8 @@ import featureTagRoutes from "./routes/featureTag.route";
 import marketingTagRoutes from "./routes/marketingTags.route";
 import colorRoutes from "./routes/color.route";
 import productRoutes from "./routes/product.route";
+import inquiryRoutes from "./routes/inquiry.route";
+import adRoutes from "./routes/ads.route";
 
 
 dotenv.config();
@@ -52,6 +54,8 @@ app.use("/api/feature-tag", featureTagRoutes);
 app.use("/api/marketing-tag", marketingTagRoutes);
 app.use("/api/colors", colorRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/inquiry", inquiryRoutes);
+app.use("/api/ads", adRoutes);
 
 
 // ✅ Health check
