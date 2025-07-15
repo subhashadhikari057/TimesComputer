@@ -60,6 +60,7 @@ export default function PhotoUpload({
                 onChange={onImageUpload}
                 className="hidden"
                 id={inputId}
+                required
               />
               <label
                 htmlFor={inputId}

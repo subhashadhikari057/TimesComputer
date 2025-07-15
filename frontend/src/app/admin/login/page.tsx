@@ -57,11 +57,10 @@ export default function AdminLogin() {
     // }, 2000);
 
     try {
-      const response = await axios.post("/auth/login", form);
-      // setIsLoading(false);
+       await axios.post("/auth/login", form);
       toast.success("Login successful!");
       // Redirect to admin dashboard
-      // router.push("/admin/dashboard");
+      router.push("/admin/dashboard");
     } catch (error) {
       setIsLoading(false);
       toast.error("Login failed. Please try again.");

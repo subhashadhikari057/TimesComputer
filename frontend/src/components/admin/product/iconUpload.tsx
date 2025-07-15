@@ -53,6 +53,7 @@ export default function IconUpload({
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
           <input
             type="file"
+            required
             accept=".svg,image/svg+xml"
             onChange={(e) => {
               const files = Array.from(e.target.files || []);

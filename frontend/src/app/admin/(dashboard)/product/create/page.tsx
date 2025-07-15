@@ -83,19 +83,6 @@ export default function CreateProductPage() {
   ]);
   const [selectedColorIds, setSelectedColorIds] = useState<number[]>([]);
 
-  // Mock data - replace with actual API calls
-  const brands = [
-    { id: 1, name: "Apple" },
-    { id: 2, name: "Samsung" },
-    { id: 3, name: "Dell" },
-  ];
-
-  const categories = [
-    { id: 1, name: "Laptops" },
-    { id: 2, name: "Smartphones" },
-    { id: 3, name: "Tablets" },
-  ];
-
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -304,8 +291,6 @@ export default function CreateProductPage() {
 
               {/* Brand & Category */}
               <BrandCategorySelector
-                brands={brands}
-                categories={categories}
                 selectedBrandId={formData.brandId}
                 selectedCategoryId={formData.categoryId}
                 onBrandChange={handleBrandChange}
