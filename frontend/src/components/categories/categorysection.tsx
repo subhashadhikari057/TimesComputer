@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CategoryCard } from "./categoriecard";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import Link from "next/link";
 
 const TopCategories = () => {
   const categories = [
@@ -21,6 +22,10 @@ const TopCategories = () => {
   const visibleCategories =
     isMobile && !showAll ? categories.slice(0, 4) : categories;
 
+    const slugify = (text: string) => {
+      return text.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    }
+
   return (
     <div className="max-w-7xl mx-auto px-3 md:px-4 md:pb-2">
       <div className="mb-4 flex justify-between items-center">
@@ -29,13 +34,17 @@ const TopCategories = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 overflow-x-auto">
         {visibleCategories.map((category) => (
+          <Link
+          key={category.id}
+          href={`/category/${slugify(category.title)}`}
+          >
           <CategoryCard
-            key={category.id}
             image={category.image}
             title={category.title}
             onClick={() => { }}
             className="min-h-[60px] md:min-h-[80px]"
           />
+          </Link>
         ))}
       </div>
 
