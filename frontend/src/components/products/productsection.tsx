@@ -23,7 +23,8 @@ function FeaturedProductsSection() {
       price: '1,49,000',
       currency: 'Rs',
       tag: "best seller",
-      category: "Laptops"
+      category: "Laptops",
+      brand: "Apple"
     },
     {
       id: 2,
@@ -34,7 +35,8 @@ function FeaturedProductsSection() {
       price: '1,49,000',
       currency: 'Rs',
       tag: "new",
-      category: undefined
+      category: undefined,
+      brand: "Apple"
     },
     {
       id: 3,
@@ -45,7 +47,8 @@ function FeaturedProductsSection() {
       price: '1,49,000',
       currency: 'Rs',
       tag: undefined,
-      category: undefined
+      category: undefined,
+      brand: "Apple"
     },
     {
       id: 4,
@@ -56,7 +59,8 @@ function FeaturedProductsSection() {
       price: '1,49,000',
       currency: 'Rs',
       tag: undefined,
-      category: undefined
+      category: undefined,
+      brand: "Apple"
     },
     {
       id: 5,
@@ -67,7 +71,8 @@ function FeaturedProductsSection() {
       price: '1,49,000',
       currency: 'Rs',
       tag: undefined,
-      category: undefined
+      category: undefined,
+      brand: "Apple"
     },
     {
       id: 6,
@@ -78,7 +83,8 @@ function FeaturedProductsSection() {
       price: '1,49,000',
       currency: 'Rs',
       tag: undefined,
-      category: undefined
+      category: undefined,
+      brand: "Apple"
     },
     {
       id: 7,
@@ -89,7 +95,8 @@ function FeaturedProductsSection() {
       price: '1,49,000',
       currency: 'Rs',
       tag: undefined,
-      category: undefined
+      category: undefined,
+      brand: "Apple"
     },
   ];
 
@@ -106,7 +113,8 @@ function FeaturedProductsSection() {
           className="w-full"
         >
           {/* Navigation buttons must be INSIDE the Carousel component */}
-          <CarouselPrevious className="hidden sm:flex absolute left-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
+          <CarouselPrevious className="hidden sm:flex md:left-[-10px] lg:absolute left-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
+          <CarouselNext className="hidden sm:flex md:right-[-10px] lg:absolute right-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
 
           <CarouselContent className="-ml-1">
             {products.map((product) => (
@@ -121,7 +129,7 @@ function FeaturedProductsSection() {
             ))}
           </CarouselContent>
 
-          <CarouselNext className="hidden sm:flex absolute right-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
+          <CarouselNext className="hidden sm:flex md:right-[-10px] lg:absolute right-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
         </Carousel>
       </div>
     </div>

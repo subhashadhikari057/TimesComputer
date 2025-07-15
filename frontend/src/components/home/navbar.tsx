@@ -6,16 +6,17 @@ import Dropdown from "../form/form-elements/dropdown";
 import { Input } from "../ui/input";
 import { Twitter, Facebook, Search } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
 
-
 const laptopCategories = [
-  { label: "Gaming Laptops", value: "gaming" },
-  { label: "Business Laptops", value: "business" },
-  { label: "Student Laptops", value: "student" },
-  { label: "Everyday Laptops", value: "everyday" },
-  { label: "Macbooks", value: "macbooks" },
+  { label: "All Products", value: "all-products" },  // Changed from "all-products" to "all"
+  { label: "Gaming Laptops", value: "gaming-laptop" },
+  { label: "Business Laptops", value: "business-laptop" },
+  { label: "Student Laptops", value: "student-laptop" },
+  { label: "Everyday Laptops", value: "everyday-laptop" },
+  { label: "Macbooks", value: "mac" },
 ];
 
 const navLinks = [
@@ -26,8 +27,43 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const router = useRouter()
+  
+  // Get the current category from the URL
+  const getCurrentCategory = () => {
+    // On homepage, return undefined to show placeholder
+    if (pathname === '/') {
+      return undefined;
+    }
+    // On products page, return all-products
+    if (pathname === '/products') {
+      return 'all-products';
+    }
+    // On category pages, return the category
+    if (pathname.startsWith('/category/')) {
+      return pathname.split('/').pop();
+    }
+    // Default to undefined to show placeholder
+    return undefined;
+  };
+  
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const currentCategory = getCurrentCategory();
+
+  const handleCategoryChange = (value: string | undefined) => {
+    const selectedValue = value || "all-products";
+    
+    if (selectedValue === "all-products") {
+      // For "All Products", go to products page
+      router.push("/products");
+    } else {
+      // For specific categories, go to category page
+      router.push(`/category/${selectedValue}`);
+    }
+  };
 
   useEffect(() => {
     document.body.style.overflow = isSidebarOpen ? "hidden" : "auto";
@@ -106,8 +142,10 @@ export default function Navbar() {
           <div className="w-[160px] md:w-[180px] flex-shrink-0">
             <Dropdown
               options={laptopCategories}
-              placeholder="All Categories"
-              onChange={() => { }}
+              placeholder="Select Categories"
+              value={currentCategory}
+              onChange={handleCategoryChange}
+              allowDeselect={true}
             />
           </div>
 
