@@ -3,6 +3,8 @@ import { Mail, Lock, LoaderCircleIcon } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import axios from "@/lib/axiosInstance";
+
 
 interface LoginForm {
   email: string;
@@ -33,7 +35,7 @@ export default function AdminLogin() {
     }));
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const errors: LoginFormError = {};
@@ -46,13 +48,26 @@ export default function AdminLogin() {
     }
 
     setIsLoading(true);
-    // Simulate login API call
-    setTimeout(() => {
-      setIsLoading(false);
+    // // Simulate login API call
+    // setTimeout(() => {
+    //   setIsLoading(false);
+    //   toast.success("Login successful!");
+    //   // Redirect to admin dashboard
+    //   router.push("/admin/dashboard");
+    // }, 2000);
+
+    try {
+      const response = await axios.post("/auth/login", form);
+      // setIsLoading(false);
       toast.success("Login successful!");
       // Redirect to admin dashboard
-      router.push("/admin/dashboard");
-    }, 2000);
+      // router.push("/admin/dashboard");
+    } catch (error) {
+      setIsLoading(false);
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import ComponentCard from "@/components/common/ComponentsCard";
 import AddDetailsPopup from "./add_details_popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
-import Dropdown from "@/components/form/form-elements/dropdown";
+
 
 interface Color {
   id: number;
