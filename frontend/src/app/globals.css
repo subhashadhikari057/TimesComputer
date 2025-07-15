@@ -16,6 +16,7 @@
   --font-manrope: var(--font-manrope);
   --color-muted-foreground2: var(--muted-foreground2);
   --color-muted-background: var(--muted-background);
+  --color-border:var(--border); 
 }
 
 /* Root color definitions */
@@ -28,6 +29,7 @@
   --secondary: #3B82F6;
   --muted-foreground2: #252525;
   --muted-background: #F8F8F8;
+  --border:#D5D3D3;
 }
 
 /* Base styles */
