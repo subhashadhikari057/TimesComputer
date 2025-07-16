@@ -719,7 +719,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               onChange={(e) => handleSliderChange('min', e.target.value)}
               min={configMin}
               max={configMax}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <span className="text-gray-500 py-2 shrink-0">to</span>
@@ -731,7 +731,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               onChange={(e) => handleSliderChange('max', e.target.value)}
               min={configMin}
               max={configMax}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </div>

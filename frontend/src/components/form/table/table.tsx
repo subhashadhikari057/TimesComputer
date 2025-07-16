@@ -1,6 +1,6 @@
 // components/ui/GenericDataTable.tsx
-import React, { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import React from "react";
+import { Edit, Trash2 } from "lucide-react";
 
 // Generic Types
 export interface TableColumn<T> {
@@ -9,6 +9,7 @@ export interface TableColumn<T> {
   render: (item: T) => React.ReactNode;
   sortable?: boolean;
   className?: string;
+  width?: string;
 }
 
 export interface TableAction<T> {
@@ -16,19 +17,49 @@ export interface TableAction<T> {
   icon: React.ReactNode;
   onClick: (item: T) => void;
   className?: string;
+  variant?: "primary" | "secondary" | "danger";
+}
+
+export interface TableHeader {
+  title?: string;
+  description?: string;
+  showSelectAll?: boolean;
+  headerActions?: React.ReactNode;
 }
 
 export interface GenericTableProps<T> {
+  // Table header configuration
+  header?: TableHeader;
+
+  // Data and columns
   data: T[];
   columns: TableColumn<T>[];
-  selectedItems: (string | number)[];
-  onSelectItem: (itemId: string | number) => void;
-  onSelectAll: () => void;
-  primaryAction?: TableAction<T>;
-  dropdownActions?: TableAction<T>[];
+
+  // Selection functionality
+  selectedItems?: (string | number)[];
+  onSelectItem?: (itemId: string | number) => void;
+  onSelectAll?: () => void;
+  showSelection?: boolean;
+
+  // Actions configuration
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
+  showActions?: boolean;
+
+  // Utility functions
   getItemId: (item: T) => string | number;
+
+  // Empty state
   emptyMessage?: string;
   emptyIcon?: React.ReactNode;
+
+  // Styling
+  className?: string;
+  tableClassName?: string;
+
+  // Loading state
+  loading?: boolean;
+  loadingMessage?: string;
 }
 
 // Base Table Components
@@ -42,22 +73,24 @@ const Table: React.FC<{ children: React.ReactNode; className?: string }> = ({
 );
 
 const TableHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <thead>{children}</thead>
+  <thead className="bg-gray-50">{children}</thead>
 );
 
 const TableBody: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <tbody className="divide-y divide-gray-200">{children}</tbody>
+  <tbody className="divide-y divide-gray-200 bg-white">{children}</tbody>
 );
 
 const TableRow: React.FC<{
   children: React.ReactNode;
   isSelected?: boolean;
   className?: string;
-}> = ({ children, isSelected = false, className = "" }) => (
+  onClick?: () => void;
+}> = ({ children, isSelected = false, className = "", onClick }) => (
   <tr
     className={`hover:bg-gray-50 transition-colors ${
       isSelected ? "bg-blue-50" : ""
-    } ${className}`}
+    } ${onClick ? "cursor-pointer" : ""} ${className}`}
+    onClick={onClick}
   >
     {children}
   </tr>
@@ -72,240 +105,266 @@ const TableCell: React.FC<{
   isHeader?: boolean;
   className?: string;
   style?: React.CSSProperties;
-}> = ({ children, isHeader = false, className = "", style }) => {
+  width?: string;
+}> = ({ children, isHeader = false, className = "", style, width }) => {
   const Tag = isHeader ? "th" : "td";
   const baseClasses = isHeader
     ? "text-left py-4 px-4 text-sm font-medium text-gray-700"
-    : "py-4 px-4";
+    : "py-4 px-4 text-sm text-gray-900";
 
   return (
-    <Tag className={`${baseClasses} ${className}`} style={style}>
+    <Tag className={`${baseClasses} ${className}`} style={{ ...style, width }}>
       {children}
     </Tag>
   );
 };
 
-// Split Button Component
-const SplitButton: React.FC<{
-  primaryAction: {
-    label: string;
-    icon: React.ReactNode;
-    onClick: () => void;
-  };
-  dropdownItems: Array<{
-    label: string;
-    icon: React.ReactNode;
-    onClick: () => void;
-  }>;
-  isOpen: boolean;
-  onToggle: () => void;
-  onClose: () => void;
-}> = ({ primaryAction, dropdownItems, isOpen, onToggle, onClose }) => (
-  <div className="relative inline-flex">
-    {/* Primary Button */}
-    <button
-      onClick={primaryAction.onClick}
-      className="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300"
-    >
-      {primaryAction.icon}
-      {primaryAction.label}
-    </button>
-
-    {/* Dropdown Trigger Button */}
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        onToggle();
-      }}
-      className="relative inline-flex items-center px-2 py-1.5 text-sm font-medium text-gray-700 bg-white border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300"
-      aria-expanded={isOpen}
-      aria-haspopup="true"
-    >
-      <ChevronDown className="w-4 h-4" />
-    </button>
-
-    {/* Dropdown Menu */}
-    {isOpen && (
-      <div
-        className="absolute right-0 z-10 mt-2 w-40 origin-top-right bg-white border border-gray-200 rounded-md shadow-lg top-full"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="py-1">
-          {dropdownItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                item.onClick();
-                onClose();
-              }}
-              className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-            >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
-        </div>
+const DataTableHeader: React.FC<{ header: TableHeader }> = ({ header }) => (
+  <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+    <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+      {/* Title + Description */}
+      <div>
+        {header.title && (
+          <h3 className="text-base sm:text-lg md:text-xl font-medium leading-5 sm:leading-6 text-gray-900">
+            {header.title}
+          </h3>
+        )}
+        {header.description && (
+          <p className="hidden sm:block mt-1 text-sm text-gray-500">
+            {header.description}
+          </p>
+        )}
       </div>
-    )}
+
+      {/* Actions */}
+      {header.headerActions && (
+        <div className="flex-shrink-0">{header.headerActions}</div>
+      )}
+    </div>
   </div>
 );
 
-// Main Generic Table Component
-export const GenericDataTable = <T,>({
-  data,
-  columns,
-  selectedItems,
-  onSelectItem,
-  onSelectAll,
-  primaryAction,
-  dropdownActions = [],
-  getItemId,
-  emptyMessage = "No items found",
-  emptyIcon,
-}: GenericTableProps<T>) => {
-  const [openDropdown, setOpenDropdown] = useState<string | number | null>(
-    null
-  );
+// Loading Component
+const LoadingRow: React.FC<{ colSpan: number; message: string }> = ({
+  colSpan,
+  message,
+}) => (
+  <TableRow>
+    <TableCell
+      className="text-center py-12"
+      style={{ gridColumn: `span ${colSpan}` }}
+    >
+      <div className="flex flex-col items-center space-y-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="text-gray-500">{message}</p>
+      </div>
+    </TableCell>
+  </TableRow>
+);
 
-  const toggleDropdown = (itemId: string | number) => {
-    setOpenDropdown(openDropdown === itemId ? null : itemId);
+// Empty State Component
+const EmptyRow: React.FC<{
+  colSpan: number;
+  message: string;
+  icon?: React.ReactNode;
+}> = ({ colSpan, message, icon }) => (
+  <TableRow>
+    <TableCell
+      className="text-center py-12"
+      style={{ gridColumn: `span ${colSpan}` }}
+    >
+      <div className="flex flex-col items-center space-y-4">
+        {icon}
+        <p className="text-gray-500">{message}</p>
+      </div>
+    </TableCell>
+  </TableRow>
+);
+
+// Edit/Delete Buttons Component
+const EditDeleteButtons: React.FC<{
+  onEdit: () => void;
+  onDelete: () => void;
+  size?: "sm" | "md" | "lg";
+}> = ({ onEdit, onDelete, size = "sm" }) => {
+  const getSizeClasses = (size: string) => {
+    switch (size) {
+      case "sm":
+        return "px-2 py-1 text-xs";
+      case "lg":
+        return "px-4 py-2 text-base";
+      default:
+        return "px-3 py-1.5 text-sm";
+    }
   };
 
-  const closeDropdown = () => {
-    setOpenDropdown(null);
+  const getIconSize = (size: string) => {
+    switch (size) {
+      case "sm":
+        return "w-3 h-3";
+      case "lg":
+        return "w-5 h-5";
+      default:
+        return "w-4 h-4";
+    }
   };
 
-  const hasActions = primaryAction || dropdownActions.length > 0;
+  const sizeClasses = getSizeClasses(size);
+  const iconSize = getIconSize(size);
 
   return (
-    <div onClick={closeDropdown}>
-      <Table>
-        <TableHeader>
-          <TableHeaderRow>
-            <TableCell isHeader>
-              <input
-                type="checkbox"
-                checked={
-                  selectedItems.length === data.length && data.length > 0
-                }
-                onChange={onSelectAll}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-            </TableCell>
-            {columns.map((column) => (
-              <TableCell key={column.id} isHeader className={column.className}>
-                {column.label}
-              </TableCell>
-            ))}
-            {hasActions && (
-              <TableCell isHeader className="text-right">
-                Actions
-              </TableCell>
-            )}
-          </TableHeaderRow>
-        </TableHeader>
+    <div className="flex space-x-2">
+      {/* Edit Button */}
+      <button
+        onClick={onEdit}
+        className={`inline-flex items-center ${sizeClasses} font-medium text-blue-600 bg-white border border-blue-300 rounded-md hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors`}
+        title="Edit"
+      >
+        <Edit className={iconSize} />
+      </button>
 
-        <TableBody>
-          {data.length === 0 ? (
-            <TableRow>
-              <TableCell
-                className="text-center py-12"
-                style={{
-                  gridColumn: `span ${columns.length + (hasActions ? 2 : 1)}`,
-                }}
-              >
-                <div className="flex flex-col items-center space-y-4">
-                  {emptyIcon}
-                  <p className="text-gray-500">{emptyMessage}</p>
-                </div>
-              </TableCell>
-            </TableRow>
-          ) : (
-            data.map((item) => {
-              const itemId = getItemId(item);
-              return (
-                <TableRow
-                  key={itemId}
-                  isSelected={selectedItems.includes(itemId)}
-                >
-                  {/* Selection Checkbox */}
-                  <TableCell>
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.includes(itemId)}
-                      onChange={() => onSelectItem(itemId)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                  </TableCell>
-
-                  {/* Dynamic Columns */}
-                  {columns.map((column) => (
-                    <TableCell key={column.id} className={column.className}>
-                      {column.render(item)}
-                    </TableCell>
-                  ))}
-
-                  {/* Actions */}
-                  {hasActions && (
-                    <TableCell>
-                      <div className="flex items-center justify-end">
-                        {primaryAction && dropdownActions.length > 0 ? (
-                          <SplitButton
-                            primaryAction={{
-                              label: primaryAction.label,
-                              icon: primaryAction.icon,
-                              onClick: () => primaryAction.onClick(item),
-                            }}
-                            dropdownItems={dropdownActions.map((action) => ({
-                              label: action.label,
-                              icon: action.icon,
-                              onClick: () => action.onClick(item),
-                            }))}
-                            isOpen={openDropdown === itemId}
-                            onToggle={() => toggleDropdown(itemId)}
-                            onClose={closeDropdown}
-                          />
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            {primaryAction && (
-                              <button
-                                onClick={() => primaryAction.onClick(item)}
-                                className={`p-2 rounded-lg transition-colors ${
-                                  primaryAction.className ||
-                                  "text-blue-600 hover:text-blue-900 hover:bg-blue-50"
-                                }`}
-                                title={primaryAction.label}
-                              >
-                                {primaryAction.icon}
-                              </button>
-                            )}
-                            {dropdownActions.map((action, index) => (
-                              <button
-                                key={index}
-                                onClick={() => action.onClick(item)}
-                                className={`p-2 rounded-lg transition-colors ${
-                                  action.className ||
-                                  "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                                }`}
-                                title={action.label}
-                              >
-                                {action.icon}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                  )}
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+      {/* Delete Button */}
+      <button
+        onClick={onDelete}
+        className={`inline-flex items-center ${sizeClasses} font-medium text-red-600 bg-white border border-red-300 rounded-md hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors`}
+        title="Delete"
+      >
+        <Trash2 className={iconSize} />
+      </button>
     </div>
   );
 };
 
-// This file now contains only the generic, reusable table components
-// Specific table implementations should be in their respective pages
+// Main Generic Table Component
+export const GenericDataTable = <T,>({
+  header,
+  data,
+  columns,
+  selectedItems = [],
+  onSelectItem,
+  onSelectAll,
+  showSelection = true,
+  onEdit,
+  onDelete,
+  showActions = true,
+  getItemId,
+  emptyMessage = "No items found",
+  emptyIcon,
+  className = "",
+  tableClassName = "",
+  loading = false,
+  loadingMessage = "Loading...",
+}: GenericTableProps<T>) => {
+  const hasActions = showActions && (onEdit || onDelete);
+  const hasSelection = showSelection && onSelectItem && onSelectAll;
+
+  // Calculate total columns for colspan
+  const totalColumns =
+    columns.length + (hasSelection ? 1 : 0) + (hasActions ? 1 : 0);
+
+  return (
+    <div className={`bg-white shadow rounded-lg ${className}`}>
+      {/* Table Header */}
+      {header && <DataTableHeader header={header} />}
+
+      {/* Table Content */}
+      <div>
+        <Table className={tableClassName}>
+          <TableHeader>
+            <TableHeaderRow>
+              {/* Selection Header */}
+              {hasSelection && (
+                <TableCell isHeader width="48px">
+                  <input
+                    type="checkbox"
+                    checked={
+                      selectedItems.length === data.length && data.length > 0
+                    }
+                    onChange={onSelectAll}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                </TableCell>
+              )}
+
+              {/* Dynamic Column Headers */}
+              {columns.map((column) => (
+                <TableCell
+                  key={column.id}
+                  isHeader
+                  className={column.className}
+                  width={column.width}
+                >
+                  {column.label}
+                </TableCell>
+              ))}
+
+              {/* Actions Header */}
+              {hasActions && (
+                <TableCell isHeader className="text-right" width="120px">
+                  Actions
+                </TableCell>
+              )}
+            </TableHeaderRow>
+          </TableHeader>
+
+          <TableBody>
+            {loading ? (
+              <LoadingRow colSpan={totalColumns} message={loadingMessage} />
+            ) : data.length === 0 ? (
+              <EmptyRow
+                colSpan={totalColumns}
+                message={emptyMessage}
+                icon={emptyIcon}
+              />
+            ) : (
+              data.map((item) => {
+                const itemId = getItemId(item);
+                const isSelected = selectedItems.includes(itemId);
+
+                return (
+                  <TableRow key={itemId} isSelected={isSelected}>
+                    {/* Selection Checkbox */}
+                    {hasSelection && (
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => onSelectItem(itemId)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </TableCell>
+                    )}
+
+                    {/* Dynamic Columns */}
+                    {columns.map((column) => (
+                      <TableCell
+                        key={column.id}
+                        className={column.className}
+                        width={column.width}
+                      >
+                        {column.render(item)}
+                      </TableCell>
+                    ))}
+
+                    {/* Actions Column */}
+                    {hasActions && (
+                      <TableCell>
+                        <div className="flex items-center justify-end">
+                          <EditDeleteButtons
+                            onEdit={() => onEdit?.(item)}
+                            onDelete={() => onDelete?.(item)}
+                            size="md"
+                          />
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};

@@ -43,7 +43,20 @@ const Dropdown: React.FC<DropdownProps> = ({
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
-    onChange(selectedValue === "" ? null : selectedValue);
+    
+    if (selectedValue === "") {
+      onChange(null);
+      return;
+    }
+    
+    // Find the original option to get the correct type
+    const selectedOption = options.find(option => String(option.value) === selectedValue);
+    
+    if (selectedOption) {
+      onChange(selectedOption.value); // This preserves the original type (string or number)
+    } else {
+      onChange(null);
+    }
   };
 
   const baseClasses = `

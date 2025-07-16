@@ -3,6 +3,7 @@
 import Header from "@/components/admin/layout/AdminHeader";
 import Sidebar from "@/components/admin/layout/AdminSidebar";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,6 +13,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true); // Default to true for desktop
   const [activeMenus, setActiveMenus] = useState<string[]>(["dashboard"]);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const pathname = usePathname();
 
   // Set initial sidebar state based on screen size (only on mount)
   useEffect(() => {
@@ -27,6 +29,23 @@ export default function DashboardLayout({ children }: LayoutProps) {
     // Set initial state only
     setInitialState();
   }, []);
+
+  // Auto-open relevant dropdown based on current route
+  useEffect(() => {
+    const newActiveMenus = ["dashboard"]; // Always include dashboard
+
+    if (pathname.startsWith("/admin/product")) {
+      newActiveMenus.push("product");
+    }
+
+    if (pathname.startsWith("/admin/attributes")) {
+      newActiveMenus.push("attributes");
+    }
+
+    // Add other menu auto-open logic here as needed
+
+    setActiveMenus(newActiveMenus);
+  }, [pathname]);
 
   const toggleSubmenu = (menu: string) => {
     setActiveMenus((prev) =>

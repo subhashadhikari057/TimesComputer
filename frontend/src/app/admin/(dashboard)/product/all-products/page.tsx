@@ -4,26 +4,25 @@ import { useState } from "react";
 import {
   GenericDataTable,
   TableColumn,
-  TableAction,
+  TableHeader,
 } from "@/components/form/table/table";
 import {
   Package,
-  Search,
   Trash2,
   Plus,
   DollarSign,
-  TrendingUp,
   CheckCircle,
   Edit3,
   Copy,
   Eye,
+  Download,
 } from "lucide-react";
-import Link from "next/link";
-import ComponentCard from "@/components/common/ComponentsCard";
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
+import { FilterComponent, FilterConfig } from "@/components/admin/product/filter";
+import { useFilters } from "@/hooks/useFilter";
 
-// Product interface
+// Product interface (same as before)
 interface Product {
   id: number;
   name: string;
@@ -39,7 +38,7 @@ interface Product {
   status: string;
 }
 
-// Enhanced mock data
+// Mock data (same as before)
 const mockProducts: Product[] = [
   {
     id: 1,
@@ -113,168 +112,89 @@ const mockProducts: Product[] = [
   },
 ];
 
-// Constants
-const CATEGORIES = ["all", "Laptops", "Smartphones", "Tablets"];
-const BRANDS = ["all", "Apple", "Samsung", "Dell", "HP"];
-const STATUSES = ["all", "active", "out_of_stock", "low_stock"];
-
-const STATUS_LABELS = {
-  all: "All Status",
-  out_of_stock: "Out of Stock",
-  low_stock: "Low Stock",
-  active: "Active",
-};
-
-// Product Table Component
-const ProductTable: React.FC<{
-  products: Product[];
-  selectedProducts: number[];
-  onSelectProduct: (productId: number) => void;
-  onSelectAll: () => void;
-  onEdit: (productId: number) => void;
-  onDelete: (productId: number) => void;
-  onDuplicate: (productId: number) => void;
-  onToggleStatus: (productId: number) => void;
-}> = ({
-  products,
-  selectedProducts,
-  onSelectProduct,
-  onSelectAll,
-  onEdit,
-  onDelete,
-  onDuplicate,
-  onToggleStatus,
-}) => {
-  const columns: TableColumn<Product>[] = [
-    {
-      id: "product",
-      label: "Product",
-      render: (product) => (
-        <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-            <Package className="h-6 w-6 text-blue-600" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {product.name}
-            </div>
-            <div className="text-xs text-gray-500">{product.slug}</div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "category",
-      label: "Category",
-      render: (product) => (
-        <div className="text-sm text-gray-900">{product.category}</div>
-      ),
-    },
-    {
-      id: "brand",
-      label: "Brand",
-      render: (product) => (
-        <div className="text-sm font-medium text-gray-900">{product.brand}</div>
-      ),
-    },
-    {
-      id: "price",
-      label: "Price",
-      render: (product) => (
-        <div className="text-sm font-semibold text-gray-900">
-          ${product.price.toFixed(2)}
-        </div>
-      ),
-    },
-    {
-      id: "stock",
-      label: "Stock",
-      render: (product) => (
-        <div className="text-sm font-medium text-gray-900">
-          {product.stock} units
-        </div>
-      ),
-    },
-    {
-      id: "status",
-      label: "Status",
-      render: (product) => (
-        <span
-          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-            product.isPublished
-              ? "bg-green-100 text-green-800"
-              : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {product.isPublished ? (
-            <>
-              <CheckCircle className="w-3 h-3 mr-1" />
-              Published
-            </>
-          ) : (
-            <>
-              <Eye className="w-3 h-3 mr-1" />
-              Draft
-            </>
-          )}
-        </span>
-      ),
-    },
-  ];
-
-  const primaryAction: TableAction<Product> = {
-    label: "Edit",
-    icon: <Edit3 className="w-4 h-4 mr-1.5" />,
-    onClick: (product) => onEdit(product.id),
-  };
-
-  const dropdownActions: TableAction<Product>[] = [
-    {
-      label: "Delete",
-      icon: <Trash2 className="w-4 h-4 mr-2" />,
-      onClick: (product) => onDelete(product.id),
-    },
-    {
-      label: "Duplicate",
-      icon: <Copy className="w-4 h-4 mr-2" />,
-      onClick: (product) => onDuplicate(product.id),
-    },
-    {
-      label: "Toggle Status",
-      icon: <CheckCircle className="w-4 h-4 mr-2" />,
-      onClick: (product) => onToggleStatus(product.id),
-    },
-  ];
-
-  return (
-    <GenericDataTable
-      data={products}
-      columns={columns}
-      selectedItems={selectedProducts}
-      onSelectItem={(id) => onSelectProduct(id as number)}
-      onSelectAll={onSelectAll}
-      primaryAction={primaryAction}
-      dropdownActions={dropdownActions}
-      getItemId={(product) => product.id}
-      emptyMessage="No products found"
-      emptyIcon={<Package className="w-12 h-12 text-gray-400" />}
-    />
-  );
-};
-
 // Main Component
 export default function ViewProductsPage() {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [filterBrand, setFilterBrand] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [sortBy, setSortBy] = useState("name");
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Initialize filters using the custom hook
+  const { filters, updateFilter, resetFilters } = useFilters({
+    search: '',
+    category: 'all',
+    brand: 'all',
+    status: 'all',
+    sort: 'name'
+  });
+
+  // Filter configuration
+  const filterConfig: FilterConfig[] = [
+    {
+      key: 'search',
+      label: 'Search Products',
+      type: 'search',
+      placeholder: 'Search by product name...',
+      width: 'lg'
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      type: 'select',
+      width: 'md',
+      options: [
+        { value: 'all', label: 'All Categories' },
+        { value: 'Laptops', label: 'Laptops' },
+        { value: 'Smartphones', label: 'Smartphones' },
+        { value: 'Tablets', label: 'Tablets' }
+      ]
+    },
+    {
+      key: 'brand',
+      label: 'Brand',
+      type: 'select',
+      width: 'md',
+      options: [
+        { value: 'all', label: 'All Brands' },
+        { value: 'Apple', label: 'Apple' },
+        { value: 'Samsung', label: 'Samsung' },
+        { value: 'Dell', label: 'Dell' },
+        { value: 'HP', label: 'HP' }
+      ]
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      type: 'select',
+      width: 'md',
+      options: [
+        { value: 'all', label: 'All Status' },
+        { value: 'active', label: 'Active' },
+        { value: 'out_of_stock', label: 'Out of Stock' },
+        { value: 'low_stock', label: 'Low Stock' }
+      ]
+    },
+    {
+      key: 'sort',
+      label: 'Sort By',
+      type: 'select',
+      width: 'md',
+      options: [
+        { value: 'name', label: 'Sort by Name' },
+        { value: 'price', label: 'Sort by Price' },
+        { value: 'stock', label: 'Sort by Stock' },
+        { value: 'created', label: 'Sort by Date Created' }
+      ]
+    }
+  ];
 
   // Filter and sort products
   const filteredProducts = mockProducts
     .filter((product) => {
+      const searchTerm = filters.search as string;
+      const filterCategory = filters.category as string;
+      const filterBrand = filters.brand as string;
+      const filterStatus = filters.status as string;
+
       const matchesSearch = product.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
@@ -284,9 +204,11 @@ export default function ViewProductsPage() {
         filterBrand === "all" || product.brand === filterBrand;
       const matchesStatus =
         filterStatus === "all" || product.status === filterStatus;
+      
       return matchesSearch && matchesCategory && matchesBrand && matchesStatus;
     })
     .sort((a, b) => {
+      const sortBy = filters.sort as string;
       switch (sortBy) {
         case "name":
           return a.name.localeCompare(b.name);
@@ -333,6 +255,7 @@ export default function ViewProductsPage() {
 
   const handleBulkDelete = () => {
     console.log("Bulk delete products:", selectedProducts);
+    setSelectedProducts([]);
     // TODO: Implement bulk delete functionality
   };
 
@@ -346,6 +269,137 @@ export default function ViewProductsPage() {
     // TODO: Implement toggle status functionality
   };
 
+  const handleExport = () => {
+    console.log("Export products");
+    // TODO: Implement export functionality
+  };
+
+  const handleAddProduct = () => {
+    router.push("/admin/product/create");
+  };
+
+// Table configuration
+const tableHeader: TableHeader = {
+  title: `Products (${filteredProducts.length})`,
+  description: "Manage your product catalog with advanced controls",
+  headerActions: (
+    <div className="flex items-center space-x-2 sm:space-x-2">
+      {selectedProducts.length > 0 && (
+        <button
+          onClick={handleBulkDelete}
+          className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          Delete ({selectedProducts.length})
+        </button>
+      )}
+      <button
+        onClick={handleExport}
+        className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <Download className="h-4 w-4 mr-1" />
+        Export
+      </button>
+      <button
+        onClick={handleAddProduct}
+        className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <Plus className="h-4 w-4 mr-1" />
+        Add Product
+      </button>
+    </div>
+  ),
+};
+
+  const columns: TableColumn<Product>[] = [
+    {
+      id: "product",
+      label: "Product",
+      width: "300px",
+      render: (product) => (
+        <div className="flex items-center space-x-4">
+          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+            <Package className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-gray-900 truncate">
+              {product.name}
+            </div>
+            <div className="text-xs text-gray-500">{product.slug}</div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "category",
+      label: "Category",
+      width: "120px",
+      render: (product) => (
+        <div className="text-sm text-gray-900">{product.category}</div>
+      ),
+    },
+    {
+      id: "brand",
+      label: "Brand",
+      width: "100px",
+      render: (product) => (
+        <div className="text-sm font-medium text-gray-900">{product.brand}</div>
+      ),
+    },
+    {
+      id: "price",
+      label: "Price",
+      width: "100px",
+      render: (product) => (
+        <div className="text-sm font-semibold text-gray-900">
+          ${product.price.toFixed(2)}
+        </div>
+      ),
+    },
+    {
+      id: "stock",
+      label: "Stock",
+      width: "100px",
+      render: (product) => (
+        <div className={`text-sm font-medium ${
+          product.stock === 0 
+            ? 'text-red-600' 
+            : product.stock < 10 
+              ? 'text-yellow-600' 
+              : 'text-gray-900'
+        }`}>
+          {product.stock} units
+        </div>
+      ),
+    },
+    {
+      id: "status",
+      label: "Status",
+      width: "120px",
+      render: (product) => (
+        <span
+          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+            product.isPublished
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {product.isPublished ? (
+            <>
+              <CheckCircle className="w-3 h-3 mr-1" />
+              Published
+            </>
+          ) : (
+            <>
+              <Eye className="w-3 h-3 mr-1" />
+              Draft
+            </>
+          )}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="p-6 space-y-6">
       {/* Page Header */}
@@ -355,24 +409,6 @@ export default function ViewProductsPage() {
           <p className="text-gray-600">
             Manage your product inventory and catalog
           </p>
-        </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-3">
-          {selectedProducts.length > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete ({selectedProducts.length})</span>
-            </button>
-          )}
-          <Link
-            href="/admin/product/create"
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Product</span>
-          </Link>
         </div>
       </div>
 
@@ -394,118 +430,42 @@ export default function ViewProductsPage() {
         />
         <StatCard
           title="Total Value"
-          value={`${totalValue.toLocaleString()}`}
+          value={`$${totalValue.toLocaleString()}`}
           change="Current stock value"
           Icon={DollarSign}
           color="text-purple-600"
         />
       </div>
 
-      {/* Filters */}
-      <ComponentCard title="Filters & Search" desc="Find and filter products">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-          {/* Search */}
-          <div className="lg:col-span-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <input
-                type="text"
-                placeholder="Search by product name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Category Filter */}
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {category === "all" ? "All Categories" : category}
-              </option>
-            ))}
-          </select>
-
-          {/* Brand Filter */}
-          <select
-            value={filterBrand}
-            onChange={(e) => setFilterBrand(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {BRANDS.map((brand) => (
-              <option key={brand} value={brand}>
-                {brand === "all" ? "All Brands" : brand}
-              </option>
-            ))}
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            {STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {STATUS_LABELS[status as keyof typeof STATUS_LABELS] || status}
-              </option>
-            ))}
-          </select>
-
-          {/* Sort */}
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="name">Sort by Name</option>
-            <option value="price">Sort by Price</option>
-            <option value="stock">Sort by Stock</option>
-            <option value="created">Sort by Date Created</option>
-          </select>
-        </div>
-      </ComponentCard>
+      {/* Reusable Filter Component */}
+      <FilterComponent
+        title="Filters & Search"
+        description="Find and filter products"
+        filters={filterConfig}
+        values={filters}
+        onChange={updateFilter}
+        onReset={resetFilters}
+      />
 
       {/* Products Table */}
-      <ComponentCard
-        title={`Products (${filteredProducts.length})`}
-        desc="Manage your product catalog with advanced controls"
-      >
-        {filteredProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No products found
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Try adjusting your search or filter criteria
-            </p>
-            <Link
-              href="/admin/product/create"
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create First Product</span>
-            </Link>
-          </div>
-        ) : (
-          <ProductTable
-            products={filteredProducts}
-            selectedProducts={selectedProducts}
-            onSelectProduct={handleSelectProduct}
-            onSelectAll={handleSelectAll}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onDuplicate={handleDuplicate}
-            onToggleStatus={handleToggleStatus}
-          />
-        )}
-      </ComponentCard>
+      <GenericDataTable
+        header={tableHeader}
+        data={filteredProducts}
+        columns={columns}
+        selectedItems={selectedProducts}
+        onSelectItem={(id) => handleSelectProduct(id as number)}
+        onSelectAll={handleSelectAll}
+        onEdit={(product) => handleEdit(product.id)}
+        onDelete={(product) => handleDelete(product.id)}
+        showSelection={true}
+        showActions={true}
+        getItemId={(product) => product.id}
+        emptyMessage="No products found matching your criteria"
+        emptyIcon={<Package className="w-12 h-12 text-gray-400" />}
+        loading={loading}
+        loadingMessage="Loading products..."
+        className="max-w-full"
+      />
     </div>
   );
 }

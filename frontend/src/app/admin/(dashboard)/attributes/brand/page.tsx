@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
-  Tag,
+  Award,
   Calendar,
   Package,
   Trash2,
@@ -25,13 +25,13 @@ import { FilterComponent, FilterConfig } from "@/components/admin/product/filter
 import { useFilters } from "@/hooks/useFilter";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import AddDetailsPopup from "@/components/common/popup";
-import { categoryService } from "@/services/categoryService";
+import { brandService } from "@/services/brandService";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
 import IconUpload from "@/components/admin/product/iconUpload";
 
 // Type definitions
-interface Category {
+interface Brand {
   id: number;
   name: string;
   description: string;
@@ -44,7 +44,7 @@ interface Category {
   sortOrder: number;
 }
 
-interface CategoryFormData {
+interface BrandFormData {
   name: string;
   image: File | null;
   imagePreview: string;
@@ -52,7 +52,7 @@ interface CategoryFormData {
   iconPreview: string;
 }
 
-const INITIAL_CATEGORY_FORM: CategoryFormData = {
+const INITIAL_BRAND_FORM: BrandFormData = {
   name: "",
   image: null,
   imagePreview: "",
@@ -60,12 +60,12 @@ const INITIAL_CATEGORY_FORM: CategoryFormData = {
   iconPreview: "",
 };
 
-// Enhanced mock data for categories
-const mockCategories: Category[] = [
+// Enhanced mock data for brands
+const mockBrands: Brand[] = [
   {
     id: 1,
-    name: "Laptops",
-    description: "High-performance laptops and notebooks for work and gaming",
+    name: "Apple",
+    description: "Premium technology products and innovative devices",
     productCount: 45,
     isActive: true,
     createdAt: "2024-01-15",
@@ -76,8 +76,8 @@ const mockCategories: Category[] = [
   },
   {
     id: 2,
-    name: "Smartphones",
-    description: "Latest smartphones from top brands",
+    name: "Samsung",
+    description: "Global leader in technology and electronics",
     productCount: 32,
     isActive: true,
     createdAt: "2024-01-10",
@@ -88,8 +88,8 @@ const mockCategories: Category[] = [
   },
   {
     id: 3,
-    name: "Tablets",
-    description: "Tablets and iPad for productivity and entertainment",
+    name: "Google",
+    description: "Search, cloud, and consumer technology products",
     productCount: 12,
     isActive: false,
     createdAt: "2024-01-25",
@@ -100,8 +100,8 @@ const mockCategories: Category[] = [
   },
   {
     id: 4,
-    name: "Accessories",
-    description: "Computer accessories and peripherals",
+    name: "Microsoft",
+    description: "Software, cloud computing, and productivity tools",
     productCount: 67,
     isActive: true,
     createdAt: "2024-01-08",
@@ -112,8 +112,8 @@ const mockCategories: Category[] = [
   },
   {
     id: 5,
-    name: "Gaming",
-    description: "Gaming consoles, accessories, and games",
+    name: "Dell",
+    description: "Computer hardware and enterprise solutions",
     productCount: 28,
     isActive: true,
     createdAt: "2024-01-20",
@@ -124,8 +124,8 @@ const mockCategories: Category[] = [
   },
   {
     id: 6,
-    name: "Audio",
-    description: "Headphones, speakers, and audio equipment",
+    name: "HP",
+    description: "Personal computing and printing solutions",
     productCount: 19,
     isActive: false,
     createdAt: "2024-01-18",
@@ -134,17 +134,29 @@ const mockCategories: Category[] = [
     parentId: null,
     sortOrder: 6,
   },
+  {
+    id: 7,
+    name: "Sony",
+    description: "Consumer electronics and entertainment technology",
+    productCount: 0,
+    isActive: true,
+    createdAt: "2024-01-22",
+    updatedAt: "2024-02-01",
+    image: "/api/placeholder/150/150",
+    parentId: null,
+    sortOrder: 7,
+  },
 ];
 
 // Main Component
-export default function CategoryManagementPage() {
+export default function BrandManagementPage() {
   const router = useRouter();
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<number[]>([]);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<CategoryFormData>({
-    ...INITIAL_CATEGORY_FORM,
+  const [form, setForm] = useState<BrandFormData>({
+    ...INITIAL_BRAND_FORM,
   });
   const [showValidation, setShowValidation] = useState(false);
 
@@ -160,9 +172,9 @@ export default function CategoryManagementPage() {
   const filterConfig: FilterConfig[] = [
     {
       key: 'search',
-      label: 'Search Categories',
+      label: 'Search Brands',
       type: 'search',
-      placeholder: 'Search by category name or description...',
+      placeholder: 'Search by brand name or description...',
       width: 'lg'
     },
     {
@@ -182,7 +194,7 @@ export default function CategoryManagementPage() {
       type: 'select',
       width: 'md',
       options: [
-        { value: 'all', label: 'All Categories' },
+        { value: 'all', label: 'All Brands' },
         { value: 'high', label: 'High (50+)' },
         { value: 'medium', label: 'Medium (10-49)' },
         { value: 'low', label: 'Low (1-9)' },
@@ -203,26 +215,26 @@ export default function CategoryManagementPage() {
     }
   ];
 
-  // Filter and sort categories
-  const filteredCategories = mockCategories
-    .filter((category) => {
+  // Filter and sort brands
+  const filteredBrands = mockBrands
+    .filter((brand) => {
       const searchTerm = filters.search as string;
       const filterStatus = filters.status as string;
       const filterProductCount = filters.productCount as string;
 
-      const matchesSearch = category.name
+      const matchesSearch = brand.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-        category.description.toLowerCase().includes(searchTerm.toLowerCase());
+        brand.description.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus =
         filterStatus === "all" ||
-        (filterStatus === "active" && category.isActive) ||
-        (filterStatus === "inactive" && !category.isActive);
+        (filterStatus === "active" && brand.isActive) ||
+        (filterStatus === "inactive" && !brand.isActive);
       
       const matchesProductCount = (() => {
         if (filterProductCount === "all") return true;
-        const count = category.productCount;
+        const count = brand.productCount;
         switch (filterProductCount) {
           case "high": return count >= 50;
           case "medium": return count >= 10 && count <= 49;
@@ -251,58 +263,58 @@ export default function CategoryManagementPage() {
     });
 
   // Calculate statistics
-  const activeCount = mockCategories.filter((c) => c.isActive).length;
-  const totalProducts = mockCategories.reduce((sum, c) => sum + c.productCount, 0);
-  const averageProducts = Math.round(totalProducts / mockCategories.length);
+  const activeCount = mockBrands.filter((b) => b.isActive).length;
+  const totalProducts = mockBrands.reduce((sum, b) => sum + b.productCount, 0);
+  const averageProducts = Math.round(totalProducts / mockBrands.length);
 
   // Event handlers
   const handleSelectAll = () => {
-    setSelectedCategories(
-      selectedCategories.length === filteredCategories.length
+    setSelectedBrands(
+      selectedBrands.length === filteredBrands.length
         ? []
-        : filteredCategories.map((c) => c.id)
+        : filteredBrands.map((b) => b.id)
     );
   };
 
-  const handleSelectCategory = (categoryId: number) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
+  const handleSelectBrand = (brandId: number) => {
+    setSelectedBrands((prev) =>
+      prev.includes(brandId)
+        ? prev.filter((id) => id !== brandId)
+        : [...prev, brandId]
     );
   };
 
-  const handleEdit = (categoryId: number) => {
-    router.push(`/admin/attributes/category/${categoryId}/edit`);
+  const handleEdit = (brandId: number) => {
+    router.push(`/admin/attributes/brand/${brandId}/edit`);
   };
 
-  const handleDelete = (categoryId: number) => {
-    console.log("Delete category:", categoryId);
-    toast.success("Category deleted successfully!");
+  const handleDelete = (brandId: number) => {
+    console.log("Delete brand:", brandId);
+    toast.success("Brand deleted successfully!");
     // TODO: Implement actual delete logic
   };
 
   const handleBulkDelete = () => {
-    console.log("Bulk delete categories:", selectedCategories);
-    toast.success(`${selectedCategories.length} categories deleted successfully!`);
-    setSelectedCategories([]);
+    console.log("Bulk delete brands:", selectedBrands);
+    toast.success(`${selectedBrands.length} brands deleted successfully!`);
+    setSelectedBrands([]);
     // TODO: Implement actual bulk delete logic
   };
 
   const handleExport = () => {
-    console.log("Export categories");
-    toast.success("Categories exported successfully!");
+    console.log("Export brands");
+    toast.success("Brands exported successfully!");
     // TODO: Implement export functionality
   };
 
-  const handleAddCategory = () => {
+  const handleAddBrand = () => {
     setShowAddPopup(true);
   };
 
   // Form handlers
   const handleCancel = () => {
     setShowAddPopup(false);
-    setForm({ ...INITIAL_CATEGORY_FORM });
+    setForm({ ...INITIAL_BRAND_FORM });
     setShowValidation(false);
     setError(null);
   };
@@ -320,31 +332,31 @@ export default function CategoryManagementPage() {
       setLoading(true);
       setError(null);
 
-      const newCategory = await categoryService.createCategory({
+      const newBrand = await brandService.createBrand({
         name: form.name,
         image: form.image!,
         icon: form.icon!,
       });
 
-      // Create a full category object with all required properties
-      const fullCategory: Category = {
-        id: newCategory.id,
-        name: newCategory.name,
-        description: `${newCategory.name} category`,
+      // Create a full brand object with all required properties
+      const fullBrand: Brand = {
+        id: newBrand.id,
+        name: newBrand.name,
+        description: `${newBrand.name} brand`,
         productCount: 0,
         isActive: true,
-        createdAt: newCategory.createdAt,
-        updatedAt: newCategory.updatedAt,
-        image: newCategory.image,
+        createdAt: newBrand.createdAt,
+        updatedAt: newBrand.updatedAt,
+        image: newBrand.image,
         parentId: null,
         sortOrder: 0,
       };
 
-      toast.success("Category created successfully!");
+      toast.success("Brand created successfully!");
       handleCancel();
     } catch (err) {
-      setError("Failed to create category");
-      console.error("Error creating category:", err);
+      setError("Failed to create brand");
+      console.error("Error creating brand:", err);
     } finally {
       setLoading(false);
     }
@@ -373,23 +385,23 @@ export default function CategoryManagementPage() {
     });
   };
 
-  const updateForm = (updates: Partial<CategoryFormData>) => {
+  const updateForm = (updates: Partial<BrandFormData>) => {
     setForm((prev) => ({ ...prev, ...updates }));
   };
 
   // Table configuration
   const tableHeader: TableHeader = {
-    title: `Categories (${filteredCategories.length})`,
-    description: "Manage your product categories with advanced controls",
+    title: `Brands (${filteredBrands.length})`,
+    description: "Manage your product brands with advanced controls",
     headerActions: (
       <div className="flex items-center space-x-2">
-        {selectedCategories.length > 0 && (
+        {selectedBrands.length > 0 && (
           <button
             onClick={handleBulkDelete}
             className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            Delete ({selectedCategories.length})
+            Delete ({selectedBrands.length})
           </button>
         )}
         <button
@@ -400,32 +412,32 @@ export default function CategoryManagementPage() {
           Export
         </button>
         <button
-          onClick={handleAddCategory}
+          onClick={handleAddBrand}
           className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <Plus className="h-4 w-4 mr-1" />
-          Add Category
+          Add Brand
         </button>
       </div>
     ),
   };
 
-  const columns: TableColumn<Category>[] = [
+  const columns: TableColumn<Brand>[] = [
     {
-      id: "category",
-      label: "Category",
+      id: "brand",
+      label: "Brand",
       width: "300px",
-      render: (category) => (
+      render: (brand) => (
         <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-            <Tag className="h-6 w-6 text-purple-600" />
+          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+            <Award className="h-6 w-6 text-blue-600" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {category.name}
+              {brand.name}
             </div>
             <div className="text-xs text-gray-500 truncate">
-              {category.description}
+              {brand.description}
             </div>
           </div>
         </div>
@@ -435,17 +447,17 @@ export default function CategoryManagementPage() {
       id: "products",
       label: "Products",
       width: "120px",
-      render: (category) => (
+      render: (brand) => (
         <div className="flex items-center space-x-2">
           <Package className="w-4 h-4 text-gray-400" />
           <span className={`text-sm font-medium ${
-            category.productCount === 0 
+            brand.productCount === 0 
               ? 'text-red-600' 
-              : category.productCount < 10 
+              : brand.productCount < 10 
                 ? 'text-yellow-600' 
                 : 'text-gray-900'
           }`}>
-            {category.productCount}
+            {brand.productCount}
           </span>
         </div>
       ),
@@ -454,7 +466,7 @@ export default function CategoryManagementPage() {
       id: "image",
       label: "Image",
       width: "120px",
-      render: (category) => (
+      render: (brand) => (
         <div className="flex items-center space-x-2">
           <ImageIcon className="w-4 h-4 text-gray-400" />
           <span className="text-sm text-gray-600">
@@ -467,15 +479,15 @@ export default function CategoryManagementPage() {
       id: "status",
       label: "Status",
       width: "120px",
-      render: (category) => (
+      render: (brand) => (
         <span
           className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-            category.isActive
+            brand.isActive
               ? "bg-green-100 text-green-800"
               : "bg-gray-100 text-gray-800"
           }`}
         >
-          {category.isActive ? (
+          {brand.isActive ? (
             <>
               <CheckCircle className="w-3 h-3 mr-1" />
               Active
@@ -493,10 +505,10 @@ export default function CategoryManagementPage() {
       id: "created",
       label: "Created",
       width: "120px",
-      render: (category) => (
+      render: (brand) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
-          {new Date(category.createdAt).toLocaleDateString()}
+          {new Date(brand.createdAt).toLocaleDateString()}
         </div>
       ),
     },
@@ -507,22 +519,22 @@ export default function CategoryManagementPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Categories</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Brands</h1>
           <p className="text-gray-600">
-            Manage your product categories and organize your catalog
+            Manage your product brands and organize your catalog
           </p>
         </div>
       </div>
 
-      {/* Add Category Popup */}
+      {/* Add Brand Popup */}
       <AddDetailsPopup
         isOpen={showAddPopup}
         onClose={handleCancel}
-        title="Add New Category"
-        description="Create a new category for your products"
+        title="Add New Brand"
+        description="Create a new brand for your products"
         onSave={handleSave}
         onCancel={handleCancel}
-        saveButtonText={loading ? "Creating..." : "Add Category"}
+        saveButtonText={loading ? "Creating..." : "Add Brand"}
         maxWidth="md"
       >
         <div className="space-y-6">
@@ -533,18 +545,18 @@ export default function CategoryManagementPage() {
           )}
 
           <DefaultInput
-            label="Category Name *"
-            name="categoryName"
+            label="Brand Name *"
+            name="brandName"
             value={form.name}
             onChange={(e) => updateForm({ name: e.target.value })}
-            placeholder="Enter category name (e.g., Laptops, Smartphones)"
+            placeholder="Enter brand name (e.g., Apple, Samsung)"
             required
           />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <PhotoUpload
-                label="Category Image"
+                label="Brand Image"
                 required
                 images={form.image ? [form.image] : []}
                 imagePreviews={form.imagePreview ? [form.imagePreview] : []}
@@ -561,7 +573,7 @@ export default function CategoryManagementPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category Icon *
+                Brand Icon *
               </label>
               <IconUpload
                 images={form.icon ? [form.icon] : []}
@@ -586,57 +598,56 @@ export default function CategoryManagementPage() {
       {/* Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Total Categories"
-          value={mockCategories.length.toString()}
+          title="Total Brands"
+          value={mockBrands.length.toString()}
           change="+12% from last month"
-          Icon={Tag}
-          color="text-purple-600"
+          Icon={Award}
+          color="text-blue-600"
         />
         <StatCard
-          title="Active Categories"
+          title="Active Brands"
           value={activeCount.toString()}
-          change={`${Math.round((activeCount / mockCategories.length) * 100)}% active`}
+          change={`${Math.round((activeCount / mockBrands.length) * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
           title="Total Products"
           value={totalProducts.toString()}
-          change={`Avg ${averageProducts} per category`}
+          change={`Avg ${averageProducts} per brand`}
           Icon={Package}
-          color="text-blue-600"
+          color="text-purple-600"
         />
       </div>
 
       {/* Reusable Filter Component */}
       <FilterComponent
         title="Filters & Search"
-        description="Find and filter categories"
+        description="Find and filter brands"
         filters={filterConfig}
         values={filters}
         onChange={updateFilter}
         onReset={resetFilters}
-       
-
+        
       />
 
-      {/* Categories Table */}
+      {/* Brands Table */}
       <GenericDataTable
         header={tableHeader}
-        data={filteredCategories}
+        data={filteredBrands}
         columns={columns}
-        selectedItems={selectedCategories}
-        onSelectItem={(id) => handleSelectCategory(id as number)}
+        selectedItems={selectedBrands}
+        onSelectItem={(id) => handleSelectBrand(id as number)}
         onSelectAll={handleSelectAll}
-        onEdit={(category) => handleEdit(category.id)}
-        onDelete={(category) => handleDelete(category.id)}
+        onEdit={(brand) => handleEdit(brand.id)}
+        onDelete={(brand) => handleDelete(brand.id)}
         showSelection={true}
         showActions={true}
-        getItemId={(category) => category.id}
-        emptyMessage="No categories found matching your criteria"
-        emptyIcon={<Tag className="w-12 h-12 text-gray-400" />}
+        getItemId={(brand) => brand.id}
+        emptyMessage="No brands found matching your criteria"
+        emptyIcon={<Award className="w-12 h-12 text-gray-400" />}
         loading={loading}
-        loadingMessage="Loading categories..."
+        loadingMessage="Loading brands..."
         className="max-w-full"
       />
     </div>

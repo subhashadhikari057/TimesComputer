@@ -241,7 +241,7 @@ export default function Sidebar({
                   className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
                     sidebarOpen
                       ? "opacity-100"
-                      : "opacity-0 group-hover:opacity-100"
+                      : " group-hover:opacity-100"
                   } transition-opacity duration-300`}
                 >
                   Menu
@@ -258,7 +258,7 @@ export default function Sidebar({
                     className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
                       sidebarOpen
                         ? "opacity-100"
-                        : "opacity-0 group-hover:opacity-100"
+                        : "group-hover:opacity-100"
                     } transition-opacity duration-300`}
                   >
                     Others

@@ -50,4 +50,38 @@ export const categoryService = {
       throw error;
     }
   },
+
+  // Update an existing category
+  updateCategory: async (id: number, data: CreateCategoryData): Promise<Category> => {
+    try {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      
+      
+        formData.append("image", data.image);
+
+        formData.append("icon", data.icon);
+
+      const response = await axios.put(`/category/update/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response.data.data;
+    } catch (error) {
+      console.error("Error updating category:", error);
+      throw error;
+    }
+  },
+
+  //delete Category
+  deleteCategory: async (id: number): Promise<void> => {
+    try {
+      await axios.delete(`/category/delete/${id}`);
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      throw error;
+    }
+  },
 };

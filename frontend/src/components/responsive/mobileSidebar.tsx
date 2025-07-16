@@ -48,7 +48,7 @@ const MobileSidebar: FC<MobileSidebarProps> = ({ isOpen, onClose, navLinks }) =>
         <div className="p-4 flex justify-end border-b border-primary">
           <button
             onClick={onClose}
-            className="text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+            className="text-primary focus:outline-none focus:ring-1 focus:ring-primary"
             aria-label="Close menu"
           >
             <svg

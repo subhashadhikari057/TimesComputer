@@ -33,7 +33,7 @@ const DefaultCheckbox: React.FC<DefaultCheckboxProps> = ({
           onChange={onChange}
           disabled={disabled}
           required={required}
-          className={`mt-0.5 w-4 h-4 rounded border focus:ring-2 focus:ring-offset-0 transition-all duration-200 disabled:cursor-not-allowed ${
+          className={`mt-0.5 w-4 h-4 rounded border focus:ring-1  transition-all duration-200 disabled:cursor-not-allowed ${
             error
               ? "border-red-300 text-red-600 focus:ring-red-500"
               : "border-gray-300 text-blue-600 focus:ring-blue-500 hover:border-gray-400"

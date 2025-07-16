@@ -1,4 +1,12 @@
-import { LayoutDashboard, Lock, Tags, Package } from "lucide-react";
+import {
+  LayoutDashboard,
+  Lock,
+  Tags,
+  Package,
+  Megaphone,
+  FileText,
+  Palette,
+} from "lucide-react";
 
 export interface MenuItem {
   id: string;
@@ -19,7 +27,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: "product",
-    label: "Product Management",
+    label: "Manage Products",
     icon: Package,
     hasSubmenu: true,
     subItems: [
@@ -29,41 +37,49 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: "attributes",
-    label: "Attributes Management",
-    icon: Tags,
+    label: "Manage Attributes",
+    icon: Palette,
     hasSubmenu: true,
     subItems: [
       { label: "Category", href: "/admin/attributes/category" },
-      { label: "Brands", href: "/admin/attributes/all-brands" },
-      { label: "Colors", href: "/admin/attributes/all-colors" },
-      { label: "Tags", href: "/admin/attributes/all-tags" },
+      { label: "Brands", href: "/admin/attributes/brand" },
+      { label: "Colors", href: "/admin/attributes/color" },
+      { label: "Tags", href: "/admin/attributes/tag" },
     ],
+  },
+  {
+    id: "ads",
+    label: "Manage Ads",
+    icon: Megaphone,
+    hasSubmenu: false,
+    href: "/admin/ads",
+  },
+  {
+    id: "blogs",
+    label: "Manage Blogs",
+    icon: FileText,
+    hasSubmenu: false,
+    href: "/admin/blogs",
   },
 ];
 
 export const otherMenuItems: MenuItem[] = [
+  
+  {
+    id: "user",
+    label: "Manage Users",
+    icon: Lock,
+    hasSubmenu: false,
+  },
   {
     id: "auth",
     label: "Authentication",
     icon: Lock,
     hasSubmenu: true,
+    subItems: [
+      { label: "Change Password", href: "/admin/auth/login" },
+      { label: "Log Out", href: "/admin/auth/register" },
+    ],
   },
-  {
-    id: "user",
-    label: "User Management",
-    icon: Lock,
-    hasSubmenu: true,
-  },
-  {
-    id: "ads",
-    label: "Ads Management",
-    icon: Lock,
-    hasSubmenu: true,
-  },
-  {
-    id: "blogs",
-    label: "Blogs Management",
-    icon: Lock,
-    hasSubmenu: true,
-  },
+ 
 ];
