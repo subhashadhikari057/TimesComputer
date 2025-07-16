@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
-import slugify from 'slugify';
 import {
-    // createProductService,
+    createProductService,
     deleteProductService,
     getAllProductsService,
     getProductByIdService,
@@ -11,7 +10,6 @@ import {
 } from '../services/product.service';
 import { CreateProductSchema, UpdateProductSchema } from '../validations/product.schema';
 import prisma from '../prisma/client';
-import { Prisma } from '@prisma/client';
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
@@ -41,6 +39,7 @@ export const getProductById = async (req: Request, res: Response) => {
     }
 };
 
+
 export const getProductBySlug = async (req: Request, res: Response) => {
     try {
         const { slug } = req.params;
@@ -60,55 +59,24 @@ export const getProductBySlug = async (req: Request, res: Response) => {
     }
 };
 
+
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const slug = slugify(req.body.name, { lower: true, strict: true });
-        const parsedData = CreateProductSchema.parse({
-            ...req.body,
-            price: parseFloat(req.body.price),
-            stock: parseInt(req.body.stock),
-            isPublished: req.body.isPublished === 'true',
-            brandId: req.body.brandId ? parseInt(req.body.brandId) : null,
-            categoryId: req.body.categoryId ? parseInt(req.body.categoryId) : null,
-            featureTagIds: req.body.featureTagIds ? JSON.parse(req.body.featureTagIds) : [],
-            marketingTagIds: req.body.marketingTagIds ? JSON.parse(req.body.marketingTagIds) : [],
-            colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : [],
-            specs: req.body.specs ? JSON.parse(req.body.specs) : null,
-            images: (req.files as Express.Multer.File[]).map(f => f.path),
-        });
-
-        const product = await createProductService({ ...parsedData, slug });
+        const data = CreateProductSchema.parse(req.body);
+        const product = await createProductService(data);
         res.status(201).json(product);
     } catch (error) {
         handleError(res, error);
     }
 };
 
-
-
-
 export const updateProduct = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
 
-        const parsedData = UpdateProductSchema.parse({
-            ...req.body,
-            price: req.body.price ? parseFloat(req.body.price) : undefined,
-            stock: req.body.stock ? parseInt(req.body.stock) : undefined,
-            isPublished: req.body.isPublished === 'true',
-            brandId: req.body.brandId ? parseInt(req.body.brandId) : undefined,
-            categoryId: req.body.categoryId ? parseInt(req.body.categoryId) : undefined,
-            featureTagIds: req.body.featureTagIds ? JSON.parse(req.body.featureTagIds) : undefined,
-            marketingTagIds: req.body.marketingTagIds ? JSON.parse(req.body.marketingTagIds) : undefined,
-            colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : undefined,
-            specs: req.body.specs ? JSON.parse(req.body.specs) : undefined,
-            images: req.files && Array.isArray(req.files)
-                ? (req.files as Express.Multer.File[]).map(f => f.path)
-                : undefined,
-        });
-
-        const product = await updateProductService(id, parsedData);
+        const data = UpdateProductSchema.parse(req.body);
+        const product = await updateProductService(id, data);
         res.status(200).json(product);
     } catch (error) {
         handleError(res, error);
@@ -127,6 +95,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     }
 };
 
+// --- Shared error handler ---
 const handleError = (res: Response, error: any) => {
     if (error instanceof ZodError) {
         return res.status(400).json({ message: 'Validation error', errors: error.errors });

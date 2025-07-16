@@ -134,3 +134,15 @@ model ProductColor {
 
   @@id([productId, colorId])
 }
+
+model AdBanner {
+  id     Int      @id @default(autoincrement())
+  images String[]
+}
+
+model Blog {
+  id      Int      @id @default(autoincrement())
+  title   String
+  content String
+  images  String[]
+}

@@ -4,11 +4,8 @@ import { authenticate, isAdmin } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
-router.route("/add").post(authenticate, isAdmin, addMarketingTag);
-router.route("/get").get(getAllMarketingTags);
-router.route("/get/:id").get(getMarketingTagById);
-router.route("/get/:id/products").get(getProductByMarketingTag);
-router.route("/update/:id").patch(authenticate, isAdmin, updateMarketingTag);
-router.route("/delete/:id").delete(authenticate, isAdmin, deleteMarketingTag);
+router.route("/:id/products").get(getProductByMarketingTag);
+router.route("/").get(getAllMarketingTags).post(authenticate, isAdmin, addMarketingTag)
+router.route("/:id").get(getMarketingTagById).patch(authenticate, isAdmin, updateMarketingTag).delete(authenticate, isAdmin, deleteMarketingTag);
 
 export default router;

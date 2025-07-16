@@ -41,8 +41,8 @@ export const addBrand = async (req: Request, res: Response) => {
 
 export const getAllBrands = async (_req: Request, res: Response) => {
     try {
-        const categories = await getAllBrandService();
-        res.status(200).json({ message: "Categories retrieved successfully.", data: categories });
+        const brand = await getAllBrandService();
+        res.status(200).json({ message: "Brand retrieved successfully.", data: brand });
     } catch (error: any) {
         res.status(500).json({ error: "Internal server error", details: error.message });
     }
