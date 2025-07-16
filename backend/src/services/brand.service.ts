@@ -1,8 +1,5 @@
-// services/Brand.service.ts
-
 import prisma from "../prisma/client";
 
-// Create a new Brand
 interface BrandInput {
     name: string,
     image: string,
@@ -24,33 +21,32 @@ export const addBrandService = async ({ name, image, icon }: BrandInput) => {
     return Brand;
 };
 
-// Get all categories
 export const getAllBrandService = async () => {
     return await prisma.brand.findMany();
 };
 
-// Get a Brand by ID
 export const getBrandByIdService = async (id: number) => {
     const Brand = await prisma.brand.findUnique({ where: { id } });
     if (!Brand) throw new Error("Brand not found.");
+
     return Brand;
 };
 
-// Update a Brand
 export const updateBrandService = async (id: number, updateData: { name?: string; image?: string; icon?: string }) => {
     const exist = await prisma.brand.findUnique({ where: { id } });
     if (!exist) throw new Error("Brand not found.");
+
     if (updateData.name) {
         const duplicate = await prisma.brand.findUnique({ where: { name: updateData.name } });
         if (duplicate && duplicate.id !== id) throw new Error("Brand name already exists.");
     }
+
     return await prisma.brand.update({
         where: { id },
         data: updateData,
     });
 };
 
-// Delete a Brand
 export const deleteBrandService = async (id: number) => {
     const exist = await prisma.brand.findUnique({ where: { id } });
     if (!exist) throw new Error("Brand not found.");
