@@ -1,6 +1,6 @@
 // components/ui/GenericDataTable.tsx
 import React from "react";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 // Generic Types
 export interface TableColumn<T> {
@@ -27,6 +27,14 @@ export interface TableHeader {
   headerActions?: React.ReactNode;
 }
 
+// Sort configuration
+export type SortDirection = "asc" | "desc" | null;
+
+export interface SortConfig {
+  column: string;
+  direction: SortDirection;
+}
+
 export interface GenericTableProps<T> {
   // Table header configuration
   header?: TableHeader;
@@ -45,6 +53,10 @@ export interface GenericTableProps<T> {
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   showActions?: boolean;
+
+  // Sorting functionality
+  sortConfig?: SortConfig;
+  onSort?: (columnId: string) => void;
 
   // Utility functions
   getItemId: (item: T) => string | number;
@@ -67,7 +79,7 @@ const Table: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
   className = "",
 }) => (
-  <div className="overflow-x-auto">
+  <div className="overflow-hidden rounded-lg">
     <table className={`w-full ${className}`}>{children}</table>
   </div>
 );
@@ -109,7 +121,7 @@ const TableCell: React.FC<{
 }> = ({ children, isHeader = false, className = "", style, width }) => {
   const Tag = isHeader ? "th" : "td";
   const baseClasses = isHeader
-    ? "text-left py-4 px-4 text-sm font-medium text-gray-700"
+    ? "text-left py-4 px-4 text-sm font-normal text-gray-400"
     : "py-4 px-4 text-sm text-gray-900";
 
   return (
@@ -119,8 +131,74 @@ const TableCell: React.FC<{
   );
 };
 
+// Sort Icon Component
+const SortIcon: React.FC<{
+  column: TableColumn<any>;
+  sortConfig?: SortConfig;
+  onSort?: (columnId: string) => void;
+}> = ({ column, sortConfig, onSort }) => {
+  if (!column.sortable || !onSort) return null;
+
+  const isActive = sortConfig?.column === column.id;
+  const direction = isActive ? sortConfig.direction : null;
+
+  const handleSort = () => {
+    onSort(column.id);
+  };
+
+  const getIcon = () => {
+    if (!isActive || direction === null) {
+      return <ChevronsUpDown className="w-4 h-4 text-gray-400" />;
+    }
+    
+    return direction === "asc" ? (
+      <ChevronUp className="w-4 h-4 text-gray-600" />
+    ) : (
+      <ChevronDown className="w-4 h-4 text-gray-600" />
+    );
+  };
+
+  return (
+    <button
+      onClick={handleSort}
+      className="ml-2 inline-flex items-center hover:text-gray-600 focus:outline-none"
+      title={`Sort by ${column.label}`}
+    >
+      {getIcon()}
+    </button>
+  );
+};
+
+// Sortable Header Cell Component
+const SortableHeaderCell: React.FC<{
+  column: TableColumn<any>;
+  sortConfig?: SortConfig;
+  onSort?: (columnId: string) => void;
+}> = ({ column, sortConfig, onSort }) => {
+  return (
+    <TableCell
+      isHeader
+      className={`${column.className} ${
+        column.sortable ? "select-none" : ""
+      }`}
+      width={column.width}
+    >
+      <div className="flex items-center justify-between">
+        <span className={column.sortable ? "cursor-pointer" : ""}>
+          {column.label}
+        </span>
+        <SortIcon
+          column={column}
+          sortConfig={sortConfig}
+          onSort={onSort}
+        />
+      </div>
+    </TableCell>
+  );
+};
+
 const DataTableHeader: React.FC<{ header: TableHeader }> = ({ header }) => (
-  <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
+  <div className="px-4 py-5 border-b border-gray-200 sm:px-6 rounded-t-lg bg-white">
     <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
       {/* Title + Description */}
       <div>
@@ -135,11 +213,6 @@ const DataTableHeader: React.FC<{ header: TableHeader }> = ({ header }) => (
           </p>
         )}
       </div>
-
-      {/* Actions */}
-      {header.headerActions && (
-        <div className="flex-shrink-0">{header.headerActions}</div>
-      )}
     </div>
   </div>
 );
@@ -247,6 +320,8 @@ export const GenericDataTable = <T,>({
   onEdit,
   onDelete,
   showActions = true,
+  sortConfig,
+  onSort,
   getItemId,
   emptyMessage = "No items found",
   emptyIcon,
@@ -263,108 +338,113 @@ export const GenericDataTable = <T,>({
     columns.length + (hasSelection ? 1 : 0) + (hasActions ? 1 : 0);
 
   return (
-    <div className={`bg-white shadow rounded-lg ${className}`}>
-      {/* Table Header */}
-      {header && <DataTableHeader header={header} />}
+    <div className={`bg-white border border-gray-300 rounded-lg hover:shadow-md transition-shadow overflow-hidden ${className}`}>
+      {/* Table Header - Only show title/description if present */}
+      {header && (header.title || header.description) && (
+        <DataTableHeader header={header} />
+      )}
+
+      {/* Header Actions Row - Now rendered as part of table structure */}
+      {header?.headerActions && (
+        <div className="px-6 py-6 bg-white border-b border-gray-200">
+          {header.headerActions}
+        </div>
+      )}
 
       {/* Table Content */}
-      <div>
-        <Table className={tableClassName}>
-          <TableHeader>
-            <TableHeaderRow>
-              {/* Selection Header */}
-              {hasSelection && (
-                <TableCell isHeader width="48px">
-                  <input
-                    type="checkbox"
-                    checked={
-                      selectedItems.length === data.length && data.length > 0
-                    }
-                    onChange={onSelectAll}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                </TableCell>
-              )}
-
-              {/* Dynamic Column Headers */}
-              {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  isHeader
-                  className={column.className}
-                  width={column.width}
-                >
-                  {column.label}
-                </TableCell>
-              ))}
-
-              {/* Actions Header */}
-              {hasActions && (
-                <TableCell isHeader className="text-right" width="120px">
-                  Actions
-                </TableCell>
-              )}
-            </TableHeaderRow>
-          </TableHeader>
-
-          <TableBody>
-            {loading ? (
-              <LoadingRow colSpan={totalColumns} message={loadingMessage} />
-            ) : data.length === 0 ? (
-              <EmptyRow
-                colSpan={totalColumns}
-                message={emptyMessage}
-                icon={emptyIcon}
-              />
-            ) : (
-              data.map((item) => {
-                const itemId = getItemId(item);
-                const isSelected = selectedItems.includes(itemId);
-
-                return (
-                  <TableRow key={itemId} isSelected={isSelected}>
-                    {/* Selection Checkbox */}
-                    {hasSelection && (
-                      <TableCell>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => onSelectItem(itemId)}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                      </TableCell>
-                    )}
-
-                    {/* Dynamic Columns */}
-                    {columns.map((column) => (
-                      <TableCell
-                        key={column.id}
-                        className={column.className}
-                        width={column.width}
-                      >
-                        {column.render(item)}
-                      </TableCell>
-                    ))}
-
-                    {/* Actions Column */}
-                    {hasActions && (
-                      <TableCell>
-                        <div className="flex items-center justify-end">
-                          <EditDeleteButtons
-                            onEdit={() => onEdit?.(item)}
-                            onDelete={() => onDelete?.(item)}
-                            size="md"
-                          />
-                        </div>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })
+      <Table className={tableClassName}>
+        <TableHeader>
+          <TableHeaderRow>
+            {/* Selection Header */}
+            {hasSelection && (
+              <TableCell isHeader width="48px">
+                <input
+                  type="checkbox"
+                  checked={
+                    selectedItems.length === data.length && data.length > 0
+                  }
+                  onChange={onSelectAll}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+              </TableCell>
             )}
-          </TableBody>
-        </Table>
-      </div>
+
+            {/* Dynamic Column Headers with Sort Icons */}
+            {columns.map((column) => (
+              <SortableHeaderCell
+                key={column.id}
+                column={column}
+                sortConfig={sortConfig}
+                onSort={onSort}
+              />
+            ))}
+
+            {/* Actions Header */}
+            {hasActions && (
+              <TableCell isHeader className="text-right" width="120px">
+                Actions
+              </TableCell>
+            )}
+          </TableHeaderRow>
+        </TableHeader>
+
+        <TableBody>
+          {loading ? (
+            <LoadingRow colSpan={totalColumns} message={loadingMessage} />
+          ) : data.length === 0 ? (
+            <EmptyRow
+              colSpan={totalColumns}
+              message={emptyMessage}
+              icon={emptyIcon}
+            />
+          ) : (
+            data.map((item) => {
+              const itemId = getItemId(item);
+              const isSelected = selectedItems.includes(itemId);
+
+              return (
+                <TableRow key={itemId} isSelected={isSelected}>
+                  {/* Selection Checkbox */}
+                  {hasSelection && (
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => onSelectItem(itemId)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                    </TableCell>
+                  )}
+
+                  {/* Dynamic Columns */}
+                  {columns.map((column) => (
+                    <TableCell
+                      key={column.id}
+                      className={column.className}
+                      width={column.width}
+                    >
+                      {column.render(item)}
+                    </TableCell>
+                  ))}
+
+                  {/* Actions Column */}
+                  {hasActions && (
+                    <TableCell>
+                      <div className="flex items-center justify-end">
+                        <EditDeleteButtons
+                          onEdit={() => onEdit?.(item)}
+                          onDelete={() => onDelete?.(item)}
+                          size="md"
+                        />
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 };

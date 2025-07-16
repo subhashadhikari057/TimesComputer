@@ -12,17 +12,17 @@ import {
   Plus,
   DollarSign,
   CheckCircle,
-  Edit3,
-  Copy,
   Eye,
   Download,
+  Search,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import { FilterComponent, FilterConfig } from "@/components/admin/product/filter";
+import FilterComponent, { FilterConfig } from "@/components/admin/product/filter";
 import { useFilters } from "@/hooks/useFilter";
+import { useSort, createSortableColumn } from "@/hooks/useSort";
 
-// Product interface (same as before)
+// Product interface
 interface Product {
   id: number;
   name: string;
@@ -38,7 +38,7 @@ interface Product {
   status: string;
 }
 
-// Mock data (same as before)
+// Mock data
 const mockProducts: Product[] = [
   {
     id: 1,
@@ -112,6 +112,50 @@ const mockProducts: Product[] = [
   },
 ];
 
+// Define sortable columns for products
+const productSortableColumns = {
+  product: createSortableColumn(
+    'product',
+    (product: Product) => product.name,
+    'string'
+  ),
+  category: createSortableColumn(
+    'category',
+    (product: Product) => product.category,
+    'string'
+  ),
+  brand: createSortableColumn(
+    'brand',
+    (product: Product) => product.brand,
+    'string'
+  ),
+  price: createSortableColumn(
+    'price',
+    (product: Product) => product.price,
+    'number'
+  ),
+  stock: createSortableColumn(
+    'stock',
+    (product: Product) => product.stock,
+    'number'
+  ),
+  status: createSortableColumn(
+    'status',
+    (product: Product) => product.isPublished,
+    'boolean'
+  ),
+  created: createSortableColumn(
+    'created',
+    (product: Product) => product.createdAt,
+    'date'
+  ),
+  updated: createSortableColumn(
+    'updated',
+    (product: Product) => product.updatedAt,
+    'date'
+  ),
+};
+
 // Main Component
 export default function ViewProductsPage() {
   const router = useRouter();
@@ -120,27 +164,69 @@ export default function ViewProductsPage() {
 
   // Initialize filters using the custom hook
   const { filters, updateFilter, resetFilters } = useFilters({
-    search: '',
-    category: 'all',
-    brand: 'all',
-    status: 'all',
-    sort: 'name'
+    initialFilters: {
+      search: '',
+      category: 'all',
+      brand: 'all',
+      status: 'all',
+      priceRange: 'all',
+    }
   });
 
-  // Filter configuration
-  const filterConfig: FilterConfig[] = [
-    {
-      key: 'search',
-      label: 'Search Products',
-      type: 'search',
-      placeholder: 'Search by product name...',
-      width: 'lg'
-    },
+  // Filter products first
+  const filteredProducts = mockProducts.filter((product) => {
+    const searchTerm = filters.search as string;
+    const filterCategory = filters.category as string;
+    const filterBrand = filters.brand as string;
+    const filterStatus = filters.status as string;
+    const filterPriceRange = filters.priceRange as string;
+
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      filterCategory === "all" || product.category === filterCategory;
+    const matchesBrand =
+      filterBrand === "all" || product.brand === filterBrand;
+    const matchesStatus =
+      filterStatus === "all" || product.status === filterStatus;
+    
+    let matchesPriceRange = true;
+    if (filterPriceRange !== 'all') {
+      const price = product.price;
+      switch (filterPriceRange) {
+        case '0-500':
+          matchesPriceRange = price >= 0 && price <= 500;
+          break;
+        case '500-1000':
+          matchesPriceRange = price > 500 && price <= 1000;
+          break;
+        case '1000-2000':
+          matchesPriceRange = price > 1000 && price <= 2000;
+          break;
+        case '2000+':
+          matchesPriceRange = price > 2000;
+          break;
+      }
+    }
+    
+    return matchesSearch && matchesCategory && matchesBrand && matchesStatus && matchesPriceRange;
+  });
+
+  // Use the sorting hook with initial sort by name
+  const { sortedData: sortedProducts, sortConfig, handleSort } = useSort(
+    filteredProducts,
+    productSortableColumns,
+    { column: 'product', direction: 'asc' }
+  );
+
+  // Filter configuration for the reusable filter component
+  const filterConfigs: FilterConfig[] = [
     {
       key: 'category',
       label: 'Category',
-      type: 'select',
-      width: 'md',
+      type: 'radio',
+      gridSpan: 2,
       options: [
         { value: 'all', label: 'All Categories' },
         { value: 'Laptops', label: 'Laptops' },
@@ -152,7 +238,7 @@ export default function ViewProductsPage() {
       key: 'brand',
       label: 'Brand',
       type: 'select',
-      width: 'md',
+      gridSpan: 1,
       options: [
         { value: 'all', label: 'All Brands' },
         { value: 'Apple', label: 'Apple' },
@@ -165,7 +251,7 @@ export default function ViewProductsPage() {
       key: 'status',
       label: 'Status',
       type: 'select',
-      width: 'md',
+      gridSpan: 1,
       options: [
         { value: 'all', label: 'All Status' },
         { value: 'active', label: 'Active' },
@@ -174,54 +260,19 @@ export default function ViewProductsPage() {
       ]
     },
     {
-      key: 'sort',
-      label: 'Sort By',
+      key: 'priceRange',
+      label: 'Price Range',
       type: 'select',
-      width: 'md',
+      gridSpan: 2,
       options: [
-        { value: 'name', label: 'Sort by Name' },
-        { value: 'price', label: 'Sort by Price' },
-        { value: 'stock', label: 'Sort by Stock' },
-        { value: 'created', label: 'Sort by Date Created' }
+        { value: 'all', label: 'All Prices' },
+        { value: '0-500', label: '$0 - $500' },
+        { value: '500-1000', label: '$500 - $1000' },
+        { value: '1000-2000', label: '$1000 - $2000' },
+        { value: '2000+', label: '$2000+' }
       ]
     }
   ];
-
-  // Filter and sort products
-  const filteredProducts = mockProducts
-    .filter((product) => {
-      const searchTerm = filters.search as string;
-      const filterCategory = filters.category as string;
-      const filterBrand = filters.brand as string;
-      const filterStatus = filters.status as string;
-
-      const matchesSearch = product.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        filterCategory === "all" || product.category === filterCategory;
-      const matchesBrand =
-        filterBrand === "all" || product.brand === filterBrand;
-      const matchesStatus =
-        filterStatus === "all" || product.status === filterStatus;
-      
-      return matchesSearch && matchesCategory && matchesBrand && matchesStatus;
-    })
-    .sort((a, b) => {
-      const sortBy = filters.sort as string;
-      switch (sortBy) {
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "price":
-          return a.price - b.price;
-        case "stock":
-          return b.stock - a.stock;
-        case "created":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        default:
-          return 0;
-      }
-    });
 
   // Calculate statistics
   const publishedCount = mockProducts.filter((p) => p.isPublished).length;
@@ -230,9 +281,9 @@ export default function ViewProductsPage() {
   // Event handlers
   const handleSelectAll = () => {
     setSelectedProducts(
-      selectedProducts.length === filteredProducts.length
+      selectedProducts.length === sortedProducts.length
         ? []
-        : filteredProducts.map((p) => p.id)
+        : sortedProducts.map((p) => p.id)
     );
   };
 
@@ -259,16 +310,6 @@ export default function ViewProductsPage() {
     // TODO: Implement bulk delete functionality
   };
 
-  const handleDuplicate = (productId: number) => {
-    console.log("Duplicate product:", productId);
-    // TODO: Implement duplicate functionality
-  };
-
-  const handleToggleStatus = (productId: number) => {
-    console.log("Toggle product status:", productId);
-    // TODO: Implement toggle status functionality
-  };
-
   const handleExport = () => {
     console.log("Export products");
     // TODO: Implement export functionality
@@ -278,44 +319,62 @@ export default function ViewProductsPage() {
     router.push("/admin/product/create");
   };
 
-// Table configuration
-const tableHeader: TableHeader = {
-  title: `Products (${filteredProducts.length})`,
-  description: "Manage your product catalog with advanced controls",
-  headerActions: (
-    <div className="flex items-center space-x-2 sm:space-x-2">
-      {selectedProducts.length > 0 && (
-        <button
-          onClick={handleBulkDelete}
-          className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
-          Delete ({selectedProducts.length})
-        </button>
-      )}
-      <button
-        onClick={handleExport}
-        className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-      >
-        <Download className="h-4 w-4 mr-1" />
-        Export
-      </button>
-      <button
-        onClick={handleAddProduct}
-        className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-      >
-        <Plus className="h-4 w-4 mr-1" />
-        Add Product
-      </button>
-    </div>
-  ),
-};
+  // Table configuration
+  const tableHeader: TableHeader = {
+    headerActions: (
+      <div className="flex items-center justify-between">
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search by product name..."
+            value={(filters.search as string) || ""}
+            onChange={(e) => updateFilter('search', e.target.value)}
+            className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300"
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-2">
+          {selectedProducts.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete ({selectedProducts.length})
+            </button>
+          )}
+          <button
+            onClick={handleExport}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Export
+          </button>
+          
+          {/* Reusable Filter Component */}
+          <FilterComponent
+            filters={filters}
+            filterConfigs={filterConfigs}
+            onFilterChange={updateFilter}
+            onResetFilters={resetFilters}
+            buttonText="Filters"
+            dropdownWidth="w-96"
+            dropdownPosition="right"
+          />
+        </div>
+      </div>
+    ),
+  };
 
   const columns: TableColumn<Product>[] = [
     {
       id: "product",
       label: "Product",
       width: "300px",
+      sortable: true,
       render: (product) => (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
@@ -334,6 +393,7 @@ const tableHeader: TableHeader = {
       id: "category",
       label: "Category",
       width: "120px",
+      sortable: true,
       render: (product) => (
         <div className="text-sm text-gray-900">{product.category}</div>
       ),
@@ -342,6 +402,7 @@ const tableHeader: TableHeader = {
       id: "brand",
       label: "Brand",
       width: "100px",
+      sortable: true,
       render: (product) => (
         <div className="text-sm font-medium text-gray-900">{product.brand}</div>
       ),
@@ -350,6 +411,7 @@ const tableHeader: TableHeader = {
       id: "price",
       label: "Price",
       width: "100px",
+      sortable: true,
       render: (product) => (
         <div className="text-sm font-semibold text-gray-900">
           ${product.price.toFixed(2)}
@@ -360,6 +422,7 @@ const tableHeader: TableHeader = {
       id: "stock",
       label: "Stock",
       width: "100px",
+      sortable: true,
       render: (product) => (
         <div className={`text-sm font-medium ${
           product.stock === 0 
@@ -376,6 +439,7 @@ const tableHeader: TableHeader = {
       id: "status",
       label: "Status",
       width: "120px",
+      sortable: true,
       render: (product) => (
         <span
           className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
@@ -404,11 +468,20 @@ const tableHeader: TableHeader = {
     <div className="p-6 space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Products</h1>
           <p className="text-gray-600">
             Manage your product inventory and catalog
           </p>
+        </div>
+        <div className="mt-4 sm:mt-0">
+          <button
+            onClick={handleAddProduct}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Product
+          </button>
         </div>
       </div>
 
@@ -437,20 +510,10 @@ const tableHeader: TableHeader = {
         />
       </div>
 
-      {/* Reusable Filter Component */}
-      <FilterComponent
-        title="Filters & Search"
-        description="Find and filter products"
-        filters={filterConfig}
-        values={filters}
-        onChange={updateFilter}
-        onReset={resetFilters}
-      />
-
       {/* Products Table */}
       <GenericDataTable
         header={tableHeader}
-        data={filteredProducts}
+        data={sortedProducts}
         columns={columns}
         selectedItems={selectedProducts}
         onSelectItem={(id) => handleSelectProduct(id as number)}
@@ -464,6 +527,8 @@ const tableHeader: TableHeader = {
         emptyIcon={<Package className="w-12 h-12 text-gray-400" />}
         loading={loading}
         loadingMessage="Loading products..."
+        sortConfig={sortConfig}
+        onSort={handleSort}
         className="max-w-full"
       />
     </div>

@@ -1,31 +1,32 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Plus,
-  Award,
-  Calendar,
-  Package,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  ImageIcon,
-  TrendingUp,
-  Download,
-} from "lucide-react";
-import Link from "next/link";
-import { toast } from "sonner";
 import {
   GenericDataTable,
   TableColumn,
   TableHeader,
 } from "@/components/form/table/table";
-import { FilterComponent, FilterConfig } from "@/components/admin/product/filter";
-import { useFilters } from "@/hooks/useFilter";
+import {
+  Package,
+  Trash2,
+  Plus,
+  Award,
+  CheckCircle,
+  XCircle,
+  ImageIcon,
+  Calendar,
+  Download,
+  Search,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
+import FilterComponent, {
+  FilterConfig,
+} from "@/components/admin/product/filter";
+import { useFilters } from "@/hooks/useFilter";
+import { useSort, createSortableColumn } from "@/hooks/useSort";
+import { toast } from "sonner";
 import AddDetailsPopup from "@/components/common/popup";
-import { brandService } from "@/services/brandService";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
 import IconUpload from "@/components/admin/product/iconUpload";
@@ -148,6 +149,35 @@ const mockBrands: Brand[] = [
   },
 ];
 
+// Define sortable columns for brands
+const brandSortableColumns = {
+  brand: createSortableColumn(
+    'brand',
+    (brand: Brand) => brand.name,
+    'string'
+  ),
+  products: createSortableColumn(
+    'products',
+    (brand: Brand) => brand.productCount,
+    'number'
+  ),
+  status: createSortableColumn(
+    'status',
+    (brand: Brand) => brand.isActive,
+    'boolean'
+  ),
+  created: createSortableColumn(
+    'created',
+    (brand: Brand) => brand.createdAt,
+    'date'
+  ),
+  updated: createSortableColumn(
+    'updated',
+    (brand: Brand) => brand.updatedAt,
+    'date'
+  ),
+};
+
 // Main Component
 export default function BrandManagementPage() {
   const router = useRouter();
@@ -162,105 +192,82 @@ export default function BrandManagementPage() {
 
   // Initialize filters using the custom hook
   const { filters, updateFilter, resetFilters } = useFilters({
-    search: '',
-    status: 'all',
-    sortBy: 'name',
-    productCount: 'all'
+    initialFilters: {
+      search: "",
+      status: "all",
+      productCount: "all",
+    },
   });
 
-  // Filter configuration
-  const filterConfig: FilterConfig[] = [
-    {
-      key: 'search',
-      label: 'Search Brands',
-      type: 'search',
-      placeholder: 'Search by brand name or description...',
-      width: 'lg'
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select',
-      width: 'md',
-      options: [
-        { value: 'all', label: 'All Status' },
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' }
-      ]
-    },
-    {
-      key: 'productCount',
-      label: 'Product Count',
-      type: 'select',
-      width: 'md',
-      options: [
-        { value: 'all', label: 'All Brands' },
-        { value: 'high', label: 'High (50+)' },
-        { value: 'medium', label: 'Medium (10-49)' },
-        { value: 'low', label: 'Low (1-9)' },
-        { value: 'empty', label: 'Empty (0)' }
-      ]
-    },
-    {
-      key: 'sortBy',
-      label: 'Sort By',
-      type: 'select',
-      width: 'md',
-      options: [
-        { value: 'name', label: 'Sort by Name' },
-        { value: 'products', label: 'Sort by Product Count' },
-        { value: 'created', label: 'Sort by Date Created' },
-        { value: 'updated', label: 'Sort by Last Updated' }
-      ]
-    }
-  ];
+  // Filter brands first
+  const filteredBrands = mockBrands.filter((brand) => {
+    const searchTerm = filters.search as string;
+    const filterStatus = filters.status as string;
+    const filterProductCount = filters.productCount as string;
 
-  // Filter and sort brands
-  const filteredBrands = mockBrands
-    .filter((brand) => {
-      const searchTerm = filters.search as string;
-      const filterStatus = filters.status as string;
-      const filterProductCount = filters.productCount as string;
+    const matchesSearch =
+      brand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      brand.description.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesSearch = brand.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-        brand.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus =
-        filterStatus === "all" ||
-        (filterStatus === "active" && brand.isActive) ||
-        (filterStatus === "inactive" && !brand.isActive);
-      
-      const matchesProductCount = (() => {
-        if (filterProductCount === "all") return true;
-        const count = brand.productCount;
-        switch (filterProductCount) {
-          case "high": return count >= 50;
-          case "medium": return count >= 10 && count <= 49;
-          case "low": return count >= 1 && count <= 9;
-          case "empty": return count === 0;
-          default: return true;
-        }
-      })();
+    const matchesStatus =
+      filterStatus === "all" ||
+      (filterStatus === "active" && brand.isActive) ||
+      (filterStatus === "inactive" && !brand.isActive);
 
-      return matchesSearch && matchesStatus && matchesProductCount;
-    })
-    .sort((a, b) => {
-      const sortBy = filters.sortBy as string;
-      switch (sortBy) {
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "products":
-          return b.productCount - a.productCount;
-        case "created":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case "updated":
-          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    const matchesProductCount = (() => {
+      if (filterProductCount === "all") return true;
+      const count = brand.productCount;
+      switch (filterProductCount) {
+        case "high":
+          return count >= 50;
+        case "medium":
+          return count >= 10 && count <= 49;
+        case "low":
+          return count >= 1 && count <= 9;
+        case "empty":
+          return count === 0;
         default:
-          return 0;
+          return true;
       }
-    });
+    })();
+
+    return matchesSearch && matchesStatus && matchesProductCount;
+  });
+
+  // Use the sorting hook with initial sort by name
+  const { sortedData: sortedBrands, sortConfig, handleSort } = useSort(
+    filteredBrands,
+    brandSortableColumns,
+    { column: 'brand', direction: 'asc' }
+  );
+
+  // Filter configuration for the reusable filter component
+  const filterConfigs: FilterConfig[] = [
+    {
+      key: "status",
+      label: "Status",
+      type: "radio",
+      gridSpan: 2,
+      options: [
+        { value: "all", label: "All Status" },
+        { value: "active", label: "Active" },
+        { value: "inactive", label: "Inactive" },
+      ],
+    },
+    {
+      key: "productCount",
+      label: "Product Count",
+      type: "select",
+      gridSpan: 2,
+      options: [
+        { value: "all", label: "All Brands" },
+        { value: "high", label: "High (50+)" },
+        { value: "medium", label: "Medium (10-49)" },
+        { value: "low", label: "Low (1-9)" },
+        { value: "empty", label: "Empty (0)" },
+      ],
+    },
+  ];
 
   // Calculate statistics
   const activeCount = mockBrands.filter((b) => b.isActive).length;
@@ -270,9 +277,9 @@ export default function BrandManagementPage() {
   // Event handlers
   const handleSelectAll = () => {
     setSelectedBrands(
-      selectedBrands.length === filteredBrands.length
+      selectedBrands.length === sortedBrands.length
         ? []
-        : filteredBrands.map((b) => b.id)
+        : sortedBrands.map((b) => b.id)
     );
   };
 
@@ -332,13 +339,23 @@ export default function BrandManagementPage() {
       setLoading(true);
       setError(null);
 
-      const newBrand = await brandService.createBrand({
+      // TODO: Implement actual API call
+      console.log("Creating brand with:", {
         name: form.name,
-        image: form.image!,
-        icon: form.icon!,
+        image: form.image,
+        icon: form.icon,
       });
 
-      // Create a full brand object with all required properties
+      // Mock successful creation
+      const newBrand = {
+        id: Date.now(),
+        name: form.name,
+        image: form.imagePreview,
+        icon: form.iconPreview,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
       const fullBrand: Brand = {
         id: newBrand.id,
         name: newBrand.name,
@@ -391,33 +408,50 @@ export default function BrandManagementPage() {
 
   // Table configuration
   const tableHeader: TableHeader = {
-    title: `Brands (${filteredBrands.length})`,
-    description: "Manage your product brands with advanced controls",
     headerActions: (
-      <div className="flex items-center space-x-2">
-        {selectedBrands.length > 0 && (
+      <div className="flex items-center justify-between">
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Search brands..."
+            value={(filters.search as string) || ""}
+            onChange={(e) => updateFilter("search", e.target.value)}
+            className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300"
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-2">
+          {selectedBrands.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete ({selectedBrands.length})
+            </button>
+          )}
           <button
-            onClick={handleBulkDelete}
-            className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
+            onClick={handleExport}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete ({selectedBrands.length})
+            <Download className="h-4 w-4 mr-1" />
+            Export
           </button>
-        )}
-        <button
-          onClick={handleExport}
-          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <Download className="h-4 w-4 mr-1" />
-          Export
-        </button>
-        <button
-          onClick={handleAddBrand}
-          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Brand
-        </button>
+
+          {/* Reusable Filter Component */}
+          <FilterComponent
+            filters={filters}
+            filterConfigs={filterConfigs}
+            onFilterChange={updateFilter}
+            onResetFilters={resetFilters}
+            buttonText="Filters"
+            dropdownWidth="w-96"
+            dropdownPosition="right"
+          />
+        </div>
       </div>
     ),
   };
@@ -427,6 +461,7 @@ export default function BrandManagementPage() {
       id: "brand",
       label: "Brand",
       width: "300px",
+      sortable: true,
       render: (brand) => (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
@@ -447,16 +482,19 @@ export default function BrandManagementPage() {
       id: "products",
       label: "Products",
       width: "120px",
+      sortable: true,
       render: (brand) => (
         <div className="flex items-center space-x-2">
           <Package className="w-4 h-4 text-gray-400" />
-          <span className={`text-sm font-medium ${
-            brand.productCount === 0 
-              ? 'text-red-600' 
-              : brand.productCount < 10 
-                ? 'text-yellow-600' 
-                : 'text-gray-900'
-          }`}>
+          <span
+            className={`text-sm font-medium ${
+              brand.productCount === 0
+                ? "text-red-600"
+                : brand.productCount < 10
+                ? "text-yellow-600"
+                : "text-gray-900"
+            }`}
+          >
             {brand.productCount}
           </span>
         </div>
@@ -466,12 +504,11 @@ export default function BrandManagementPage() {
       id: "image",
       label: "Image",
       width: "120px",
+      sortable: false,
       render: (brand) => (
         <div className="flex items-center space-x-2">
           <ImageIcon className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-600">
-            Available
-          </span>
+          <span className="text-sm text-gray-600">Available</span>
         </div>
       ),
     },
@@ -479,6 +516,7 @@ export default function BrandManagementPage() {
       id: "status",
       label: "Status",
       width: "120px",
+      sortable: true,
       render: (brand) => (
         <span
           className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
@@ -505,6 +543,7 @@ export default function BrandManagementPage() {
       id: "created",
       label: "Created",
       width: "120px",
+      sortable: true,
       render: (brand) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
@@ -518,11 +557,20 @@ export default function BrandManagementPage() {
     <div className="p-6 space-y-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Brands</h1>
           <p className="text-gray-600">
             Manage your product brands and organize your catalog
           </p>
+        </div>
+        <div className="mt-4 sm:mt-0">
+          <button
+            onClick={handleAddBrand}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Brand
+          </button>
         </div>
       </div>
 
@@ -607,7 +655,9 @@ export default function BrandManagementPage() {
         <StatCard
           title="Active Brands"
           value={activeCount.toString()}
-          change={`${Math.round((activeCount / mockBrands.length) * 100)}% active`}
+          change={`${Math.round(
+            (activeCount / mockBrands.length) * 100
+          )}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
@@ -620,21 +670,10 @@ export default function BrandManagementPage() {
         />
       </div>
 
-      {/* Reusable Filter Component */}
-      <FilterComponent
-        title="Filters & Search"
-        description="Find and filter brands"
-        filters={filterConfig}
-        values={filters}
-        onChange={updateFilter}
-        onReset={resetFilters}
-        
-      />
-
       {/* Brands Table */}
       <GenericDataTable
         header={tableHeader}
-        data={filteredBrands}
+        data={sortedBrands}
         columns={columns}
         selectedItems={selectedBrands}
         onSelectItem={(id) => handleSelectBrand(id as number)}
@@ -648,6 +687,8 @@ export default function BrandManagementPage() {
         emptyIcon={<Award className="w-12 h-12 text-gray-400" />}
         loading={loading}
         loadingMessage="Loading brands..."
+        sortConfig={sortConfig}
+        onSort={handleSort}
         className="max-w-full"
       />
     </div>
