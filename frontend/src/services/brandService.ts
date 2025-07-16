@@ -10,7 +10,8 @@ export interface Brand {
 
 export interface CreateBrandData {
   name: string;
-  images: File[];
+  image: File;
+  icon: File;
 }
 
 export const brandService = {
@@ -30,11 +31,12 @@ export const brandService = {
     try {
       const formData = new FormData();
       formData.append("name", data.name);
-      
-      // Append all images
-      data.images.forEach((image) => {
-        formData.append("images", image);
-      });
+
+      // Append image file
+      formData.append("image", data.image);
+
+      // Append icon file
+      formData.append("icon", data.icon);
 
       const response = await axios.post("/brand/add", formData, {
         headers: {

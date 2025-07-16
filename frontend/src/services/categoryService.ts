@@ -1,4 +1,5 @@
 import axios from "@/lib/axiosInstance";
+import { toast } from "sonner";
 
 export interface Category {
   id: number;
@@ -10,7 +11,8 @@ export interface Category {
 
 export interface CreateCategoryData {
   name: string;
-  images: File[];
+  image: File;
+  icon: File;
 }
 
 export const categoryService = {
@@ -18,7 +20,10 @@ export const categoryService = {
   getAllCategories: async (): Promise<Category[]> => {
     try {
       const response = await axios.get("/category/get");
-      return response.data.data || [];
+
+      const data = await response.data.data;
+      console.log("Fetched categories:", data);
+      return data;
     } catch (error) {
       console.error("Error fetching categories:", error);
       throw error;
@@ -30,11 +35,12 @@ export const categoryService = {
     try {
       const formData = new FormData();
       formData.append("name", data.name);
-      
+
       // Append all images
-      data.images.forEach((image) => {
-        formData.append("images", image);
-      });
+      formData.append("image", data.image);
+
+      // Append all Icon
+      formData.append("icon", data.icon);
 
       const response = await axios.post("/category/add", formData, {
         headers: {
@@ -42,10 +48,12 @@ export const categoryService = {
         },
       });
 
+      toast.success("Category created successfully!");
+
       return response.data.data;
     } catch (error) {
-      console.error("Error creating category:", error);
-      throw error;
+      toast.error("Error creating category");
+      throw error; // Ensure the error is propagated
     }
   },
 };
