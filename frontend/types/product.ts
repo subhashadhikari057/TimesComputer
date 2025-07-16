@@ -1,12 +1,23 @@
-export interface Product {
-    category: string | undefined;
-    tag: string | undefined;
-    id: number;
-    image: string;
-    rating: number;
-    reviews: number;
-    title: string;
-    price: string;
-    currency: string;
-    brand: string;
-}
+type Product = {
+    category?: string,
+    tag?: string ,
+    id?: number,
+    images?: string[],
+    rating?: number,
+    reviews?: number,
+    title?: string,
+    price?: number,
+    currency?: string,
+    brand?: string,
+    name?:string,
+    slug?:string,
+    stock?:number,
+    description?:string,
+    isPublished?:boolean,
+    brochure?:string,
+    specs?:JSON,
+    views?:number,
+    featureTags?:string[],
+    marketingTags?:string[],
+    colors?:string[]
+};

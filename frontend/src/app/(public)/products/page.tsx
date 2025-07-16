@@ -1,13 +1,14 @@
 import { use } from 'react';
-import { getAllProducts } from '@/lib/getproducts';
-import SortSelect from '@/components/sortselect';
-import ProductCard from '@/components/products/productcard';
-import FilterSidebar from '@/components/sidebar/sidebar';
+// import { getAllProducts } from '@/lib/getproducts';
+// import SortSelect from '@/components/sortselect';
+// import ProductCard from '@/components/products/productcard';
+// import FilterSidebar from '@/components/sidebar/sidebar';
 import ProductsClientPage from './products-client';
 
 interface AllProductsPageProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
+
 
 export default function AllProductsPage({ searchParams }: AllProductsPageProps) {
   // Properly unwrap searchParams
@@ -21,3 +22,4 @@ export default function AllProductsPage({ searchParams }: AllProductsPageProps) 
   // Pass the unwrapped params to the client component
   return <ProductsClientPage initialSort={sort} initialPage={page} searchParams={unwrappedParams} />;
 }
+ 
