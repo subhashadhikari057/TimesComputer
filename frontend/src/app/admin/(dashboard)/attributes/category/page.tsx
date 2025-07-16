@@ -15,6 +15,7 @@ import {
   Calendar,
   TrendingUp,
   Clock,
+  DollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ import {
   TableColumn,
   TableAction,
 } from "@/components/form/table/table";
+import StatCard from "@/components/admin/dashboard/Statcards";
 
 // Type definitions
 interface Category {
@@ -363,6 +365,37 @@ export default function CategoryManagementPage() {
         </div>
       </div>
 
+
+
+      {/* Statistics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <StatCard
+                title="Total Categories"
+                value={mockCategories.length.toString()}
+                change="+12% from last month"
+                Icon={Package}
+                color="text-blue-600"
+              />
+                <StatCard
+                title="Total Categories"
+                value={mockCategories.length.toString()}
+                change="+12% from last month"
+                Icon={Package}
+                color="text-blue-600"
+              />
+                <StatCard
+                title="Total Categories"
+                value={mockCategories.length.toString()}
+                change="+12% from last month"
+                Icon={Package}
+                color="text-blue-600"
+              />
+             
+            </div>
+
+
+
+
       {/* Enhanced Filters */}
       <ComponentCard title="Filters & Search" desc="Find and filter categories">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -448,92 +481,15 @@ export default function CategoryManagementPage() {
         )}
       </ComponentCard>
 
-      {/* Enhanced Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <ComponentCard
-          title="Total Categories"
-          desc="All categories in system"
-          className="hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-3xl font-bold text-gray-900">
-                {mockCategories.length}
-              </p>
-              <p className="text-sm text-green-600 mt-1">+2 new this month</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Tag className="w-8 h-8 text-purple-600" />
-            </div>
-          </div>
-        </ComponentCard>
 
-        <ComponentCard
-          title="Active Categories"
-          desc="Currently active"
-          className="hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-3xl font-bold text-gray-900">
-                {mockCategories.filter((c) => c.isActive).length}
-              </p>
-              <p className="text-sm text-green-600 mt-1">
-                {Math.round(
-                  (mockCategories.filter((c) => c.isActive).length /
-                    mockCategories.length) *
-                    100
-                )}
-                % active
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-          </div>
-        </ComponentCard>
 
-        <ComponentCard
-          title="Total Products"
-          desc="Across all categories"
-          className="hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-3xl font-bold text-gray-900">
-                {mockCategories.reduce((sum, c) => sum + c.productCount, 0)}
-              </p>
-              <p className="text-sm text-green-600 mt-1">Products catalogued</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <Package className="w-8 h-8 text-blue-600" />
-            </div>
-          </div>
-        </ComponentCard>
 
-        <ComponentCard
-          title="Avg Products"
-          desc="Per category"
-          className="hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-3xl font-bold text-gray-900">
-                {Math.round(
-                  mockCategories.reduce((sum, c) => sum + c.productCount, 0) /
-                    mockCategories.length
-                )}
-              </p>
-              <p className="text-sm text-green-600 mt-1">
-                Average distribution
-              </p>
-            </div>
-            <div className="p-3 bg-orange-100 rounded-full">
-              <TrendingUp className="w-8 h-8 text-orange-600" />
-            </div>
-          </div>
-        </ComponentCard>
-      </div>
+      
+
+
+
+
+
     </div>
   );
 }
