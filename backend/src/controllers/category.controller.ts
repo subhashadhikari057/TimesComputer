@@ -40,7 +40,7 @@ export const addCategory = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllCategorys = async (_req: Request, res: Response) => {
+export const getAllCategory = async (_req: Request, res: Response) => {
   try {
     const categories = await getAllCategoryService();
     res.status(200).json({ message: "Categories retrieved successfully.", data: categories });
