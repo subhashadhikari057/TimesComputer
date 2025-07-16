@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getAllProducts } from '@/lib/getproducts';
 import SortSelect from '@/components/sortselect';
@@ -28,6 +28,21 @@ function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
+// Brand name mapping to handle special cases
+function getBrandName(slug: string): string {
+  const brandMapping: { [key: string]: string } = {
+    'hp': 'HP',
+    'asus': 'ASUS', 
+    'dell': 'Dell',
+    'apple': 'Apple',
+    'lenovo': 'Lenovo',
+    'acer': 'Acer',
+    'microsoft': 'Microsoft',
+  };
+  
+  return brandMapping[slug.toLowerCase()] || capitalize(slug);
+}
+
 export default function BrandPage({ params }: BrandPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -36,17 +51,63 @@ export default function BrandPage({ params }: BrandPageProps) {
   const [appliedFilters, setAppliedFilters] = useState<any>({});
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const [pendingFilters, setPendingFilters] = useState<any>(null);
 
   const resolvedParams = React.use(params);
   const brand = resolvedParams.brandSlug;
+  
+  // Get proper brand name (handles HP, ASUS, etc.)
+  const properBrandName = getBrandName(brand);
+  
   const sort = searchParams.get('sort') || undefined;
   const page = parseInt(searchParams.get('page') || '1');
 
+  // Get initial filters from URL params (ADDED - was missing)
+  useEffect(() => {
+    const initialFilters: any = {};
+    searchParams.forEach((value, key) => {
+      if (key !== 'sort' && key !== 'page') {
+        if (key === 'minPrice' || key === 'maxPrice') {
+          initialFilters.priceRange = initialFilters.priceRange || {};
+          initialFilters.priceRange[key === 'minPrice' ? 'min' : 'max'] = parseInt(value);
+        } else {
+          initialFilters[key] = value.split(',');
+        }
+      }
+    });
+    setAppliedFilters(initialFilters);
+  }, [searchParams]);
+
+  // Fetch products when filters, sort, or page changes (FIXED)
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const fetchedProducts = await getAllProducts(sort || 'featured', page, appliedFilters);
+        console.log('Fetching products for brand:', properBrandName); // Debug log
+        console.log('Applied filters:', appliedFilters); // Debug log
+        
+        // Create filters object like category page does
+        const filters: any = {
+          brands: [properBrandName] // Use proper brand name (HP, ASUS, etc.)
+        };
+        
+        // Handle price range
+        if (appliedFilters.priceRange) {
+          filters.priceRange = appliedFilters.priceRange;
+        }
+
+        // Handle other filters
+        ['type', 'processor', 'memory', 'storage', 'graphics', 'os'].forEach(key => {
+          if (appliedFilters[key] && appliedFilters[key].length > 0) {
+            filters[key] = appliedFilters[key];
+          }
+        });
+        
+        console.log('Final filters being sent:', filters); // Debug log
+        
+        const fetchedProducts = await getAllProducts(sort || 'featured', page, 15, filters);
+        
+        console.log('Fetched products:', fetchedProducts); // Debug log
         setProducts(fetchedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -55,38 +116,88 @@ export default function BrandPage({ params }: BrandPageProps) {
     };
 
     fetchProducts();
-  }, [brand, sort, page, appliedFilters]);
+  }, [properBrandName, sort, page, appliedFilters]);
 
-  const handleApplyFilters = (filterData: any) => {
+  // Handler for immediate filter changes (no URL update)
+  const handleFiltersChange = useCallback((filterData: any) => {
+    const { filters, priceRange } = filterData;
+    // Only update local state, don't navigate
+    setAppliedFilters({ ...filters, priceRange });
+  }, []);
+
+  // Handler for applying filters (with URL update)
+  const handleApplyFilters = useCallback((filterData: any) => {
     const { filters, priceRange } = filterData;
     
-    // Construct the new query parameters
-    const newParams = new URLSearchParams(searchParams.toString());
+    // Set pending filters to trigger URL update in useEffect
+    setPendingFilters({ filters, priceRange });
     
-    // Add filter parameters
-    Object.entries(filters).forEach(([key, values]: [string, any]) => {
-      if (Array.isArray(values) && values.length > 0) {
-        newParams.set(key, values.join(','));
-      }
-    });
-
-    // Add price range if changed
-    if (priceRange) {
-      newParams.set('minPrice', priceRange.min.toString());
-      newParams.set('maxPrice', priceRange.max.toString());
-    }
-
-    // Keep existing sort if present
-    if (sort) newParams.set('sort', sort);
-    
-    // Reset to page 1 when filters change
-    newParams.set('page', '1');
-
-    // Update the URL and state
-    router.push(`?${newParams.toString()}`);
+    // Update local state immediately
     setAppliedFilters({ ...filters, priceRange });
-    setIsMobileFilterOpen(false); // Close mobile filter after applying
-  };
+    setIsMobileFilterOpen(false);
+  }, []);
+
+  // Use useEffect to handle URL updates
+  useEffect(() => {
+    if (pendingFilters) {
+      const { filters, priceRange } = pendingFilters;
+      
+      // Construct the new query parameters
+      const newParams = new URLSearchParams();
+      
+      // Add filter parameters
+      Object.entries(filters).forEach(([key, values]: [string, any]) => {
+        if (Array.isArray(values) && values.length > 0) {
+          newParams.set(key, values.join(','));
+        }
+      });
+
+      // Add price range if changed
+      if (priceRange) {
+        newParams.set('minPrice', priceRange.min.toString());
+        newParams.set('maxPrice', priceRange.max.toString());
+      }
+
+      // Keep existing sort if present
+      if (sort) newParams.set('sort', sort);
+      
+      // Reset to page 1 when filters change
+      newParams.set('page', '1');
+
+      // Update the URL
+      router.push(`?${newParams.toString()}`);
+      
+      // Clear pending filters
+      setPendingFilters(null);
+    }
+  }, [pendingFilters, sort, router]);
+
+  // Memoized clear filters handler
+  const handleClearFilters = useCallback(() => {
+    handleApplyFilters({ filters: {}, priceRange: { min: 25000, max: 500000 } });
+  }, [handleApplyFilters]);
+
+  // Memoized pagination handlers
+  const handlePrevPage = useCallback(() => {
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set('page', Math.max(page - 1, 1).toString());
+    router.push(`?${newParams.toString()}`);
+  }, [page, router, searchParams]);
+
+  const handleNextPage = useCallback(() => {
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set('page', (page + 1).toString());
+    router.push(`?${newParams.toString()}`);
+  }, [page, router, searchParams]);
+
+  // Memoized mobile filter toggle
+  const toggleMobileFilter = useCallback(() => {
+    setIsMobileFilterOpen(prev => !prev);
+  }, []);
+
+  const closeMobileFilter = useCallback(() => {
+    setIsMobileFilterOpen(false);
+  }, []);
 
   // Track active filters count
   useEffect(() => {
@@ -101,14 +212,7 @@ export default function BrandPage({ params }: BrandPageProps) {
     setActiveFiltersCount(count);
   }, [appliedFilters]);
 
-  // Determine category based on brand
-  let category = 'laptop';  // Default to laptop for now
-  if (products.length > 0 && products[0].category) {
-    category = products[0].category.toLowerCase();
-  }
-
-  const brandName = capitalize(brand);
-  const mobileProducts = products.slice(0, 9);
+  const brandName = properBrandName; // Already properly formatted
 
   if (loading) {
     return <LoadingSpinner />;
@@ -117,22 +221,23 @@ export default function BrandPage({ params }: BrandPageProps) {
   const filterSidebar = (
     <FilterSidebar 
       initialFilters={appliedFilters}
-      onApplyFilters={handleApplyFilters}
-      brand={resolvedParams.brandSlug}
+      onApplyFilters={handleApplyFilters}      // For apply button clicks
+      onFiltersChange={handleFiltersChange}    // For immediate filter changes (no URL update)
+      brand={properBrandName}                  // Use proper brand name
       loading={loading}
     />
   );
 
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8"> 
         {/* Mobile/Tablet Filter Header */}
         <div className="lg:hidden flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">
             {products.length > 0 ? `${brandName} Products` : 'No Products Found'}
           </h1>
           <button
-            onClick={() => setIsMobileFilterOpen(true)}
+            onClick={toggleMobileFilter}
             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg"
           >
             <svg
@@ -184,7 +289,7 @@ export default function BrandPage({ params }: BrandPageProps) {
               <div className="text-center py-8">
                 <p className="text-gray-500">No products match your selected filters.</p>
                 <button
-                  onClick={() => handleApplyFilters({ filters: {}, priceRange: { min: 25000, max: 500000 } })}
+                  onClick={handleClearFilters}
                   className="mt-4 text-blue-600 hover:text-blue-800"
                 >
                   Clear all filters
@@ -200,14 +305,14 @@ export default function BrandPage({ params }: BrandPageProps) {
                         product={{
                           id: product.id,
                           title: product.title,
-                          price: product.price.toString(),
-                          currency: 'Rs',
+                          price: product.price,
+                          currency: product.currency,
                           image: product.image,
-                          rating: product.rating ?? 4,
-                          reviews: product.reviews ?? 0,
-                          tag: product.tag ?? '',
-                          category: product.category ?? '',
-                          brand: product.brand ?? '',
+                          rating: product.rating,
+                          reviews: product.reviews,
+                          tag: product.tag,
+                          category: product.category,
+                          brand: product.brand,
                         }}
                         compact={true}
                       />
@@ -223,14 +328,14 @@ export default function BrandPage({ params }: BrandPageProps) {
                       product={{
                         id: product.id,
                         title: product.title,
-                        price: product.price.toString(),
-                        currency: 'Rs',
+                        price: product.price,
+                        currency: product.currency,
                         image: product.image,
-                        rating: product.rating ?? 4,
-                        reviews: product.reviews ?? 0,
-                        tag: product.tag ?? '',
-                        category: product.category ?? '',
-                        brand: product.brand ?? '',
+                        rating: product.rating,
+                        reviews: product.reviews,
+                        tag: product.tag,
+                        category: product.category,
+                        brand: product.brand,
                       }}
                     />
                   ))}
@@ -241,11 +346,7 @@ export default function BrandPage({ params }: BrandPageProps) {
             {/* Pagination */}
             <div className="mt-8 flex justify-center gap-2">
               <button
-                onClick={() => {
-                  const newParams = new URLSearchParams(searchParams.toString());
-                  newParams.set('page', Math.max(page - 1, 1).toString());
-                  router.push(`?${newParams.toString()}`);
-                }}
+                onClick={handlePrevPage}
                 className="px-4 py-2 border rounded hover:bg-gray-100"
                 disabled={page <= 1}
               >
@@ -255,11 +356,7 @@ export default function BrandPage({ params }: BrandPageProps) {
                 {page}
               </span>
               <button
-                onClick={() => {
-                  const newParams = new URLSearchParams(searchParams.toString());
-                  newParams.set('page', (page + 1).toString());
-                  router.push(`?${newParams.toString()}`);
-                }}
+                onClick={handleNextPage}
                 className="px-4 py-2 border rounded hover:bg-gray-100"
               >
                 Next
@@ -273,7 +370,7 @@ export default function BrandPage({ params }: BrandPageProps) {
       {isMobileFilterOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300"
-          onClick={() => setIsMobileFilterOpen(false)}
+          onClick={closeMobileFilter}
         />
       )}
       <aside
@@ -284,7 +381,7 @@ export default function BrandPage({ params }: BrandPageProps) {
         <div className="p-4 flex justify-between items-center border-b border-gray-200">
           <h2 className="text-lg font-semibold">Filters</h2>
           <button
-            onClick={() => setIsMobileFilterOpen(false)}
+            onClick={closeMobileFilter}
             className="text-gray-500 hover:text-gray-700"
           >
             <svg
