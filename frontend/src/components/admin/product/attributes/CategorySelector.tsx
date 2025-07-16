@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import AddDetailsPopup from "../../../common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "../photoUpload";
@@ -34,10 +35,12 @@ export default function CategorySelector({
   selectedCategoryId,
   onCategoryChange,
 }: CategorySelectorProps) {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAddPopup, setShowAddPopup] = useState(false);
+
   const [form, setForm] = useState<CategoryFormData>({
     ...INITIAL_CATEGORY_FORM,
   });
@@ -123,9 +126,9 @@ export default function CategorySelector({
 
   const handleCancel = () => {
     setForm({ ...INITIAL_CATEGORY_FORM });
-    setShowAddPopup(false);
     setShowValidation(false);
     setError(null);
+    setShowAddPopup(false);
   };
 
   // Convert categories to dropdown options
@@ -142,10 +145,7 @@ export default function CategorySelector({
         </label>
         <button
           type="button"
-          onClick={() => {
-            setError(null);
-            setShowAddPopup(true);
-          }}
+          onClick={() => router.push('/admin/attributes/category')}
           disabled={loading}
           className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:border-green-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >

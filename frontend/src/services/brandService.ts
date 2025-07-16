@@ -3,14 +3,16 @@ import axios from "@/lib/axiosInstance";
 export interface Brand {
   id: number;
   name: string;
-  images: string[];
+  image: string;
+  icon: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateBrandData {
   name: string;
-  images: File[];
+  image: File;
+  icon: File;
 }
 
 export const brandService = {
@@ -31,10 +33,11 @@ export const brandService = {
       const formData = new FormData();
       formData.append("name", data.name);
       
-      // Append all images
-      data.images.forEach((image) => {
-        formData.append("images", image);
-      });
+      
+        formData.append("image", data.image);
+
+         formData.append("icon", data.icon);
+
 
       const response = await axios.post("/brand/add", formData, {
         headers: {

@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -26,6 +27,11 @@ import {
   TableAction,
 } from "@/components/form/table/table";
 import StatCard from "@/components/admin/dashboard/Statcards";
+import AddDetailsPopup from "@/components/common/popup";
+import { categoryService } from "@/services/categoryService";
+import DefaultInput from "@/components/form/form-elements/DefaultInput";
+import PhotoUpload from "@/components/admin/product/photoUpload";
+import IconUpload from "@/components/admin/product/iconUpload";
 
 // Type definitions
 interface Category {
@@ -52,6 +58,81 @@ interface CategoryTableProps {
   onDuplicate: (categoryId: number) => void;
   onToggleStatus: (categoryId: number) => void;
 }
+
+interface CategoryFormData {
+  name: string;
+  image: File | null;
+  imagePreview: string;
+  icon: File | null;
+  iconPreview: string;
+}
+
+const INITIAL_CATEGORY_FORM: CategoryFormData = {
+  name: "",
+  image: null,
+  imagePreview: "",
+  icon: null,
+  iconPreview: "",
+};
+
+  const [showAddPopup, setShowAddPopup] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+   const [form, setForm] = useState<CategoryFormData>({
+      ...INITIAL_CATEGORY_FORM,
+    });
+    const [showValidation, setShowValidation] = useState(false);
+
+  const handleCancel = () => {
+    setShowAddPopup(false);
+  };
+
+    const isFormValid = () => {
+    return form.name.trim() !== "" && form.image !== null && form.icon !== null;
+  };
+
+  const handleSave = async () => {
+      setShowValidation(true);
+  
+      if (!isFormValid()) return;
+  
+      try {
+        setLoading(true);
+        setError(null);
+  
+        const newCategory = await categoryService.createCategory({
+          name: form.name,
+          image: form.image!,
+          icon: form.icon!,
+        });
+  
+        // Create a full category object with all required properties
+        const fullCategory: Category = {
+          id: newCategory.id,
+          name: newCategory.name,
+          slug: newCategory.name.toLowerCase().replace(/\s+/g, '-'),
+          description: `${newCategory.name} category`,
+          productCount: 0,
+          isActive: true,
+          createdAt: newCategory.createdAt,
+          updatedAt: newCategory.updatedAt,
+          image: newCategory.image,
+          parentId: null,
+          sortOrder: 0,
+        };
+  
+        setCategories((prev) => [...prev, fullCategory]);
+        handleCancel();
+      } catch (err) {
+        setError("Failed to create category");
+        console.error("Error creating category:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
 
 // TODO: Replace with actual API integration
 // Enhanced mock data for categories
@@ -303,6 +384,21 @@ export default function CategoryManagementPage() {
     );
   };
 
+  const handleImageUpload = (files: File[], imageType: "image" | "icon") => {
+    const file = files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
+      updateForm({
+        [imageType]: file,
+        [previewKey]: e.target?.result as string,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   // TODO: Implement actual CRUD operations with backend
   const handleEdit = (categoryId: number) => {
     router.push(`/admin/attributes/category/${categoryId}/edit`);
@@ -312,6 +408,19 @@ export default function CategoryManagementPage() {
     console.log("Delete category:", categoryId);
     toast.success("Category deleted successfully!");
     // TODO: Implement actual delete logic
+  };
+
+   const handleRemove = (imageType: "image" | "icon") => {
+    const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
+    updateForm({
+      [imageType]: null,
+      [previewKey]: "",
+    });
+  };
+
+
+   const updateForm = (updates: Partial<CategoryFormData>) => {
+    setForm((prev) => ({ ...prev, ...updates }));
   };
 
   const handleBulkDelete = () => {
@@ -355,20 +464,87 @@ export default function CategoryManagementPage() {
               <span>Delete ({selectedCategories.length})</span>
             </button>
           )}
-          <Link
-            href="/admin/attributes/category/create"
+          <button
+            onClick={() => setShowAddPopup(true)}
             className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Add Category</span>
-          </Link>
+          </button>
         </div>
       </div>
 
+      {/* Add Category Popup */}
+      <AddDetailsPopup
+        isOpen={showAddPopup}
+        onClose={handleCancel}
+        title="Add New Category"
+        description="Create a new category for your products"
+        onSave={handleSave}
+        onCancel={handleCancel}
+        saveButtonText={loading ? "Creating..." : "Add Category"}
+        maxWidth="md"
+      >
+        <div className="space-y-6">
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {error}
+            </div>
+          )}
 
+          <DefaultInput
+            label="Category Name *"
+            name="categoryName"
+            value={form.name}
+            onChange={(e) => updateForm({ name: e.target.value })}
+            placeholder="Enter category name (e.g., Laptops, Smartphones)"
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <PhotoUpload
+              label="Category Image"
+               required
+                images={form.image ? [form.image] : []}
+                imagePreviews={form.imagePreview ? [form.imagePreview] : []}
+                onImageUpload={(e) =>
+                  handleImageUpload(Array.from(e.target.files || []), "image")
+                }
+                onRemoveImage={() => handleRemove("image")}
+                maxImages={1}
+                maxSizeText="up to 10MB each"
+                acceptedFormats="PNG, JPG"
+                uploadText="Click to upload image"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category Icon *
+              </label>
+              <IconUpload
+                images={form.icon ? [form.icon] : []}
+                imagePreviews={form.iconPreview ? [form.iconPreview] : []}
+                onImageUpload={(e) =>
+                  handleImageUpload(Array.from(e.target.files || []), "icon")
+                }
+                onRemoveImage={() => handleRemove("icon")}
+                maxImages={1}
+              />
+            </div>
+          </div>
+
+          {!isFormValid() && showValidation && !loading && (
+            <p className="text-sm text-red-600">
+              Please fill in all required fields: name, image, and icon.
+            </p>
+          )}
+        </div>
+      </AddDetailsPopup>
 
       {/* Statistics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               <StatCard
                 title="Total Categories"
                 value={mockCategories.length.toString()}

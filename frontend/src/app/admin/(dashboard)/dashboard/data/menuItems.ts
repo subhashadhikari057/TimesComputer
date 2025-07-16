@@ -48,4 +48,22 @@ export const otherMenuItems: MenuItem[] = [
     icon: Lock,
     hasSubmenu: true,
   },
+  {
+    id: "user",
+    label: "User Management",
+    icon: Lock,
+    hasSubmenu: true,
+  },
+  {
+    id: "ads",
+    label: "Ads Management",
+    icon: Lock,
+    hasSubmenu: true,
+  },
+  {
+    id: "blogs",
+    label: "Blogs Management",
+    icon: Lock,
+    hasSubmenu: true,
+  },
 ];
