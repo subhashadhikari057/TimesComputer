@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-
 const prisma = new PrismaClient();
 
 interface ColorData {
@@ -10,7 +9,7 @@ interface ColorData {
 export const addColorService = async ({ name, hexCode }: ColorData) => {
     if (!name || !hexCode) throw { status: 400, message: "All fields are required." };
 
-    const existingColor = await prisma.color.findUnique({ where: { name } });
+    const existingColor = await prisma.color.findUnique({ where: { hexCode } });
     if (existingColor) throw { status: 409, message: "Color already exists." };
 
     return await prisma.color.create({ data: { name, hexCode } });
