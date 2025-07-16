@@ -29,7 +29,36 @@ const imageFilter = (req: Express.Request, file: Express.Multer.File, cb: multer
   }
 };
 
-export const uploadImage = multer({
+export const uploadImages = multer({
   storage,
   fileFilter: imageFilter,
 }).array('images', 10);
+
+export const uploadImage = multer({
+  storage,
+  fileFilter: imageFilter,
+}).single('image');
+
+export const uploadIcon = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'image/svg+xml') cb(null, true);
+    else cb(new Error('Only SVG files are allowed.'));
+  },
+}).single('icon');
+
+export const uploadCategoryMedia = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === 'image' && file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else if (file.fieldname === 'icon' && file.mimetype === 'image/svg+xml') {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type or field'));
+    }
+  },
+}).fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'icon', maxCount: 1 }
+]);

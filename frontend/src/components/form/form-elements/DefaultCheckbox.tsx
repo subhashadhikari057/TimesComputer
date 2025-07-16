@@ -25,7 +25,7 @@ const DefaultCheckbox: React.FC<DefaultCheckboxProps> = ({
           name={name}
           checked={checked}
           onChange={onChange}
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="rounded w-4 h-4  border-gray-300 text-blue-600 focus:ring-blue-500"
         />
         <span className="text-sm font-medium text-gray-700">{label}</span>
       </label>

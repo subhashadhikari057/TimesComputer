@@ -12,18 +12,23 @@ import {
 export const addBrand = async (req: Request, res: Response) => {
     try {
         const { name } = req.body;
-        const files = req.files as Express.Multer.File[];
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        const imageFiles = files && files['image'] ? files['image'] : [];
+        const iconFiles = files && files['icon'] ? files['icon'] : [];
 
         if (!name || typeof name !== 'string') {
             return res.status(400).json({ error: "Brand name is required and must be a string." });
         }
-
-        if (!files || files.length === 0) {
-            return res.status(400).json({ error: "At least one image is required." });
+        if (!imageFiles || imageFiles.length === 0) {
+            return res.status(400).json({ error: "One image file is required." });
+        }
+        if (!iconFiles || iconFiles.length === 0) {
+            return res.status(400).json({ error: "One SVG icon file is required." });
         }
 
-        const imagePaths = files.map(file => file.path);
-        const Brand = await addBrandService({ name, imagePaths });
+        const imagePath = imageFiles[0].path;
+        const iconPath = iconFiles[0].path;
+        const Brand = await addBrandService({ name, image: imagePath, icon: iconPath });
 
         res.status(201).json({ message: "Brand created successfully.", data: Brand });
     } catch (error: any) {
@@ -60,12 +65,15 @@ export const updateBrand = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
         const { name } = req.body;
-
-        if (!name || typeof name !== 'string') {
-            return res.status(400).json({ error: "Brand name is required and must be a string." });
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        let updateData: any = {};
+        if (name && typeof name === 'string') updateData.name = name;
+        if (files && files['image'] && files['image'][0]) updateData.image = files['image'][0].path;
+        if (files && files['icon'] && files['icon'][0]) updateData.icon = files['icon'][0].path;
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({ error: "No valid fields provided for update." });
         }
-
-        const updatedBrand = await updateBrandService(id, name);
+        const updatedBrand = await updateBrandService(id, updateData);
         res.status(200).json({ message: "Brand updated successfully.", data: updatedBrand });
     } catch (error: any) {
         const status = error.message.includes("not found") ? 404 :

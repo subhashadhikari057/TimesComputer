@@ -1,7 +1,8 @@
 "use client";
 
+import axios from "@/lib/axiosInstance";
+import { useRouter } from "next/navigation";
 import {
-  Menu,
   ChevronDown,
   Bell,
   Settings,
@@ -13,6 +14,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -28,6 +30,7 @@ export default function Header({
   setUserDropdownOpen,
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   // Close all menus/dropdowns
   const closeAllMenus = () => {
@@ -43,6 +46,17 @@ export default function Header({
       setSidebarOpen(false);
     }
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  //handle logout
+  const handleLogOut = async () => {
+    try {
+      await axios.post("/auth/logout", {});
+      toast.success("Logout successful!");
+      router.push("/admin/login");
+    } catch (error) {
+      toast.error("Logout failed. Please try again.");
+    }
   };
 
   // Handle sidebar toggle
@@ -143,10 +157,7 @@ export default function Header({
                       icon={LogOut}
                       text="Log Out"
                       danger
-                      onClick={() => {
-                        alert("Log Out");
-                        setUserDropdownOpen(false);
-                      }}
+                      onClick={handleLogOut}
                     />
                   </div>
                 )}
@@ -211,10 +222,7 @@ export default function Header({
                   icon={LogOut}
                   text="Log Out"
                   danger
-                  onClick={() => {
-                    alert("Log Out");
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={handleLogOut}
                 />
               </div>
             </div>

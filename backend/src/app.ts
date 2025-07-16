@@ -30,7 +30,7 @@ app.use(cookieParser());
 // ✅ Core Middlewares
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+        origin: "http://192.168.68.122:3000",
         credentials: true,
     })
 );

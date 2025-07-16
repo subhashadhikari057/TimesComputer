@@ -5,17 +5,19 @@ import prisma from "../prisma/client";
 // Create a new category
 interface CategoryInput {
     name: string;
-    imagePaths: string[];
+    image: string;
+    icon: string;
 }
 
-export const addCategoryService = async ({ name, imagePaths }: CategoryInput) => {
+export const addCategoryService = async ({ name, image, icon }: CategoryInput) => {
     const existing = await prisma.category.findUnique({ where: { name } });
     if (existing) throw new Error("Category already exists.");
 
     const category = await prisma.category.create({
         data: {
             name,
-            images: imagePaths,
+            image,
+            icon,
         },
     });
 
@@ -35,16 +37,16 @@ export const getCategoryByIdService = async (id: number) => {
 };
 
 // Update a category
-export const updateCategoryService = async (id: number, name: string) => {
+export const updateCategoryService = async (id: number, updateData: { name?: string; image?: string; icon?: string }) => {
     const exist = await prisma.category.findUnique({ where: { id } });
     if (!exist) throw new Error("Category not found.");
-
-    const duplicate = await prisma.category.findUnique({ where: { name } });
-    if (duplicate) throw new Error("Category name already exists.");
-
+    if (updateData.name) {
+        const duplicate = await prisma.category.findUnique({ where: { name: updateData.name } });
+        if (duplicate && duplicate.id !== id) throw new Error("Category name already exists.");
+    }
     return await prisma.category.update({
         where: { id },
-        data: { name },
+        data: updateData,
     });
 };
 

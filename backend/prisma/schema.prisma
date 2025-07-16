@@ -71,7 +71,8 @@ model Product {
 model Brand {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  images    String[]
+  image     String
+  icon      String // SVG icon path
   products  Product[]
   createdAt DateTime  @default(now())
 }
@@ -79,7 +80,8 @@ model Brand {
 model Category {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  images    String[]
+  image     String // category photo
+  icon      String // SVG icon path
   products  Product[]
   createdAt DateTime  @default(now())
 }
@@ -118,8 +120,8 @@ model ProductMarketingTag {
 
 model Color {
   id       Int            @id @default(autoincrement())
-  name     String         @unique
-  hexCode  String?
+  name     String
+  hexCode  String         @unique
   products ProductColor[]
 }
 
