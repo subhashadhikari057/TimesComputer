@@ -4,7 +4,7 @@ import prisma from "../prisma/client";
 export const addAds = async (req: Request, res: Response) => {
     try {
         const files = req.files as Express.Multer.File[];
-        if (!files || files.length === 0) {
+        if (!files) {
             return res.status(400).json({ error: "At least one image is required." });
         }
 
