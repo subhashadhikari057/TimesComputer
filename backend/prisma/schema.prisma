@@ -136,13 +136,19 @@ model ProductColor {
 }
 
 model AdBanner {
-  id     Int      @id @default(autoincrement())
-  images String[]
+  id        Int      @id @default(autoincrement())
+  images    String[]
+  createdAt DateTime @default(now())
 }
 
 model Blog {
-  id      Int      @id @default(autoincrement())
-  title   String
-  content String
-  images  String[]
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String
+  author     String   @default("admin")
+  images     String[]
+  slug       String   @default("untitles")
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
+  updateedAt DateTime @default(now())
 }
