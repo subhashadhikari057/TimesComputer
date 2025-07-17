@@ -16,7 +16,7 @@ export default function SuperAdminInit() {
       try {
         const res = await axios.get('/init');
         const data = res.data.message;
-        setSuperAdminExists(false);
+        setSuperAdminExists(data);
       } catch (err) {
         toast.error("Failed to fetch data. Try again later.");
       } finally {
