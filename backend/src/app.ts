@@ -18,12 +18,16 @@ import inquiryRoutes from "./routes/inquiry.route";
 import categoryRoutes from "./routes/category.route";
 import featureTagRoutes from "./routes/featureTag.route";
 import marketingTagRoutes from "./routes/marketingTags.route";
+import initController from './routes/init.route'
 
 
 
 dotenv.config();
 
 const app = express();
+
+
+
 
 // ✅ Security Middlewares
 app.use(helmet());
@@ -32,7 +36,7 @@ app.use(cookieParser());
 // ✅ Core Middlewares
 app.use(
     cors({
-        origin: "http://192.168.68.122:3000",
+        origin: "http://localhost:3000",
         credentials: true,
     })
 );
@@ -48,8 +52,9 @@ app.get('/api/csrf-token', (req, res) => {
 });
 
 // ✅ Routes
+app.use('/api/init', initController);
 app.use('/api/auth', authRoutes);
-app.use("/admin/users", adminUserRoutes);
+app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/ads", adsRoutes);
 app.use("/api/blog", blogRoutes);
