@@ -19,7 +19,7 @@ export default function CreateProductPage() {
       toast.success("Product created successfully!");
       
       // Redirect to products list
-      router.push("/admin/products");
+      router.push("/admin/product/all-products");
     } catch (error) {
       console.error("Error creating product:", error);
       toast.error("Failed to create product. Please try again.");

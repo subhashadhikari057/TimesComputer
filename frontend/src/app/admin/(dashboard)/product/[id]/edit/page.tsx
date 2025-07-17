@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ProductForm from "@/components/admin/product/productForm";
 
@@ -55,6 +55,7 @@ export default function EditProductPage({
 }: {
   params: { id: string };
 }) {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [productData, setProductData] = useState<ProductData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +65,7 @@ export default function EditProductPage({
     const loadProduct = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchProduct(params.id);
+        const data = await fetchProduct(id);
         setProductData(data);
       } catch (err) {
         console.error("Error fetching product:", err);
@@ -75,10 +76,10 @@ export default function EditProductPage({
       }
     };
 
-    if (params.id) {
+    if (id) {
       loadProduct();
     }
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (data: any) => {
     try {
@@ -142,7 +143,7 @@ export default function EditProductPage({
   return (
     <ProductForm
       mode="edit"
-      productId={params.id}
+      productId={id}
       initialData={productData || undefined}
       isLoading={isLoading}
       onSubmit={handleSubmit}

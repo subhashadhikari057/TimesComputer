@@ -27,13 +27,9 @@ export interface AttributeConfig {
   description: string;
   nameLabel: string;
   namePlaceholder: string;
-  showDescription?: boolean;
   showImage?: boolean;
   showIcon?: boolean;
   showColor?: boolean;
-  showParent?: boolean;
-  parentLabel?: string;
-  parentOptions?: { id: number; name: string }[];
   requiredFields: string[];
   onSave: (data: any) => Promise<void>;
 }
@@ -46,11 +42,11 @@ export const ATTRIBUTE_CONFIGS: Record<string, AttributeConfig> = {
     description: "Create a new brand for your products",
     nameLabel: "Brand Name",
     namePlaceholder: "Enter brand name (e.g., Apple, Samsung)",
-    showDescription: true,
+
     showImage: true,
     showIcon: true,
     showColor: false,
-    showParent: false,
+
     requiredFields: ["name", "image", "icon"],
     onSave: async (data) => {
       // Default implementation - should be overridden
@@ -63,7 +59,7 @@ export const ATTRIBUTE_CONFIGS: Record<string, AttributeConfig> = {
     description: "Create a new category for your products",
     nameLabel: "Category Name",
     namePlaceholder: "Enter category name (e.g., Electronics, Clothing)",
-    showDescription: false,
+   
     showImage: true,
     showIcon: true,
     showColor: false,
@@ -79,12 +75,11 @@ export const ATTRIBUTE_CONFIGS: Record<string, AttributeConfig> = {
     description: "Create a new color option for your products",
     nameLabel: "Color Name",
     namePlaceholder: "Enter color name (e.g., Ocean Blue, Forest Green)",
-    showDescription: false,
+
     showImage: false,
     showIcon: false,
     showColor: true,
-    showParent: false,
-    requiredFields: ["name", "color"],
+   requiredFields: ["name", "color"],
     onSave: async (data) => {
       // Default implementation - should be overridden
       console.log("Saving color:", data);
@@ -145,7 +140,7 @@ export default function AttributePopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen]);
 
   // Reset form when popup opens/closes
   const resetForm = () => {
@@ -186,11 +181,9 @@ export default function AttributePopup({
         name: form.name,
       };
 
-      if (config.showDescription) saveData.description = form.description;
       if (config.showImage) saveData.image = form.image;
       if (config.showIcon) saveData.icon = form.icon;
       if (config.showColor) saveData.color = form.color;
-      if (config.showParent) saveData.parentId = form.parentId;
 
       // Add ID if in edit mode
       if (initialData.id) saveData.id = initialData.id;
@@ -302,46 +295,9 @@ export default function AttributePopup({
           required
         />
 
-        {/* Description Field */}
-        {config.showDescription && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description {config.requiredFields.includes("description") && "*"}
-            </label>
-            <textarea
-              value={form.description || ""}
-              onChange={(e) => updateForm({ description: e.target.value })}
-              placeholder={`Enter ${config.type} description...`}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            />
-          </div>
-        )}
+        
 
-        {/* Parent Selection */}
-        {config.showParent && config.parentOptions && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {config.parentLabel}
-            </label>
-            <select
-              value={form.parentId || ""}
-              onChange={(e) =>
-                updateForm({
-                  parentId: e.target.value ? Number(e.target.value) : null,
-                })
-              }
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select parent {config.type}</option>
-              {config.parentOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        
 
         {/* Color Picker */}
         {config.showColor && (

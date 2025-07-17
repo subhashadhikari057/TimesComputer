@@ -1,18 +1,10 @@
 import { useState } from "react";
 import { TableColumn, TableHeader } from "@/components/form/table/table";
-import {
-  Package,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  Calendar,
-  Download,
-  Search,
-} from "lucide-react";
+import { Package, Trash2, CheckCircle, XCircle, Calendar } from "lucide-react";
 import { FilterConfig } from "@/components/admin/product/filter";
-import FilterComponent from "@/components/admin/product/filter";
 import { useFilters } from "@/hooks/useFilter";
 import { useSort, createSortableColumn } from "@/hooks/useSort";
+import { TableHeaderActions } from "@/components/form/table/TableHeaderActions";
 
 // Type definitions
 export interface Color {
@@ -232,51 +224,24 @@ export const getColorTableHeader = (
   onExport: () => void
 ): TableHeader => ({
   headerActions: (
-    <div className="flex items-center justify-between">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-        <input
-          type="text"
-          placeholder="Search colors..."
-          value={(filters.search as string) || ""}
-          onChange={(e) => updateFilter("search", e.target.value)}
-          className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300"
-        />
-      </div>
-
-      <div className="flex items-center space-x-2 w-full sm:w-auto">
-        {selectedColors.length > 0 && (
-          <button
-            onClick={onBulkDelete}
-            className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete ({selectedColors.length})
-          </button>
-        )}
-
-        <button
-          onClick={onExport}
-          className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <Download className="h-4 w-4 mr-1" />
-          Export
-        </button>
-
-        <div className="flex-1">
-          <FilterComponent
-            filters={filters}
-            filterConfigs={colorFilterConfigs}
-            onFilterChange={updateFilter}
-            onResetFilters={resetFilters}
-            buttonText="Filters"
-            dropdownWidth="w-96"
-            dropdownPosition="right"
-            className="w-full"
-          />
-        </div>
-      </div>
-    </div>
+    <TableHeaderActions
+      searchPlaceholder="Search colors..."
+      searchValue={(filters.search as string) || ""}
+      onSearchChange={(value) => updateFilter("search", value)}
+      selectedItems={selectedColors}
+      onBulkDelete={onBulkDelete}
+      bulkDeleteText="Delete"
+      onExport={onExport}
+      exportText="Export"
+      filters={filters}
+      filterConfigs={colorFilterConfigs}
+      onFilterChange={updateFilter}
+      onResetFilters={resetFilters}
+      filterButtonText="Filters"
+      filterDropdownWidth="w-96"
+      filterDropdownPosition="right"
+      layout="default"
+    />
   ),
 });
 

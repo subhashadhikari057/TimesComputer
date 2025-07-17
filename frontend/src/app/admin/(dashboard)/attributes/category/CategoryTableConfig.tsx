@@ -8,13 +8,11 @@ import {
   XCircle,
   ImageIcon,
   Calendar,
-  Download,
-  Search,
 } from "lucide-react";
 import { FilterConfig } from "@/components/admin/product/filter";
-import FilterComponent from "@/components/admin/product/filter";
 import { useFilters } from "@/hooks/useFilter";
 import { useSort, createSortableColumn } from "@/hooks/useSort";
+import { TableHeaderActions } from "@/components/form/table/TableHeaderActions";
 
 // Type definitions
 export interface Category {
@@ -36,7 +34,6 @@ export const categoryFilterConfigs: FilterConfig[] = [
     key: "status",
     label: "Status",
     type: "radio",
-    gridSpan: 2,
     options: [
       { value: "all", label: "All Status" },
       { value: "active", label: "Active" },
@@ -47,7 +44,7 @@ export const categoryFilterConfigs: FilterConfig[] = [
     key: "productCount",
     label: "Product Count",
     type: "select",
-    gridSpan: 2,
+
     options: [
       { value: "all", label: "All Categories" },
       { value: "high", label: "High (50+)" },
@@ -240,55 +237,20 @@ export const getCategoryTableHeader = (
   onExport: () => void
 ): TableHeader => ({
   headerActions: (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-0">
-      {/* Search Input */}
-      <div className="relative justify-self-start">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-        <input
-          type="text"
-          placeholder="Search categories..."
-          value={(filters.search as string) || ""}
-          onChange={(e) => updateFilter("search", e.target.value)}
-          className="w-full sm:w-64 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300"
-        />
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 lg:justify-self-end">
-        {selectedCategories.length > 0 && (
-          <button
-            onClick={onBulkDelete}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete ({selectedCategories.length})
-          </button>
-        )}
-
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <button
-            onClick={onExport}
-            className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <Download className="h-4 w-4 mr-1" />
-            Export
-          </button>
-
-          <div className="flex-1">
-            <FilterComponent
-              filters={filters}
-              filterConfigs={categoryFilterConfigs}
-              onFilterChange={updateFilter}
-              onResetFilters={resetFilters}
-              buttonText="Filters"
-              dropdownWidth="w-96"
-              dropdownPosition="right"
-              className="w-full"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    <TableHeaderActions
+      searchPlaceholder="Search categories..."
+      searchValue={(filters.search as string) || ""}
+      onSearchChange={(value) => updateFilter("search", value)}
+      selectedItems={selectedCategories}
+      onBulkDelete={onBulkDelete}
+      bulkDeleteText="Delete"
+      onExport={onExport}
+      exportText="Export"
+      filters={filters}
+      filterConfigs={categoryFilterConfigs}
+      onFilterChange={updateFilter}
+      onResetFilters={resetFilters}
+    />
   ),
 });
 

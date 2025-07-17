@@ -70,6 +70,7 @@ export const otherMenuItems: MenuItem[] = [
     label: "Manage Users",
     icon: Lock,
     hasSubmenu: false,
+    href: "/admin/users",
   },
   {
     id: "auth",

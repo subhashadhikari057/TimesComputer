@@ -15,8 +15,6 @@ export interface FilterConfig {
   label: string;
   type: "select" | "radio" | "checkbox" | "text" | "number" | "date";
   options?: FilterOption[];
-  width?: "sm" | "md" | "lg" | "full";
-  gridSpan?: 1 | 2;
 }
 
 export interface FilterComponentProps {
@@ -24,11 +22,8 @@ export interface FilterComponentProps {
   filterConfigs: FilterConfig[];
   onFilterChange: (key: string, value: any) => void;
   onResetFilters?: () => void;
-  className?: string;
-  buttonText?: string;
   showResetButton?: boolean;
   dropdownWidth?: string;
-  dropdownPosition?: "left" | "right" | "center";
 }
 
 const FilterComponent: React.FC<FilterComponentProps> = ({
@@ -36,44 +31,19 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   filterConfigs,
   onFilterChange,
   onResetFilters,
-  className = "",
-  buttonText = "Filters",
   showResetButton = true,
-  dropdownWidth = "w-80",
-  dropdownPosition = "right",
 }) => {
   const [showFilters, setShowFilters] = useState(false);
-
-  const getDropdownPositionClass = () => {
-    const positions = {
-      left: "left-0",
-      center: "left-1/2 transform -translate-x-1/2",
-      right: "right-0",
-    };
-    return positions[dropdownPosition];
-  };
-
-  const getWidthClass = (width?: string) => {
-    const widths = {
-      sm: "w-24",
-      md: "w-32",
-      lg: "w-48",
-      full: "w-full",
-    };
-    return widths[width as keyof typeof widths] || "w-full";
-  };
 
   const inputBaseClass =
     "px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm";
 
   const renderFilterInput = (config: FilterConfig) => {
     const value = filters[config.key] || "";
-    const widthClass = getWidthClass(config.width);
-
     switch (config.type) {
       case "select":
         return (
-          <div className={widthClass}>
+          <div className="w-full">
             <Dropdown
               value={value}
               onChange={(selectedValue) =>
@@ -109,7 +79,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
       case "checkbox":
         return (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {config.options?.map((option) => (
               <label key={option.value} className="flex items-center">
                 <input
@@ -140,7 +110,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             type={config.type}
             value={value}
             onChange={(e) => onFilterChange(config.key, e.target.value)}
-            className={`${widthClass} ${inputBaseClass}`}
+            className={`w-full ${inputBaseClass}`}
           />
         );
 
@@ -150,15 +120,15 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative`}>
       <button
         onClick={() => setShowFilters(!showFilters)}
         className={`w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${
           showFilters ? "bg-gray-50 border-gray-400" : ""
-        } ${className}`}
+        } `}
       >
         <Filter className="h-4 w-4 mr-2" />
-        <span>{buttonText}</span>
+        <span>Filters</span>
         <ChevronDown
           className={`h-4 w-4 ml-2 transition-transform duration-200 ${
             showFilters ? "rotate-180" : ""
@@ -168,13 +138,15 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 
       {showFilters && (
         <>
+          {/* Overlay */}
           <div
             className="fixed inset-0 z-40"
             onClick={() => setShowFilters(false)}
           />
 
+          {/* Desktop Dropdown */}
           <div
-            className={`absolute top-full mt-2 ${dropdownWidth} bg-white rounded-lg shadow-lg border border-gray-200 z-50 ${getDropdownPositionClass()} max-h-[80vh] flex flex-col`}
+            className={`hidden md:flex absolute top-full mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 right-0 max-h-[80vh] flex-col mb-16`}
           >
             {/* Fixed Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
@@ -195,12 +167,53 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
                 {filterConfigs.map((config) => (
                   <div
                     key={config.key}
-                    className={
-                      config.gridSpan === 2 || config.type === "radio"
-                        ? "md:col-span-2"
-                        : ""
-                    }
+                    className={config.type === "radio" ? "col-span-2" : ""}
                   >
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                      {config.label}
+                    </label>
+                    {renderFilterInput(config)}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Fixed Footer */}
+            {showResetButton && (
+              <div className="p-4 border-t border-gray-200 flex-shrink-0">
+                <button
+                  onClick={onResetFilters}
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-500 transition-colors"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Sidebar */}
+          <div
+            className="md:hidden fixed top-16 right-0 bottom-0 w-80 bg-white shadow-lg z-50 flex flex-col   transform transition-transform duration-300 ease-in-out
+              translate-x-0"
+          >
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Filter Options
+              </h3>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="p-4 overflow-y-auto flex-1 min-h-0">
+              <div className="space-y-6">
+                {filterConfigs.map((config) => (
+                  <div key={config.key}>
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
                       {config.label}
                     </label>
