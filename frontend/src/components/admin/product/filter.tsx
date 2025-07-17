@@ -56,14 +56,15 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
   const getWidthClass = (width?: string) => {
     const widths = {
       sm: "w-24",
-      md: "w-32", 
+      md: "w-32",
       lg: "w-48",
       full: "w-full",
     };
     return widths[width as keyof typeof widths] || "w-full";
   };
 
-  const inputBaseClass = "px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm";
+  const inputBaseClass =
+    "px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm";
 
   const renderFilterInput = (config: FilterConfig) => {
     const value = filters[config.key] || "";
@@ -75,7 +76,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           <div className={widthClass}>
             <Dropdown
               value={value}
-              onChange={(selectedValue) => onFilterChange(config.key, selectedValue)}
+              onChange={(selectedValue) =>
+                onFilterChange(config.key, selectedValue)
+              }
               options={config.options || []}
               placeholder="Select an option"
               size="sm"
@@ -96,7 +99,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
                   onChange={(e) => onFilterChange(config.key, e.target.value)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                 />
-                <span className="ml-2 text-sm text-gray-700">{option.label}</span>
+                <span className="ml-2 text-sm text-gray-700">
+                  {option.label}
+                </span>
               </label>
             ))}
           </div>
@@ -119,7 +124,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
                   }}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <span className="ml-2 text-sm text-gray-700">{option.label}</span>
+                <span className="ml-2 text-sm text-gray-700">
+                  {option.label}
+                </span>
               </label>
             ))}
           </div>
@@ -146,16 +153,16 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     <div className={`relative ${className}`}>
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className={`inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${
-          showFilters ? 'bg-gray-50 border-gray-400' : ''
-        }`}
+        className={`w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors ${
+          showFilters ? "bg-gray-50 border-gray-400" : ""
+        } ${className}`}
       >
         <Filter className="h-4 w-4 mr-2" />
         <span>{buttonText}</span>
-        <ChevronDown 
+        <ChevronDown
           className={`h-4 w-4 ml-2 transition-transform duration-200 ${
-            showFilters ? 'rotate-180' : ''
-          }`} 
+            showFilters ? "rotate-180" : ""
+          }`}
         />
       </button>
 
@@ -171,7 +178,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
           >
             {/* Fixed Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-              <h3 className="text-lg font-semibold text-gray-900">Filter Options</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Filter Options
+              </h3>
               <button
                 onClick={() => setShowFilters(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded"
@@ -184,9 +193,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             <div className="p-4 overflow-y-auto flex-1 min-h-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filterConfigs.map((config) => (
-                  <div 
-                    key={config.key} 
-                    className={config.gridSpan === 2 || config.type === "radio" ? "md:col-span-2" : ""}
+                  <div
+                    key={config.key}
+                    className={
+                      config.gridSpan === 2 || config.type === "radio"
+                        ? "md:col-span-2"
+                        : ""
+                    }
                   >
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
                       {config.label}

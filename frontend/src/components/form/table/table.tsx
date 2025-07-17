@@ -79,7 +79,7 @@ const Table: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
   className = "",
 }) => (
-  <div className="overflow-hidden rounded-lg">
+  <div className="overflow-x-auto rounded-lg">
     <table className={`w-full ${className}`}>{children}</table>
   </div>
 );

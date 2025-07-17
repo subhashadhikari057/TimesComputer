@@ -1,8 +1,5 @@
 import { useState } from "react";
-import {
-  TableColumn,
-  TableHeader,
-} from "@/components/form/table/table";
+import { TableColumn, TableHeader } from "@/components/form/table/table";
 import {
   Package,
   Trash2,
@@ -70,30 +67,26 @@ export const initialBrandFilters = {
 
 // Sortable columns configuration
 export const brandSortableColumns = {
-  brand: createSortableColumn(
-    'brand',
-    (brand: Brand) => brand.name,
-    'string'
-  ),
+  brand: createSortableColumn("brand", (brand: Brand) => brand.name, "string"),
   products: createSortableColumn(
-    'products',
+    "products",
     (brand: Brand) => brand.productCount,
-    'number'
+    "number"
   ),
   status: createSortableColumn(
-    'status',
+    "status",
     (brand: Brand) => brand.isActive,
-    'boolean'
+    "boolean"
   ),
   created: createSortableColumn(
-    'created',
+    "created",
     (brand: Brand) => brand.createdAt,
-    'date'
+    "date"
   ),
   updated: createSortableColumn(
-    'updated',
+    "updated",
     (brand: Brand) => brand.updatedAt,
-    'date'
+    "date"
   ),
 };
 
@@ -254,7 +247,7 @@ export const getBrandTableHeader = (
         />
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-2 w-full sm:w-auto">
         {selectedBrands.length > 0 && (
           <button
             onClick={onBulkDelete}
@@ -264,23 +257,27 @@ export const getBrandTableHeader = (
             Delete ({selectedBrands.length})
           </button>
         )}
+
         <button
           onClick={onExport}
-          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
           <Download className="h-4 w-4 mr-1" />
           Export
         </button>
 
-        <FilterComponent
-          filters={filters}
-          filterConfigs={brandFilterConfigs}
-          onFilterChange={updateFilter}
-          onResetFilters={resetFilters}
-          buttonText="Filters"
-          dropdownWidth="w-96"
-          dropdownPosition="right"
-        />
+        <div className="flex-1">
+          <FilterComponent
+            filters={filters}
+            filterConfigs={brandFilterConfigs}
+            onFilterChange={updateFilter}
+            onResetFilters={resetFilters}
+            buttonText="Filters"
+            dropdownWidth="w-96"
+            dropdownPosition="right"
+            className="w-full"
+          />
+        </div>
       </div>
     </div>
   ),
@@ -299,11 +296,14 @@ export const useBrandTable = (brands: Brand[]) => {
   const filteredBrands = filterBrands(brands, filters);
 
   // Use sorting hook with initial sort by name
-  const { sortedData: sortedBrands, sortConfig, handleSort } = useSort(
-    filteredBrands,
-    brandSortableColumns,
-    { column: 'brand', direction: 'asc' }
-  );
+  const {
+    sortedData: sortedBrands,
+    sortConfig,
+    handleSort,
+  } = useSort(filteredBrands, brandSortableColumns, {
+    column: "brand",
+    direction: "asc",
+  });
 
   // Selection handlers
   const handleSelectAll = () => {
@@ -330,16 +330,16 @@ export const useBrandTable = (brands: Brand[]) => {
     // Data
     sortedBrands,
     selectedBrands,
-    
+
     // Filters
     filters,
     updateFilter,
     resetFilters,
-    
+
     // Sorting
     sortConfig,
     handleSort,
-    
+
     // Selection
     handleSelectAll,
     handleSelectBrand,

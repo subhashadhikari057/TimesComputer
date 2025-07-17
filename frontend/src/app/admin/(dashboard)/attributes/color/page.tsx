@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import { toast } from "sonner";
 
-
 // Import the refactored configuration
 import {
   Color,
@@ -106,6 +105,9 @@ const mockColors: Color[] = [
 export default function ColorManagementPage() {
   const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [editingColor, setEditingColor] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [colors, setColors] = useState<Color[]>(mockColors);
 
   // Use the custom hook for table logic
@@ -126,17 +128,32 @@ export default function ColorManagementPage() {
   const stats = calculateColorStats(colors);
 
   // Event handlers
-  const handleEdit = (colorId: number) => {
-    router.push(`/admin/attributes/color/${colorId}/edit`);
+  const handleEdit = async (colorId: number) => {
+    try {
+      setLoading(true);
+      // For now, get color from local state
+      const colorData = colors.find((c) => c.id === colorId);
+      if (colorData) {
+        setEditingColor(colorData);
+        setShowEditPopup(true);
+      }
+    } catch (error) {
+      console.error("Error loading color:", error);
+      toast.error("Failed to load color data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (colorId: number) => {
-    setColors(prev => prev.filter(color => color.id !== colorId));
+    setColors((prev) => prev.filter((color) => color.id !== colorId));
     toast.success("Color deleted successfully!");
   };
 
   const handleBulkDelete = () => {
-    setColors(prev => prev.filter(color => !selectedColors.includes(color.id)));
+    setColors((prev) =>
+      prev.filter((color) => !selectedColors.includes(color.id))
+    );
     toast.success(`${selectedColors.length} colors deleted successfully!`);
     clearSelections();
   };
@@ -167,8 +184,8 @@ export default function ColorManagementPage() {
       };
 
       // Add to colors list
-      setColors(prev => [...prev, newColor]);
-      
+      setColors((prev) => [...prev, newColor]);
+
       // TODO: Implement actual API call here
       console.log("Creating color with:", data);
     } catch (err) {
@@ -177,10 +194,50 @@ export default function ColorManagementPage() {
     }
   };
 
+  // Color update handler
+  const handleColorUpdate = async (data: any) => {
+    try {
+      // For now, use mock update since we don't have real API
+      // await colorService.updateColor(editingColor.id, data);
+
+      // Update the color in the local state
+      setColors((prev) =>
+        prev.map((color) =>
+          color.id === editingColor.id
+            ? {
+                ...color,
+                name: data.name,
+                hexCode: data.color,
+                updatedAt: new Date().toISOString(),
+              }
+            : color
+        )
+      );
+
+      setEditingColor(null);
+      setShowEditPopup(false);
+      toast.success("Color updated successfully!");
+
+      // Uncomment when API is ready:
+      // await colorService.updateColor(editingColor.id, data);
+    } catch (err) {
+      console.error("Error updating color:", err);
+      throw err; // Re-throw to let AttributePopup handle the error
+    }
+  };
+
   // Create color configuration with custom save handler
   const colorConfig = {
     ...ATTRIBUTE_CONFIGS.color,
-    onSave: handleColorSave
+    onSave: handleColorSave,
+  };
+
+  // Edit color configuration
+  const editColorConfig = {
+    ...ATTRIBUTE_CONFIGS.color,
+    title: "Edit Color",
+    description: "Update color information",
+    onSave: handleColorUpdate,
   };
 
   // Get table configuration
@@ -221,6 +278,19 @@ export default function ColorManagementPage() {
         isOpen={showAddPopup}
         onClose={() => setShowAddPopup(false)}
         config={colorConfig}
+      />
+
+      {/* Edit Color Popup */}
+      <AttributePopup
+        isOpen={showEditPopup}
+        onClose={() => {
+          setShowEditPopup(false);
+          setEditingColor(null);
+        }}
+        config={editColorConfig}
+        initialData={
+          editingColor ? { ...editingColor, color: editingColor.hexCode } : null
+        }
       />
 
       {/* Statistics */}

@@ -109,6 +109,9 @@ const mockBrands: Brand[] = [
 export default function BrandManagementPage() {
   const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [editingBrand, setEditingBrand] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState<Brand[]>(mockBrands);
 
   // Use the custom hook for table logic
@@ -129,17 +132,32 @@ export default function BrandManagementPage() {
   const stats = calculateBrandStats(brands);
 
   // Event handlers
-  const handleEdit = (brandId: number) => {
-    router.push(`/admin/attributes/brand/${brandId}/edit`);
+  const handleEdit = async (brandId: number) => {
+    try {
+      setLoading(true);
+      // For now, get brand from local state
+      const brandData = brands.find((b) => b.id === brandId);
+      if (brandData) {
+        setEditingBrand(brandData);
+        setShowEditPopup(true);
+      }
+    } catch (error) {
+      console.error("Error loading brand:", error);
+      toast.error("Failed to load brand data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (brandId: number) => {
-    setBrands(prev => prev.filter(brand => brand.id !== brandId));
+    setBrands((prev) => prev.filter((brand) => brand.id !== brandId));
     toast.success("Brand deleted successfully!");
   };
 
   const handleBulkDelete = () => {
-    setBrands(prev => prev.filter(brand => !selectedBrands.includes(brand.id)));
+    setBrands((prev) =>
+      prev.filter((brand) => !selectedBrands.includes(brand.id))
+    );
     toast.success(`${selectedBrands.length} brands deleted successfully!`);
     clearSelections();
   };
@@ -165,22 +183,66 @@ export default function BrandManagementPage() {
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      image: data.image ? URL.createObjectURL(data.image) : "/api/placeholder/150/150",
+      image: data.image
+        ? URL.createObjectURL(data.image)
+        : "/api/placeholder/150/150",
       parentId: null,
       sortOrder: brands.length + 1,
     };
 
     // Add to brands list
-    setBrands(prev => [...prev, newBrand]);
-    
+    setBrands((prev) => [...prev, newBrand]);
+
     // TODO: Implement actual API call here
     console.log("Creating brand with:", data);
+  };
+
+  // Brand update handler
+  const handleBrandUpdate = async (data: any) => {
+    try {
+      // For now, use mock update since we don't have real API
+      // await brandService.updateBrand(editingBrand.id, data);
+
+      // Update the brand in the local state
+      setBrands((prev) =>
+        prev.map((brand) =>
+          brand.id === editingBrand.id
+            ? {
+                ...brand,
+                name: data.name,
+                description: data.description,
+                updatedAt: new Date().toISOString(),
+                // Only update image if new one was provided
+                ...(data.image && { image: URL.createObjectURL(data.image) }),
+              }
+            : brand
+        )
+      );
+
+      setEditingBrand(null);
+      setShowEditPopup(false);
+      toast.success("Brand updated successfully!");
+
+      // Uncomment when API is ready:
+      // await brandService.updateBrand(editingBrand.id, data);
+    } catch (err) {
+      console.error("Error updating brand:", err);
+      throw err; // Re-throw to let AttributePopup handle the error
+    }
   };
 
   // Create brand configuration with custom save handler
   const brandConfig = {
     ...ATTRIBUTE_CONFIGS.brand,
-    onSave: handleBrandSave
+    onSave: handleBrandSave,
+  };
+
+  // Edit brand configuration
+  const editBrandConfig = {
+    ...ATTRIBUTE_CONFIGS.brand,
+    title: "Edit Brand",
+    description: "Update brand information",
+    onSave: handleBrandUpdate,
   };
 
   // Get table configuration
@@ -221,6 +283,17 @@ export default function BrandManagementPage() {
         isOpen={showAddPopup}
         onClose={() => setShowAddPopup(false)}
         config={brandConfig}
+      />
+
+      {/* Edit Brand Popup */}
+      <AttributePopup
+        isOpen={showEditPopup}
+        onClose={() => {
+          setShowEditPopup(false);
+          setEditingBrand(null);
+        }}
+        config={editBrandConfig}
+        initialData={editingBrand}
       />
 
       {/* Statistics */}

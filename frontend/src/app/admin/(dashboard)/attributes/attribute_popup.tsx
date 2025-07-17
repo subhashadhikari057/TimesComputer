@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
@@ -9,11 +9,12 @@ import { toast } from "sonner";
 
 // Base form data interface
 interface BaseFormData {
+  id?: number;
   name: string;
   description?: string;
   image: File | null;
   imagePreview: string;
-  icon?: File | null;
+  icon: File | null;
   iconPreview?: string;
   color?: string;
   parentId?: number | null;
@@ -21,7 +22,7 @@ interface BaseFormData {
 
 // Configuration for different attribute types
 export interface AttributeConfig {
-  type: 'brand' | 'category' | 'color';
+  type: "brand" | "category" | "color";
   title: string;
   description: string;
   nameLabel: string;
@@ -40,57 +41,55 @@ export interface AttributeConfig {
 // Predefined configurations
 export const ATTRIBUTE_CONFIGS: Record<string, AttributeConfig> = {
   brand: {
-    type: 'brand',
-    title: 'Add New Brand',
-    description: 'Create a new brand for your products',
-    nameLabel: 'Brand Name',
-    namePlaceholder: 'Enter brand name (e.g., Apple, Samsung)',
+    type: "brand",
+    title: "Add New Brand",
+    description: "Create a new brand for your products",
+    nameLabel: "Brand Name",
+    namePlaceholder: "Enter brand name (e.g., Apple, Samsung)",
     showDescription: true,
     showImage: true,
     showIcon: true,
     showColor: false,
     showParent: false,
-    requiredFields: ['name', 'image', 'icon'],
+    requiredFields: ["name", "image", "icon"],
     onSave: async (data) => {
       // Default implementation - should be overridden
-      console.log('Saving brand:', data);
-    }
+      console.log("Saving brand:", data);
+    },
   },
   category: {
-    type: 'category',
-    title: 'Add New Category',
-    description: 'Create a new category for your products',
-    nameLabel: 'Category Name',
-    namePlaceholder: 'Enter category name (e.g., Electronics, Clothing)',
-    showDescription: true,
+    type: "category",
+    title: "Add New Category",
+    description: "Create a new category for your products",
+    nameLabel: "Category Name",
+    namePlaceholder: "Enter category name (e.g., Electronics, Clothing)",
+    showDescription: false,
     showImage: true,
     showIcon: true,
     showColor: false,
-    showParent: true,
-    parentLabel: 'Parent Category',
-    requiredFields: ['name', 'image'],
+    requiredFields: ["name", "image", "icon"],
     onSave: async (data) => {
       // Default implementation - should be overridden
-      console.log('Saving category:', data);
-    }
+      console.log("Saving category:", data);
+    },
   },
   color: {
-    type: 'color',
-    title: 'Add New Color',
-    description: 'Create a new color option for your products',
-    nameLabel: 'Color Name',
-    namePlaceholder: 'Enter color name (e.g., Ocean Blue, Forest Green)',
+    type: "color",
+    title: "Add New Color",
+    description: "Create a new color option for your products",
+    nameLabel: "Color Name",
+    namePlaceholder: "Enter color name (e.g., Ocean Blue, Forest Green)",
     showDescription: false,
     showImage: false,
     showIcon: false,
     showColor: true,
     showParent: false,
-    requiredFields: ['name', 'color'],
+    requiredFields: ["name", "color"],
     onSave: async (data) => {
       // Default implementation - should be overridden
-      console.log('Saving color:', data);
-    }
-  }
+      console.log("Saving color:", data);
+    },
+  },
 };
 
 interface AttributePopupProps {
@@ -115,15 +114,38 @@ export default function AttributePopup({
   isOpen,
   onClose,
   config,
-  initialData = {}
+  initialData = {},
 }: AttributePopupProps) {
   const [form, setForm] = useState<BaseFormData>({
     ...INITIAL_FORM_DATA,
-    ...initialData
+    ...initialData,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
+
+  // Reset form when popup opens/closes or initialData changes
+  useEffect(() => {
+    if (isOpen) {
+      const updatedForm = { ...INITIAL_FORM_DATA, ...initialData };
+
+      // Handle existing images for edit mode
+      if (initialData.image && typeof initialData.image === "string") {
+        updatedForm.imagePreview = initialData.image;
+        updatedForm.image = null; // Will be set only if user uploads new image
+      }
+
+      // Handle existing icons for edit mode
+      if (initialData.icon && typeof initialData.icon === "string") {
+        updatedForm.iconPreview = initialData.icon;
+        updatedForm.icon = null; // Will be set only if user uploads new icon
+      }
+
+      setForm(updatedForm);
+      setShowValidation(false);
+      setError(null);
+    }
+  }, [isOpen, initialData]);
 
   // Reset form when popup opens/closes
   const resetForm = () => {
@@ -138,12 +160,14 @@ export default function AttributePopup({
   };
 
   const isFormValid = () => {
-    return config.requiredFields.every(field => {
-      if (field === 'name') return form.name.trim() !== "";
-      if (field === 'image') return form.image !== null;
-      if (field === 'icon') return form.icon !== null;
-      if (field === 'color') return form.color !== "";
-      if (field === 'description') return form.description?.trim() !== "";
+    return config.requiredFields.every((field) => {
+      if (field === "name") return form.name.trim() !== "";
+      if (field === "image")
+        return form.image !== null || form.imagePreview !== "";
+      if (field === "icon")
+        return form.icon !== null || form.iconPreview !== "";
+      if (field === "color") return form.color !== "";
+      if (field === "description") return form.description?.trim() !== "";
       return true;
     });
   };
@@ -168,13 +192,25 @@ export default function AttributePopup({
       if (config.showColor) saveData.color = form.color;
       if (config.showParent) saveData.parentId = form.parentId;
 
+      // Add ID if in edit mode
+      if (initialData.id) saveData.id = initialData.id;
+
       await config.onSave(saveData);
 
-      toast.success(`${config.type.charAt(0).toUpperCase() + config.type.slice(1)} created successfully!`);
+      const isEditMode = initialData && Object.keys(initialData).length > 0;
+      toast.success(
+        `${config.type.charAt(0).toUpperCase() + config.type.slice(1)} ${
+          isEditMode ? "updated" : "created"
+        } successfully!`
+      );
       handleCancel();
     } catch (err) {
-      setError(`Failed to create ${config.type}`);
-      console.error(`Error creating ${config.type}:`, err);
+      const isEditMode = initialData && Object.keys(initialData).length > 0;
+      setError(`Failed to ${isEditMode ? "update" : "create"} ${config.type}`);
+      console.error(
+        `Error ${isEditMode ? "updating" : "creating"} ${config.type}:`,
+        err
+      );
     } finally {
       setLoading(false);
     }
@@ -208,18 +244,26 @@ export default function AttributePopup({
   };
 
   const getRequiredFieldsText = () => {
-    const fieldNames = config.requiredFields.map(field => {
+    const fieldNames = config.requiredFields.map((field) => {
       switch (field) {
-        case 'name': return 'name';
-        case 'image': return 'image';
-        case 'icon': return 'icon';
-        case 'color': return 'color';
-        case 'description': return 'description';
-        default: return field;
+        case "name":
+          return "name";
+        case "image":
+          return "image";
+        case "icon":
+          return "icon";
+        case "color":
+          return "color";
+        case "description":
+          return "description";
+        default:
+          return field;
       }
     });
-    return fieldNames.join(', ');
+    return fieldNames.join(", ");
   };
+
+  const isEditMode = initialData && Object.keys(initialData).length > 0;
 
   return (
     <AddDetailsPopup
@@ -229,7 +273,15 @@ export default function AttributePopup({
       description={config.description}
       onSave={handleSave}
       onCancel={handleCancel}
-      saveButtonText={loading ? "Creating..." : `Add ${config.type.charAt(0).toUpperCase() + config.type.slice(1)}`}
+      saveButtonText={
+        loading
+          ? isEditMode
+            ? "Updating..."
+            : "Creating..."
+          : isEditMode
+          ? "Update"
+          : `Add ${config.type.charAt(0).toUpperCase() + config.type.slice(1)}`
+      }
       isLoading={loading}
       maxWidth="md"
     >
@@ -250,7 +302,21 @@ export default function AttributePopup({
           required
         />
 
-       
+        {/* Description Field */}
+        {config.showDescription && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description {config.requiredFields.includes("description") && "*"}
+            </label>
+            <textarea
+              value={form.description || ""}
+              onChange={(e) => updateForm({ description: e.target.value })}
+              placeholder={`Enter ${config.type} description...`}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            />
+          </div>
+        )}
 
         {/* Parent Selection */}
         {config.showParent && config.parentOptions && (
@@ -260,11 +326,15 @@ export default function AttributePopup({
             </label>
             <select
               value={form.parentId || ""}
-              onChange={(e) => updateForm({ parentId: e.target.value ? Number(e.target.value) : null })}
+              onChange={(e) =>
+                updateForm({
+                  parentId: e.target.value ? Number(e.target.value) : null,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="">Select parent {config.type}</option>
-              {config.parentOptions.map(option => (
+              {config.parentOptions.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
                 </option>
@@ -299,12 +369,20 @@ export default function AttributePopup({
 
         {/* Image and Icon Upload */}
         {(config.showImage || config.showIcon) && (
-          <div className={`grid gap-4 ${config.showImage && config.showIcon ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <div
+            className={`grid gap-4 ${
+              config.showImage && config.showIcon
+                ? "grid-cols-2"
+                : "grid-cols-1"
+            }`}
+          >
             {config.showImage && (
               <div>
                 <PhotoUpload
-                  label={`${config.type.charAt(0).toUpperCase() + config.type.slice(1)} Image`}
-                  required={config.requiredFields.includes('image')}
+                  label={`${
+                    config.type.charAt(0).toUpperCase() + config.type.slice(1)
+                  } Image`}
+                  required={config.requiredFields.includes("image")}
                   images={form.image ? [form.image] : []}
                   imagePreviews={form.imagePreview ? [form.imagePreview] : []}
                   onImageUpload={(e) =>
@@ -321,11 +399,12 @@ export default function AttributePopup({
 
             {config.showIcon && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {config.type.charAt(0).toUpperCase() + config.type.slice(1)} Icon
-                </label>
                 <IconUpload
+                  label={`${
+                    config.type.charAt(0).toUpperCase() + config.type.slice(1)
+                  } Icon`}
                   images={form.icon ? [form.icon] : []}
+                  required={config.requiredFields.includes("icon")}
                   imagePreviews={form.iconPreview ? [form.iconPreview] : []}
                   onImageUpload={(e) =>
                     handleImageUpload(Array.from(e.target.files || []), "icon")

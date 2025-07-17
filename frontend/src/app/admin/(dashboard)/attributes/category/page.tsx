@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import { toast } from "sonner";
 
-
 // Import the refactored configuration
 import {
   Category,
@@ -99,6 +98,9 @@ const mockCategories: Category[] = [
 export default function CategoryManagementPage() {
   const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>(mockCategories);
 
   // Use the custom hook for table logic
@@ -119,18 +121,43 @@ export default function CategoryManagementPage() {
   const stats = calculateCategoryStats(categories);
 
   // Event handlers
-  const handleEdit = (categoryId: number) => {
-    router.push(`/admin/attributes/category/${categoryId}/edit`);
+  const handleEdit = async (categoryId: number) => {
+    try {
+      setLoading(true);
+      // For now, use mock data since we don't have real API
+      const categoryData = categories.find((cat) => cat.id === categoryId);
+      if (categoryData) {
+        setEditingCategory(categoryData);
+        setShowEditPopup(true);
+      } else {
+        toast.error("Category not found");
+      }
+      // Uncomment when API is ready:
+      // const categoryData = await categoryService.getCategoryById(categoryId);
+      // setEditingCategory(categoryData);
+      // setShowEditPopup(true);
+    } catch (error) {
+      console.error("Error loading category:", error);
+      toast.error("Failed to load category data");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = (categoryId: number) => {
-    setCategories(prev => prev.filter(category => category.id !== categoryId));
+    setCategories((prev) =>
+      prev.filter((category) => category.id !== categoryId)
+    );
     toast.success("Category deleted successfully!");
   };
 
   const handleBulkDelete = () => {
-    setCategories(prev => prev.filter(category => !selectedCategories.includes(category.id)));
-    toast.success(`${selectedCategories.length} categories deleted successfully!`);
+    setCategories((prev) =>
+      prev.filter((category) => !selectedCategories.includes(category.id))
+    );
+    toast.success(
+      `${selectedCategories.length} categories deleted successfully!`
+    );
     clearSelections();
   };
 
@@ -162,15 +189,19 @@ export default function CategoryManagementPage() {
         isActive: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        image: data.image ? URL.createObjectURL(data.image) : "/api/placeholder/150/150",
-        icon: data.icon ? URL.createObjectURL(data.icon) : "/api/placeholder/icon/50/50",
+        image: data.image
+          ? URL.createObjectURL(data.image)
+          : "/api/placeholder/150/150",
+        icon: data.icon
+          ? URL.createObjectURL(data.icon)
+          : "/api/placeholder/icon/50/50",
         parentId: data.parentId || null,
         sortOrder: categories.length + 1,
       };
 
       // Add to categories list
-      setCategories(prev => [...prev, newCategory]);
-      
+      setCategories((prev) => [...prev, newCategory]);
+
       // TODO: Implement actual API call here
       console.log("Creating category with:", data);
     } catch (err) {
@@ -179,11 +210,54 @@ export default function CategoryManagementPage() {
     }
   };
 
+  // Category update handler
+  const handleCategoryUpdate = async (data: any) => {
+    try {
+      // For now, use mock update since we don't have real API
+      // await categoryService.updateCategory(editingCategory.id, data);
+
+      // Update the category in the local state
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === editingCategory.id
+            ? {
+                ...cat,
+                name: data.name,
+                description: data.description,
+                updatedAt: new Date().toISOString(),
+                // Only update image/icon if new ones were provided
+                ...(data.image && { image: URL.createObjectURL(data.image) }),
+                ...(data.icon && { icon: URL.createObjectURL(data.icon) }),
+              }
+            : cat
+        )
+      );
+
+      setEditingCategory(null);
+      setShowEditPopup(false);
+      toast.success("Category updated successfully!");
+    } catch (err) {
+      console.error("Error updating category:", err);
+      throw err; // Re-throw to let AttributePopup handle the error
+    }
+  };
+
   // Create category configuration with custom save handler and parent options
   const categoryConfig = {
     ...ATTRIBUTE_CONFIGS.category,
-    parentOptions: categories.map(cat => ({ id: cat.id, name: cat.name })),
-    onSave: handleCategorySave
+    parentOptions: categories.map((cat) => ({ id: cat.id, name: cat.name })),
+    onSave: handleCategorySave,
+  };
+
+  // Edit category configuration
+  const editCategoryConfig = {
+    ...ATTRIBUTE_CONFIGS.category,
+    title: "Edit Category",
+    description: "Update category information",
+    parentOptions: categories
+      .filter((cat) => cat.id !== editingCategory?.id)
+      .map((cat) => ({ id: cat.id, name: cat.name })),
+    onSave: handleCategoryUpdate,
   };
 
   // Get table configuration
@@ -224,6 +298,17 @@ export default function CategoryManagementPage() {
         isOpen={showAddPopup}
         onClose={() => setShowAddPopup(false)}
         config={categoryConfig}
+      />
+
+      {/* Edit Category Popup */}
+      <AttributePopup
+        isOpen={showEditPopup}
+        onClose={() => {
+          setShowEditPopup(false);
+          setEditingCategory(null);
+        }}
+        config={editCategoryConfig}
+        initialData={editingCategory}
       />
 
       {/* Statistics */}
@@ -270,6 +355,7 @@ export default function CategoryManagementPage() {
         sortConfig={sortConfig}
         onSort={handleSort}
         className="max-w-full"
+        loading={loading}
       />
     </div>
   );
