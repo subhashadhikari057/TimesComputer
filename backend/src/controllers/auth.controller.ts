@@ -15,33 +15,33 @@ import {
 
 
 // ✅ POST /auth/register — Superadmin only if no users exist
-export const register = async (req: Request, res: Response) => {
-    const body = RegisterSchema.safeParse(req.body);
-    if (!body.success) return res.status(400).json({ error: body.error.errors });
+// export const register = async (req: Request, res: Response) => {
+//     const body = RegisterSchema.safeParse(req.body);
+//     if (!body.success) return res.status(400).json({ error: body.error.errors });
 
-    const { name, email, password } = body.data;
+//     const { name, email, password } = body.data;
 
-    const existingAdmins = await prisma.adminUser.findUnique({ where: { email } });
-    if (existingAdmins) {
-        return res.status(403).json({ message: "Superadmin already exists." });
-    }
+//     const existingAdmins = await prisma.adminUser.findUnique({ where: { email } });
+//     if (existingAdmins) {
+//         return res.status(403).json({ message: "Superadmin already exists." });
+//     }
 
-    const hashed = await hashPassword(password);
-    const user = await prisma.adminUser.create({
-        data: {
-            name,
-            email,
-            password: hashed,
-            role: "SUPERADMIN",
-            isActive: true,
-        },
-    });
+//     const hashed = await hashPassword(password);
+//     const user = await prisma.adminUser.create({
+//         data: {
+//             name,
+//             email,
+//             password: hashed,
+//             role: "SUPERADMIN",
+//             isActive: true,
+//         },
+//     });
 
-    res.status(201).json({
-        message: "Superadmin created",
-        user: { id: user.id, email: user.email },
-    });
-};
+//     res.status(201).json({
+//         message: "Superadmin created",
+//         user: { id: user.id, email: user.email },
+//     });
+// };
 
 export const login = async (req: Request, res: Response) => {
     const body = LoginSchema.safeParse(req.body);

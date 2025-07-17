@@ -1,6 +1,6 @@
 import express from "express";
 import {
-    register,
+    // register,
     login,
     logout,
     refresh,
@@ -10,7 +10,7 @@ import { authenticate, authLimiter } from "../middlewares/auth.middleware";
 
 const router = express.Router();
 
-router.post("/register", authLimiter, register); // Superadmin creation (only if none exist)
+// router.post("/register", authLimiter, register); // Superadmin creation (only if none exist)
 router.post("/login", authLimiter, login);       // Login and set cookies
 router.post("/logout", logout);     // Clear cookies
 router.post("/refresh", refresh);   // Get new access token
