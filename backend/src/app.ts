@@ -18,6 +18,7 @@ import inquiryRoutes from "./routes/inquiry.route";
 import categoryRoutes from "./routes/category.route";
 import featureTagRoutes from "./routes/featureTag.route";
 import marketingTagRoutes from "./routes/marketingTags.route";
+import searchRoutes from "./routes/search.route";
 
 
 
@@ -32,7 +33,7 @@ app.use(cookieParser());
 // ✅ Core Middlewares
 app.use(
     cors({
-        origin: "http://192.168.68.122:3000",
+        origin: "http://localhost:3000",
         credentials: true,
     })
 );
@@ -59,6 +60,7 @@ app.use("/api/inquiry", inquiryRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/feature-tag", featureTagRoutes);
 app.use("/api/marketing-tag", marketingTagRoutes);
+app.use("/api/search", searchRoutes);
 
 
 // ✅ Health check
