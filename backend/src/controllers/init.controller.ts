@@ -13,19 +13,20 @@ export const superAdminExists = async (req: Request, res: Response) => {
 };
 
 export const signup = async (req: Request, res: Response) => {
-    // First check if superadmin exists
+
+    // ⚠️ First check if superadmin exists
     const existingAdmin = await prisma.adminUser.findFirst();
     if (existingAdmin) {
         return res.status(403).json({ message: "Superadmin already exists." });
     }
 
     const body = RegisterSchema.safeParse(req.body);
-    if (!body.success) return res.status(400).json({ error: body.error.errors });
+    if (!body.success) return res.status(400).json({ message: body.error.errors });
 
     const { name, email, password } = body.data;
 
     const hashedPw = await hashPassword(password);
-    const user = await prisma.adminUser.create({
+    await prisma.adminUser.create({
         data: {
             name,
             email,
@@ -35,8 +36,5 @@ export const signup = async (req: Request, res: Response) => {
         },
     });
 
-    res.status(201).json({
-        message: "Superadmin created",
-        user: { name: user.name, role: user.role },
-    });
+    return res.sendStatus(201);
 };

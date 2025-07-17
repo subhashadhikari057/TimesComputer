@@ -3,45 +3,15 @@ import prisma from "../prisma/client";
 import {
     hashPassword,
     comparePassword,
-    generateAccessToken,
-    generateRefreshToken,
+    attachAccessToken,
+    attachRefreshToken,
     verifyRefreshToken,
 } from "../services/auth.service";
 import {
     LoginSchema,
-    RegisterSchema,
     ChangePasswordSchema,
 } from "../validations/auth.schema";
 
-
-// ✅ POST /auth/register — Superadmin only if no users exist
-// export const register = async (req: Request, res: Response) => {
-//     const body = RegisterSchema.safeParse(req.body);
-//     if (!body.success) return res.status(400).json({ error: body.error.errors });
-
-//     const { name, email, password } = body.data;
-
-//     const existingAdmins = await prisma.adminUser.findUnique({ where: { email } });
-//     if (existingAdmins) {
-//         return res.status(403).json({ message: "Superadmin already exists." });
-//     }
-
-//     const hashed = await hashPassword(password);
-//     const user = await prisma.adminUser.create({
-//         data: {
-//             name,
-//             email,
-//             password: hashed,
-//             role: "SUPERADMIN",
-//             isActive: true,
-//         },
-//     });
-
-//     res.status(201).json({
-//         message: "Superadmin created",
-//         user: { id: user.id, email: user.email },
-//     });
-// };
 
 export const login = async (req: Request, res: Response) => {
     const body = LoginSchema.safeParse(req.body);
@@ -70,7 +40,7 @@ export const login = async (req: Request, res: Response) => {
         });
     }
 
-    const user = await prisma.adminUser.findUnique({ where: { email } });
+    const user: User = await prisma.adminUser.findUnique({ where: { email } });
 
     const valid = user && user.isActive
         ? await comparePassword(password, user.password)
@@ -90,84 +60,43 @@ export const login = async (req: Request, res: Response) => {
         return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const accessToken = generateAccessToken({ id: user.id, role: user.role });
-    const refreshToken = generateRefreshToken({ id: user.id, role: user.role });
+    attachAccessToken(user, res);
+    attachRefreshToken(user, res);
 
-    const cookieOptions = {
-        httpOnly: true,
-        secure: process.env.COOKIE_SECURE === "true",
-        sameSite: "strict" as const,
-        path: '/',
-    };
-
-    res
-        .cookie("token", accessToken, { ...cookieOptions, maxAge: 15 * 60 * 1000 })
-        .cookie("refreshToken", refreshToken, {
-            ...cookieOptions,
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        })
-        .json({
-            message: "Logged in",
-            user: { id: user.id, role: user.role, email: user.email },
-        });
+    return res.status(200).json({ user: { name: user.name, role: user.role } });
 };
 
 
-// ✅ POST /auth/logout — Clears cookies
+// ✅ POST /auth/refresh/logout — Clears cookies
 export const logout = async (_req: Request, res: Response) => {
-    res.clearCookie("token", {
+
+    res.clearCookie("access_token", {
         httpOnly: true,
-        secure: process.env.COOKIE_SECURE === "true",
+        secure: process.env.SECURE === "true",
         sameSite: "strict",
-        path: "/",
+        path: "/api",
     });
 
-    res.clearCookie("refreshToken", {
+    res.clearCookie("refresh_token", {
         httpOnly: true,
-        secure: process.env.COOKIE_SECURE === "true",
+        secure: process.env.SECURE === "true",
         sameSite: "strict",
-        path: "/",
+        path: "/api/auth/refresh",
     });
 
     return res.json({ message: "Logout Successful." });
 
 };
 
-// ✅ POST /auth/refresh — Validates and rotates refresh token
+// ✅ POST /auth/refresh/renewtoken — Validates refresh token
 export const refresh = async (req: Request, res: Response) => {
-    const token = req.cookies.refreshToken;
+    const token = req.cookies.refresh_token;
     if (!token) return res.status(401).json({ message: "Refresh token missing" });
 
     try {
         const decoded = verifyRefreshToken(token);
-
-        // ✅ Create new rotated tokens
-        const newAccessToken = generateAccessToken({
-            id: decoded.userId,
-            role: decoded.role,
-        });
-
-        const newRefreshToken = generateRefreshToken({
-            id: decoded.userId,
-            role: decoded.role,
-        });
-
-        const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.COOKIE_SECURE === "true",
-            sameSite: "strict" as const,
-        };
-
-        res
-            .cookie("token", newAccessToken, {
-                ...cookieOptions,
-                maxAge: 15 * 60 * 1000,
-            })
-            .cookie("refreshToken", newRefreshToken, {
-                ...cookieOptions,
-                maxAge: 7 * 24 * 60 * 60 * 1000,
-            })
-            .json({ message: "Token rotated" });
+        attachAccessToken(decoded as User, res);
+        return res.sendStatus(200);
     } catch (err) {
         return res.status(403).json({ message: "Invalid refresh token" });
     }
@@ -176,21 +105,21 @@ export const refresh = async (req: Request, res: Response) => {
 
 // ✅ PATCH /auth/change-password — User must be logged in
 export const changePassword = async (req: Request, res: Response) => {
-    const userId = (req as any).user?.id;
+    const userEmail = (req as any).user?.email;
 
-    if (!userId || typeof userId !== "string") {
+    if (!userEmail || typeof userEmail !== "string") {
         return res.status(401).json({ message: "Not authorized" });
     }
 
     const body = ChangePasswordSchema.safeParse(req.body);
     if (!body.success) {
-        return res.status(400).json({ error: body.error.errors });
+        return res.status(400).json({ message: body.error.errors });
     }
 
     const { oldPassword, newPassword } = body.data;
 
-    const user = await prisma.adminUser.findUnique({
-        where: { id: userId },
+    const user = await prisma.adminUser.findFirst({
+        where: { email: userEmail, isActive: true },
     });
 
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -199,12 +128,12 @@ export const changePassword = async (req: Request, res: Response) => {
     if (!valid)
         return res.status(400).json({ message: "Old password is incorrect" });
 
-    const hashed = await hashPassword(newPassword);
+    const hashedPw = await hashPassword(newPassword);
 
     await prisma.adminUser.update({
-        where: { id: userId },
-        data: { password: hashed },
+        where: { email: userEmail },
+        data: { password: hashedPw },
     });
 
-    res.json({ message: "Password changed successfully" });
+    return res.status(200).json({ message: "Password changed successfully" });
 };

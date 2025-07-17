@@ -34,9 +34,13 @@ app.use(helmet());
 app.use(cookieParser());
 
 // ✅ Core Middlewares
+const allowedOrigins = [
+    'http://192.168.68.122:3000',
+    'http://localhost:3000',
+]
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: allowedOrigins,
         credentials: true,
     })
 );

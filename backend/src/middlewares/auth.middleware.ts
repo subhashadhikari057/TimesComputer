@@ -1,17 +1,17 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import type { Request, Response, NextFunction } from "express";
+import jwt, { type Secret } from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 
-const ACCESS_SECRET = process.env.JWT_SECRET || "access_secret";
+const ACCESS_SECRET: Secret = process.env.JWT_SECRET as string;
 
-// ✅ Middleware: Authenticated user required
+// ✅ Middleware: Authenticated user & attach user to req
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies?.token;
+    const token = req.cookies?.access_token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const decoded = jwt.verify(token, ACCESS_SECRET) as { userId: string; role: string };
-        (req as any).user = { id: decoded.userId, role: decoded.role };
+        const decoded = jwt.verify(token, ACCESS_SECRET) as { email: string; role: string };
+        (req as any).user = { email: decoded.email, role: decoded.role };
         next();
     } catch (err) {
         return res.status(403).json({ message: "Invalid or expired token" });
@@ -31,7 +31,6 @@ export const isSuperadmin = (req: Request, res: Response, next: NextFunction) =>
     if (role === "SUPERADMIN") return next();
     return res.status(403).json({ message: "Superadmin access only" });
 };
-
 
 
 // ✅ General limiter — max 5 requests per 15 minutes per IP
