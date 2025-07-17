@@ -1,5 +1,4 @@
 'use client';
-
 import axios from "@/lib/axiosInstance";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -12,13 +11,12 @@ export default function SuperAdminInit() {
   const [loading, setLoading] = useState(true);
   const [superAdminExists, setSuperAdminExists] = useState(true);
 
-
   useEffect(() => {
     (async () => {
       try {
         const res = await axios.get('/init');
         const data = res.data.message;
-        setSuperAdminExists(data);
+        setSuperAdminExists(false);
       } catch (err) {
         toast.error("Failed to fetch data. Try again later.");
       } finally {
@@ -43,7 +41,6 @@ export default function SuperAdminInit() {
     redirect('/not-found');
     return null;
   }
-
 }
 
 function SignUpForm() {
@@ -152,14 +149,14 @@ function SignUpForm() {
         type="submit"
         disabled={isSubmitting}
       >
-        {isSubmitting ? (
+        {isSubmitting ?
           <>
             <Loader className="animate-spin" />
             Signing Up...
           </>
-        ) : (
+          :
           "Sign Up"
-        )}
+        }
       </Button>
 
     </form>
