@@ -1,9 +1,8 @@
-import axios from "@/lib/axiosInstance";
+import axios, { apiRequest } from "@/lib/axiosInstance";
 
 export interface Category {
   id: number;
   name: string;
-  description?: string;
   image: string;
   icon: string;
   createdAt: string;
@@ -12,17 +11,16 @@ export interface Category {
 
 export interface CreateCategoryData {
   name: string;
-  description?: string;
-  image?: File;
-  icon?: File;
+  image: File;
+  icon: File;
 }
 
 export const categoryService = {
   // Get all categories
   getAllCategories: async (): Promise<Category[]> => {
     try {
-      const response = await axios.get("/category/get");
-      return response.data.data || [];
+      const response = await axios.get("/category");
+      return response.data.data;
     } catch (error) {
       console.error("Error fetching categories:", error);
       throw error;
@@ -32,7 +30,7 @@ export const categoryService = {
   // Get category by ID
   getCategoryById: async (id: number): Promise<Category> => {
     try {
-      const response = await axios.get(`/category/get/${id}`);
+      const response = await axios.get(`/category/${id}`);
       return response.data.data;
     } catch (error) {
       console.error("Error fetching category:", error);
@@ -46,10 +44,6 @@ export const categoryService = {
       const formData = new FormData();
       formData.append("name", data.name);
 
-      if (data.description) {
-        formData.append("description", data.description);
-      }
-
       if (data.image) {
         formData.append("image", data.image);
       }
@@ -58,11 +52,7 @@ export const categoryService = {
         formData.append("icon", data.icon);
       }
 
-      const response = await axios.post("/category/add", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await apiRequest("POST", "/category", formData);
 
       return response.data.data;
     } catch (error) {
@@ -80,10 +70,7 @@ export const categoryService = {
       const formData = new FormData();
       formData.append("name", data.name);
 
-      if (data.description) {
-        formData.append("description", data.description);
-      }
-
+     
       // Only append image if it exists (user uploaded new image)
       if (data.image) {
         formData.append("image", data.image);

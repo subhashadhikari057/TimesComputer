@@ -19,7 +19,7 @@ export const brandService = {
   // Get all brands
   getAllBrands: async (): Promise<Brand[]> => {
     try {
-      const response = await axios.get("/brand/get");
+      const response = await axios.get("/brand");
       return response.data.data || [];
     } catch (error) {
       console.error("Error fetching brands:", error);
@@ -39,7 +39,7 @@ export const brandService = {
          formData.append("icon", data.icon);
 
 
-      const response = await axios.post("/brand/add", formData, {
+      const response = await axios.post("/brand", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

@@ -1,280 +1,308 @@
 "use client";
 
-import { useState } from "react";
-import { GenericDataTable } from "@/components/form/table/table";
-import { Package, Plus, Tag, CheckCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import StatCard from "@/components/admin/dashboard/Statcards";
-import { toast } from "sonner";
-
-// Import the refactored configuration
 import {
-  Category,
-  useCategoryTable,
-  getCategoryTableColumns,
-  getCategoryTableHeader,
-  calculateCategoryStats,
-} from "./CategoryTableConfig";
-import { categoryService } from "@/services/categoryService";
-import AttributePopup, { ATTRIBUTE_CONFIGS } from "../attribute_popup";
+  Plus,
+  Tag,
+  CheckCircle,
+  Package,
+  Search,
+  Download,
+  Eye,
+  Calendar,
+  Trash2,
+  Image,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import StatCard from "@/components/admin/dashboard/Statcards";
+import FilterComponent from "@/components/admin/product/filter";
+import DefaultTable, { Column } from "@/components/form/table/newTable";
+import { useTableData } from "@/hooks/useTableState";
+import { toast } from "sonner";
+import CategoryPopup from "./categoryPopup";
 
-// Enhanced mock data for categories
-const mockCategories: Category[] = [
-  {
-    id: 1,
-    name: "Laptops",
-    productCount: 45,
-    isActive: true,
-    createdAt: "2024-01-15",
-    updatedAt: "2024-02-10",
-    image: "/api/placeholder/150/150",
-    icon: "/api/placeholder/icon/50/50",
-    parentId: null,
-    sortOrder: 1,
-  },
-  {
-    id: 2,
-    name: "Smartphones",
-    productCount: 32,
-    isActive: true,
-    createdAt: "2024-01-10",
-    updatedAt: "2024-02-08",
-    image: "/api/placeholder/150/150",
-    icon: "/api/placeholder/icon/50/50",
-    parentId: null,
-    sortOrder: 2,
-  },
-  {
-    id: 3,
-    name: "Tablets",
-    productCount: 12,
-    isActive: false,
-    createdAt: "2024-01-25",
-    updatedAt: "2024-02-05",
-    image: "/api/placeholder/150/150",
-    icon: "/api/placeholder/icon/50/50",
-    parentId: null,
-    sortOrder: 3,
-  },
-  {
-    id: 4,
-    name: "Accessories",
-    productCount: 67,
-    isActive: true,
-    createdAt: "2024-01-08",
-    updatedAt: "2024-02-15",
-    image: "/api/placeholder/150/150",
-    icon: "/api/placeholder/icon/50/50",
-    parentId: null,
-    sortOrder: 4,
-  },
-  {
-    id: 5,
-    name: "Gaming",
-    productCount: 28,
-    isActive: true,
-    createdAt: "2024-01-20",
-    updatedAt: "2024-02-12",
-    image: "/api/placeholder/150/150",
-    icon: "/api/placeholder/icon/50/50",
-    parentId: null,
-    sortOrder: 5,
-  },
-  {
-    id: 6,
-    name: "Audio",
-    productCount: 19,
-    isActive: false,
-    createdAt: "2024-01-18",
-    updatedAt: "2024-02-03",
-    image: "/api/placeholder/150/150",
-    icon: "/api/placeholder/icon/50/50",
-    parentId: null,
-    sortOrder: 6,
-  },
-];
+// Category interface
+interface Category {
+  id: number;
+  name: string;
+  productCount: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  image: string;
+  icon: string;
+  parentId: number | null;
+  sortOrder: number;
+}
 
 // Main Component
 export default function CategoryManagementPage() {
   const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [editingCategory, setEditingCategory] = useState<{
+    id: number;
+    name: string;
+    image?: string;
+    icon?: string;
+  } | null>(null);
 
-  // Use the custom hook for table logic
+  // Sample data matching the product page structure
+  const categoryData: Category[] = [
+    {
+      id: 1,
+      name: "Laptops",
+      productCount: 45,
+      status: "Active",
+      createdAt: "2025-07-01",
+      updatedAt: "2025-07-15",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/icon/50/50",
+      parentId: null,
+      sortOrder: 1,
+    },
+    {
+      id: 2,
+      name: "Smartphones",
+      productCount: 32,
+      status: "Active",
+      createdAt: "2025-06-24",
+      updatedAt: "2025-07-10",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/icon/50/50",
+      parentId: null,
+      sortOrder: 2,
+    },
+    {
+      id: 3,
+      name: "Tablets",
+      productCount: 12,
+      status: "Inactive",
+      createdAt: "2025-07-15",
+      updatedAt: "2025-07-15",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/icon/50/50",
+      parentId: null,
+      sortOrder: 3,
+    },
+    {
+      id: 4,
+      name: "Accessories",
+      productCount: 67,
+      status: "Active",
+      createdAt: "2025-07-10",
+      updatedAt: "2025-07-12",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/icon/50/50",
+      parentId: null,
+      sortOrder: 4,
+    },
+    {
+      id: 5,
+      name: "Gaming",
+      productCount: 28,
+      status: "Active",
+      createdAt: "2025-06-30",
+      updatedAt: "2025-07-08",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/icon/50/50",
+      parentId: null,
+      sortOrder: 5,
+    },
+    {
+      id: 6,
+      name: "Audio",
+      productCount: 19,
+      status: "Inactive",
+      createdAt: "2025-06-25",
+      updatedAt: "2025-07-05",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/icon/50/50",
+      parentId: null,
+      sortOrder: 6,
+    },
+  ];
+
+  // Define columns for the table (similar to product page)
+  const categoryColumns: Column[] = [
+    {
+      id: "name",
+      label: "Category",
+      sortable: false,
+      filterable: true,
+      searchable: true,
+      width: "300px",
+      render: (category: Category) => (
+        <div className="flex items-center space-x-4">
+          <div className="h-12 w-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center overflow-hidden">
+            {category.image ? (
+              <img 
+                src={category.image} 
+                alt={category.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Tag className="h-6 w-6 text-purple-600" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-gray-900 truncate">
+              {category.name}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "productCount",
+      label: "Products",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "120px",
+      render: (category: Category) => (
+        <div className="flex items-center space-x-1">
+          <Package className="w-4 h-4 text-gray-400" />
+          <span className={`text-sm font-medium ${
+            category.productCount === 0
+              ? "text-red-600"
+              : category.productCount < 10
+              ? "text-yellow-600"
+              : "text-gray-900"
+          }`}>
+            {category.productCount} items
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: "status",
+      label: "Status",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      width: "120px",
+      render: (category: Category) => {
+        const isActive = category.status === "Active";
+
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+              isActive
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {isActive ? (
+              <>
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Active
+              </>
+            ) : (
+              <>
+                <Eye className="w-3 h-3 mr-1" />
+                Inactive
+              </>
+            )}
+          </span>
+        );
+      },
+    },
+    {
+      id: "createdAt",
+      label: "Created At",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "120px",
+      render: (category: Category) => (
+        <div className="flex items-center text-sm text-gray-600">
+          <Calendar className="w-3 h-3 mr-1" />
+          {new Date(category.createdAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      id: "updatedAt",
+      label: "Updated At",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "120px",
+      render: (category: Category) => (
+        <div className="flex items-center text-sm text-gray-600">
+          <Calendar className="w-3 h-3 mr-1" />
+          {new Date(category.updatedAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+  ];
+
+  // Use custom hook for table data management (same as product page)
   const {
-    sortedCategories,
-    selectedCategories,
+    searchTerm,
     filters,
-    updateFilter,
-    resetFilters,
     sortConfig,
+    selectedItems,
+    processedData,
+    filterConfigs,
+    handleSearchChange,
+    handleFilterChange,
+    handleResetFilters,
     handleSort,
     handleSelectAll,
-    handleSelectCategory,
-    clearSelections,
-  } = useCategoryTable(categories);
-
-  // Calculate statistics
-  const stats = calculateCategoryStats(categories);
+    handleSelectItem,
+    handleBulkDelete,
+  } = useTableData({
+    data: categoryData,
+    columns: categoryColumns,
+    defaultSort: { key: 'createdAt', direction: 'desc' }
+  });
 
   // Event handlers
-  const handleEdit = async (categoryId: number) => {
-    try {
-      setLoading(true);
-      // For now, use mock data since we don't have real API
-      const categoryData = categories.find((cat) => cat.id === categoryId);
-      if (categoryData) {
-        setEditingCategory(categoryData);
-        setShowEditPopup(true);
-      } else {
-        toast.error("Category not found");
-      }
-      // Uncomment when API is ready:
-      // const categoryData = await categoryService.getCategoryById(categoryId);
-      // setEditingCategory(categoryData);
-      // setShowEditPopup(true);
-    } catch (error) {
-      console.error("Error loading category:", error);
-      toast.error("Failed to load category data");
-    } finally {
-      setLoading(false);
-    }
+  const handleEdit = (row: any, index: number) => {
+    // Convert Category to the format expected by CategoryPopup
+    const categoryData = {
+      id: row.id,
+      name: row.name,
+      image: row.image, // string URL
+      icon: row.icon,   // string URL
+    };
+    setEditingCategory(categoryData);
+    setShowEditPopup(true);
   };
 
-  const handleDelete = (categoryId: number) => {
-    setCategories((prev) =>
-      prev.filter((category) => category.id !== categoryId)
-    );
+  const handleDelete = (row: any, index: number) => {
+    console.log("Delete category:", row, index);
     toast.success("Category deleted successfully!");
-  };
-
-  const handleBulkDelete = () => {
-    setCategories((prev) =>
-      prev.filter((category) => !selectedCategories.includes(category.id))
-    );
-    toast.success(
-      `${selectedCategories.length} categories deleted successfully!`
-    );
-    clearSelections();
   };
 
   const handleExport = () => {
     console.log("Export categories");
     toast.success("Categories exported successfully!");
-    // TODO: Implement export functionality
   };
 
   const handleAddCategory = () => {
     setShowAddPopup(true);
   };
 
-  // Category creation handler
-  const handleCategorySave = async (data: any) => {
-    try {
-      // If using the service, uncomment this:
-      // const newCategory = await categoryService.createCategory({
-      //   name: data.name,
-      //   image: data.image!,
-      //   icon: data.icon!,
-      // });
-
-      // Create new category object
-      const newCategory: Category = {
-        id: Date.now(),
-        name: data.name,
-        productCount: 0,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        image: data.image
-          ? URL.createObjectURL(data.image)
-          : "/api/placeholder/150/150",
-        icon: data.icon
-          ? URL.createObjectURL(data.icon)
-          : "/api/placeholder/icon/50/50",
-        parentId: data.parentId || null,
-        sortOrder: categories.length + 1,
-      };
-
-      // Add to categories list
-      setCategories((prev) => [...prev, newCategory]);
-
-      // TODO: Implement actual API call here
-      console.log("Creating category with:", data);
-    } catch (err) {
-      console.error("Error creating category:", err);
-      throw err; // Re-throw to let AttributePopup handle the error
-    }
+  const handleCloseAddPopup = () => {
+    setShowAddPopup(false);
   };
 
-  // Category update handler
-  const handleCategoryUpdate = async (data: any) => {
-    try {
-      // For now, use mock update since we don't have real API
-      // await categoryService.updateCategory(editingCategory.id, data);
-
-      // Update the category in the local state
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === editingCategory.id
-            ? {
-                ...cat,
-                name: data.name,
-                description: data.description,
-                updatedAt: new Date().toISOString(),
-                // Only update image/icon if new ones were provided
-                ...(data.image && { image: URL.createObjectURL(data.image) }),
-                ...(data.icon && { icon: URL.createObjectURL(data.icon) }),
-              }
-            : cat
-        )
-      );
-
-      setEditingCategory(null);
-      setShowEditPopup(false);
-      toast.success("Category updated successfully!");
-    } catch (err) {
-      console.error("Error updating category:", err);
-      throw err; // Re-throw to let AttributePopup handle the error
-    }
+  const handleCloseEditPopup = () => {
+    setShowEditPopup(false);
+    setEditingCategory(null);
   };
 
-  // Create category configuration with custom save handler and parent options
-  const categoryConfig = {
-    ...ATTRIBUTE_CONFIGS.category,
-    parentOptions: categories.map((cat) => ({ id: cat.id, name: cat.name })),
-    onSave: handleCategorySave,
-  };
-
-  // Edit category configuration
-  const editCategoryConfig = {
-    ...ATTRIBUTE_CONFIGS.category,
-    title: "Edit Category",
-    description: "Update category information",
-    parentOptions: categories
-      .filter((cat) => cat.id !== editingCategory?.id)
-      .map((cat) => ({ id: cat.id, name: cat.name })),
-    onSave: handleCategoryUpdate,
-  };
-
-  // Get table configuration
-  const tableHeader = getCategoryTableHeader(
-    filters,
-    updateFilter,
-    resetFilters,
-    selectedCategories,
-    handleBulkDelete,
-    handleExport
-  );
-
-  const columns = getCategoryTableColumns();
+  // Calculate stats
+  const totalCategories = categoryData.length;
+  const activeCategories = categoryData.filter(c => c.status === "Active").length;
+  const totalProducts = categoryData.reduce((sum, cat) => sum + cat.productCount, 0);
 
   return (
     <div className="p-6 space-y-6">
-      {/* Page Header */}
+      {/* Page Header - Same structure as product page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Categories</h1>
@@ -294,69 +322,107 @@ export default function CategoryManagementPage() {
       </div>
 
       {/* Add Category Popup */}
-      <AttributePopup
+      <CategoryPopup
         isOpen={showAddPopup}
-        onClose={() => setShowAddPopup(false)}
-        config={categoryConfig}
+        onClose={handleCloseAddPopup}
       />
 
       {/* Edit Category Popup */}
-      <AttributePopup
+      <CategoryPopup
         isOpen={showEditPopup}
-        onClose={() => {
-          setShowEditPopup(false);
-          setEditingCategory(null);
-        }}
-        config={editCategoryConfig}
-        initialData={editingCategory}
+        onClose={handleCloseEditPopup}
+        initialData={editingCategory || undefined}
       />
 
-      {/* Statistics */}
+      {/* Statistics - Same structure as product page */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Categories"
-          value={stats.totalCategories.toString()}
+          value={totalCategories.toString()}
           change="+12% from last month"
           Icon={Tag}
           color="text-purple-600"
         />
         <StatCard
           title="Active Categories"
-          value={stats.activeCount.toString()}
-          change={`${stats.activePercentage}% active`}
+          value={activeCategories.toString()}
+          change={`${Math.round((activeCategories / totalCategories) * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
           title="Total Products"
-          value={stats.totalProducts.toString()}
-          change={`Avg ${stats.averageProducts} per category`}
+          value={totalProducts.toString()}
+          change={`Avg ${Math.round(totalProducts / totalCategories)} per category`}
           Icon={Package}
           color="text-blue-600"
         />
       </div>
 
-      {/* Categories Table */}
-      <GenericDataTable
-        header={tableHeader}
-        data={sortedCategories}
-        columns={columns}
-        selectedItems={selectedCategories}
-        onSelectItem={(id) => handleSelectCategory(id as number)}
-        onSelectAll={handleSelectAll}
-        onEdit={(category) => handleEdit(category.id)}
-        onDelete={(category) => handleDelete(category.id)}
-        showSelection={true}
-        showActions={true}
-        getItemId={(category) => category.id}
-        emptyMessage="No categories found matching your criteria"
-        emptyIcon={<Tag className="w-12 h-12 text-gray-400" />}
-        loadingMessage="Loading categories..."
-        sortConfig={sortConfig}
-        onSort={handleSort}
-        className="max-w-full"
-        loading={loading}
-      />
+      {/* Table Container - Same structure as product page */}
+      <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
+            {/* Search Input - Same as product page */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
+              />
+            </div>
+
+            {/* Action Buttons - Same structure as product page */}
+            <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 md:justify-self-end">
+              {/* Bulk Delete Button - Show only when items are selected */}
+              {selectedItems.length > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete ({selectedItems.length})
+                </button>
+              )}
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
+                <button
+                  onClick={handleExport}
+                  className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Export
+                </button>
+
+                <div className="flex-1">
+                  <FilterComponent
+                    filters={filters}
+                    filterConfigs={filterConfigs}
+                    onFilterChange={handleFilterChange}
+                    onResetFilters={handleResetFilters}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Table - Same as product page */}
+        <DefaultTable
+          selectedItems={selectedItems}
+          onSelectAll={handleSelectAll}
+          onSelectItem={handleSelectItem}
+          columns={categoryColumns}
+          data={processedData}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+        />
+      </div>
     </div>
   );
 }

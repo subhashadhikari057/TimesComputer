@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "@/lib/axiosInstance";
+import axios, { apiRequest } from "@/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -52,7 +52,7 @@ export default function Header({
 
   const handleLogOut = async () => {
     try {
-      await axios.post("/auth/logout", {});
+      const response = await apiRequest("POST", "/auth/refresh/logout");
       toast.success("Logout successful!");
       router.push("/admin/login");
     } catch (error) {

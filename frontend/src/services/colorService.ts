@@ -17,7 +17,7 @@ export const colorService = {
   // Get all colors
   getAllColors: async (): Promise<Color[]> => {
     try {
-      const response = await axios.get("/colors/get");
+      const response = await axios.get("/colors");
       return response.data.data;
     } catch (error) {
       console.error("Error fetching colors:", error);
@@ -28,7 +28,7 @@ export const colorService = {
   // Create a new color
   createColor: async (data: CreateColorData): Promise<Color> => {
     try {
-      const response = await axios.post("/colors/add", data, {
+      const response = await axios.post("/colors", data, {
         headers: {
           "Content-Type": "application/json",
         },

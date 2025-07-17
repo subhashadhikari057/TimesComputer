@@ -47,9 +47,7 @@ export default function ColorSelector({
     }
   };
 
-  const updateForm = (updates: Partial<ColorFormData>) => {
-    setForm((prev) => ({ ...prev, ...updates }));
-  };
+ 
 
   const handleColorChange = (value: string | number | null) => {
     if (
@@ -61,11 +59,7 @@ export default function ColorSelector({
     }
   };
 
-  const isFormValid = () => {
-    return (
-      form.name.trim() !== "" && form.hexCode && form.hexCode.trim() !== ""
-    );
-  };
+
 
   // Convert available colors to dropdown options (filter out already selected)
   const availableColorOptions = colors

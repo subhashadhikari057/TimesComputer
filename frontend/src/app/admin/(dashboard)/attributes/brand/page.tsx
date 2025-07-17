@@ -1,265 +1,262 @@
 "use client";
 
-import { useState } from "react";
-import { GenericDataTable } from "@/components/form/table/table";
-import { Package, Plus, Award, CheckCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import StatCard from "@/components/admin/dashboard/Statcards";
-import { toast } from "sonner";
-
-// Import the refactored configuration
 import {
-  Brand,
-  useBrandTable,
-  getBrandTableColumns,
-  getBrandTableHeader,
-  calculateBrandStats,
-} from "./BrandTableConfig";
-import AttributePopup, { ATTRIBUTE_CONFIGS } from "../attribute_popup";
+  Plus,
+  Award,
+  CheckCircle,
+  Package,
+  Search,
+  Download,
 
-// Enhanced mock data for brands
-const mockBrands: Brand[] = [
-  {
-    id: 1,
-    name: "Apple",
-    description: "Premium technology products and innovative devices",
-    productCount: 45,
-    isActive: true,
-    createdAt: "2024-01-15",
-    updatedAt: "2024-02-10",
-    image: "/api/placeholder/150/150",
-    parentId: null,
-    sortOrder: 1,
-  },
-  {
-    id: 2,
-    name: "Samsung",
-    description: "Global leader in technology and electronics",
-    productCount: 32,
-    isActive: true,
-    createdAt: "2024-01-10",
-    updatedAt: "2024-02-08",
-    image: "/api/placeholder/150/150",
-    parentId: null,
-    sortOrder: 2,
-  },
-  {
-    id: 3,
-    name: "Google",
-    description: "Search, cloud, and consumer technology products",
-    productCount: 12,
-    isActive: false,
-    createdAt: "2024-01-25",
-    updatedAt: "2024-02-05",
-    image: "/api/placeholder/150/150",
-    parentId: null,
-    sortOrder: 3,
-  },
-  {
-    id: 4,
-    name: "Microsoft",
-    description: "Software, cloud computing, and productivity tools",
-    productCount: 67,
-    isActive: true,
-    createdAt: "2024-01-08",
-    updatedAt: "2024-02-15",
-    image: "/api/placeholder/150/150",
-    parentId: null,
-    sortOrder: 4,
-  },
-  {
-    id: 5,
-    name: "Dell",
-    description: "Computer hardware and enterprise solutions",
-    productCount: 28,
-    isActive: true,
-    createdAt: "2024-01-20",
-    updatedAt: "2024-02-12",
-    image: "/api/placeholder/150/150",
-    parentId: null,
-    sortOrder: 5,
-  },
-  {
-    id: 6,
-    name: "HP",
-    description: "Personal computing and printing solutions",
-    productCount: 19,
-    isActive: false,
-    createdAt: "2024-01-18",
-    updatedAt: "2024-02-03",
-    image: "/api/placeholder/150/150",
-    parentId: null,
-    sortOrder: 6,
-  },
-  {
-    id: 7,
-    name: "Sony",
-    description: "Consumer electronics and entertainment technology",
-    productCount: 0,
-    isActive: true,
-    createdAt: "2024-01-22",
-    updatedAt: "2024-02-01",
-    image: "/api/placeholder/150/150",
-    parentId: null,
-    sortOrder: 7,
-  },
-];
+  Calendar,
+  Trash2,
+
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import StatCard from "@/components/admin/dashboard/Statcards";
+import FilterComponent from "@/components/admin/product/filter";
+import DefaultTable, { Column } from "@/components/form/table/newTable";
+import { useTableData } from "@/hooks/useTableState";
+import { toast } from "sonner";
+import BrandPopup from "./brandPopup";
+
+// Brand interface
+interface Brand {
+  id: number;
+  name: string;
+  productCount: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  image: string;
+  icon?: string;
+}
 
 // Main Component
 export default function BrandManagementPage() {
   const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [brands, setBrands] = useState<Brand[]>(mockBrands);
+  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
-  // Use the custom hook for table logic
+  // Sample data matching the product page structure
+  const brandData: Brand[] = [
+    {
+      id: 1,
+      name: "Apple",
+      productCount: 45,
+      status: "Active",
+      createdAt: "2025-07-01",
+      updatedAt: "2025-07-15",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 2,
+      name: "Samsung",
+      productCount: 32,
+      status: "Active",
+      createdAt: "2025-06-24",
+      updatedAt: "2025-07-10",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 3,
+      name: "Google",
+      productCount: 12,
+      status: "Inactive",
+      createdAt: "2025-07-15",
+      updatedAt: "2025-07-15",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 4,
+      name: "Microsoft",
+      productCount: 67,
+      status: "Active",
+      createdAt: "2025-07-10",
+      updatedAt: "2025-07-12",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 5,
+      name: "Dell",
+      productCount: 28,
+      status: "Active",
+      createdAt: "2025-06-30",
+      updatedAt: "2025-07-08",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 6,
+      name: "HP",
+      productCount: 19,
+      status: "Inactive",
+      createdAt: "2025-06-25",
+      updatedAt: "2025-07-05",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 7,
+      name: "Sony",
+      productCount: 0,
+      status: "Active",
+      createdAt: "2025-06-22",
+      updatedAt: "2025-07-01",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+  ];
+
+  // Define columns for the table (similar to product page)
+  const brandColumns: Column[] = [
+    {
+      id: "name",
+      label: "Brand",
+      sortable: false,
+      filterable: true,
+      searchable: true,
+      width: "300px",
+      render: (brand: Brand) => (
+        <div className="flex items-center space-x-4">
+          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
+            {brand.image ? (
+              <img 
+                src={brand.image} 
+                alt={brand.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Award className="h-6 w-6 text-blue-600" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-gray-900 truncate">
+              {brand.name}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "productCount",
+      label: "Products",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "120px",
+      render: (brand: Brand) => (
+        <div className="flex items-center space-x-1">
+          <Package className="w-4 h-4 text-gray-400" />
+          <span className={`text-sm font-medium ${
+            brand.productCount === 0
+              ? "text-red-600"
+              : brand.productCount < 10
+              ? "text-yellow-600"
+              : "text-gray-900"
+          }`}>
+            {brand.productCount} items
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: "status",
+      label: "Status",
+      sortable: true,
+      filterable: true,
+      searchable: false,
+      width: "120px",
+      render: (brand: Brand) => (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          brand.status === "Active"
+            ? "bg-green-100 text-green-800"
+            : "bg-red-100 text-red-800"
+        }`}>
+          {brand.status}
+        </span>
+      ),
+    },
+    {
+      id: "createdAt",
+      label: "Created At",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "120px",
+      render: (brand: Brand) => (
+        <div className="flex items-center text-sm text-gray-600">
+          <Calendar className="w-3 h-3 mr-1" />
+          {new Date(brand.createdAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+  ];
+
+  // Use custom hook for table data management (same as product page)
   const {
-    sortedBrands,
-    selectedBrands,
+    searchTerm,
     filters,
-    updateFilter,
-    resetFilters,
     sortConfig,
+    selectedItems,
+    processedData,
+    filterConfigs,
+    handleSearchChange,
+    handleFilterChange,
+    handleResetFilters,
     handleSort,
     handleSelectAll,
-    handleSelectBrand,
-    clearSelections,
-  } = useBrandTable(brands);
-
-  // Calculate statistics
-  const stats = calculateBrandStats(brands);
+    handleSelectItem,
+    handleBulkDelete,
+  } = useTableData({
+    data: brandData,
+    columns: brandColumns,
+    defaultSort: { key: 'createdAt', direction: 'desc' }
+  });
 
   // Event handlers
-  const handleEdit = async (brandId: number) => {
-    try {
-      setLoading(true);
-      // For now, get brand from local state
-      const brandData = brands.find((b) => b.id === brandId);
-      if (brandData) {
-        setEditingBrand(brandData);
-        setShowEditPopup(true);
-      }
-    } catch (error) {
-      console.error("Error loading brand:", error);
-      toast.error("Failed to load brand data");
-    } finally {
-      setLoading(false);
-    }
+  const handleEdit = (row: any, index: number) => {
+    setEditingBrand(row);
+    setShowEditPopup(true);
   };
 
-  const handleDelete = (brandId: number) => {
-    setBrands((prev) => prev.filter((brand) => brand.id !== brandId));
+  const handleDelete = (row: any, index: number) => {
+    console.log("Delete brand:", row, index);
     toast.success("Brand deleted successfully!");
-  };
-
-  const handleBulkDelete = () => {
-    setBrands((prev) =>
-      prev.filter((brand) => !selectedBrands.includes(brand.id))
-    );
-    toast.success(`${selectedBrands.length} brands deleted successfully!`);
-    clearSelections();
   };
 
   const handleExport = () => {
     console.log("Export brands");
     toast.success("Brands exported successfully!");
-    // TODO: Implement export functionality
   };
 
   const handleAddBrand = () => {
     setShowAddPopup(true);
   };
 
-  // Brand creation handler
-  const handleBrandSave = async (data: any) => {
-    // Create new brand object
-    const newBrand: Brand = {
-      id: Date.now(),
-      name: data.name,
-      description: data.description || `${data.name} brand`,
-      productCount: 0,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      image: data.image
-        ? URL.createObjectURL(data.image)
-        : "/api/placeholder/150/150",
-      parentId: null,
-      sortOrder: brands.length + 1,
-    };
-
-    // Add to brands list
-    setBrands((prev) => [...prev, newBrand]);
-
-    // TODO: Implement actual API call here
-    console.log("Creating brand with:", data);
+  const handleCloseAddPopup = () => {
+    setShowAddPopup(false);
   };
 
-  // Brand update handler
-  const handleBrandUpdate = async (data: any) => {
-    try {
-      // For now, use mock update since we don't have real API
-      // await brandService.updateBrand(editingBrand.id, data);
-
-      // Update the brand in the local state
-      setBrands((prev) =>
-        prev.map((brand) =>
-          brand.id === editingBrand.id
-            ? {
-                ...brand,
-                name: data.name,
-                description: data.description,
-                updatedAt: new Date().toISOString(),
-                // Only update image if new one was provided
-                ...(data.image && { image: URL.createObjectURL(data.image) }),
-              }
-            : brand
-        )
-      );
-
-      setEditingBrand(null);
-      setShowEditPopup(false);
-      toast.success("Brand updated successfully!");
-
-      // Uncomment when API is ready:
-      // await brandService.updateBrand(editingBrand.id, data);
-    } catch (err) {
-      console.error("Error updating brand:", err);
-      throw err; // Re-throw to let AttributePopup handle the error
-    }
+  const handleCloseEditPopup = () => {
+    setShowEditPopup(false);
+    setEditingBrand(null);
   };
 
-  // Create brand configuration with custom save handler
-  const brandConfig = {
-    ...ATTRIBUTE_CONFIGS.brand,
-    onSave: handleBrandSave,
-  };
-
-  // Edit brand configuration
-  const editBrandConfig = {
-    ...ATTRIBUTE_CONFIGS.brand,
-    title: "Edit Brand",
-    description: "Update brand information",
-    onSave: handleBrandUpdate,
-  };
-
-  // Get table configuration
-  const tableHeader = getBrandTableHeader(
-    filters,
-    updateFilter,
-    resetFilters,
-    selectedBrands,
-    handleBulkDelete,
-    handleExport
-  );
-
-  const columns = getBrandTableColumns();
+  // Calculate stats
+  const totalBrands = brandData.length;
+  const activeBrands = brandData.filter(b => b.status === "Active").length;
+  const totalProducts = brandData.reduce((sum, brand) => sum + brand.productCount, 0);
 
   return (
     <div className="p-6 space-y-6">
-      {/* Page Header */}
+      {/* Page Header - Same structure as product page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Brands</h1>
@@ -279,68 +276,107 @@ export default function BrandManagementPage() {
       </div>
 
       {/* Add Brand Popup */}
-      <AttributePopup
+      <BrandPopup
         isOpen={showAddPopup}
-        onClose={() => setShowAddPopup(false)}
-        config={brandConfig}
+        onClose={handleCloseAddPopup}
       />
 
       {/* Edit Brand Popup */}
-      <AttributePopup
+      <BrandPopup
         isOpen={showEditPopup}
-        onClose={() => {
-          setShowEditPopup(false);
-          setEditingBrand(null);
-        }}
-        config={editBrandConfig}
-        initialData={editingBrand}
+        onClose={handleCloseEditPopup}
+        initialData={editingBrand || undefined}
       />
 
-      {/* Statistics */}
+      {/* Statistics - Same structure as product page */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Brands"
-          value={stats.totalBrands.toString()}
+          value={totalBrands.toString()}
           change="+12% from last month"
           Icon={Award}
           color="text-blue-600"
         />
         <StatCard
           title="Active Brands"
-          value={stats.activeCount.toString()}
-          change={`${stats.activePercentage}% active`}
+          value={activeBrands.toString()}
+          change={`${Math.round((activeBrands / totalBrands) * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
           title="Total Products"
-          value={stats.totalProducts.toString()}
-          change={`Avg ${stats.averageProducts} per brand`}
+          value={totalProducts.toString()}
+          change={`Avg ${Math.round(totalProducts / totalBrands)} per brand`}
           Icon={Package}
           color="text-purple-600"
         />
       </div>
 
-      {/* Brands Table */}
-      <GenericDataTable
-        header={tableHeader}
-        data={sortedBrands}
-        columns={columns}
-        selectedItems={selectedBrands}
-        onSelectItem={(id) => handleSelectBrand(id as number)}
-        onSelectAll={handleSelectAll}
-        onEdit={(brand) => handleEdit(brand.id)}
-        onDelete={(brand) => handleDelete(brand.id)}
-        showSelection={true}
-        showActions={true}
-        getItemId={(brand) => brand.id}
-        emptyMessage="No brands found matching your criteria"
-        emptyIcon={<Award className="w-12 h-12 text-gray-400" />}
-        loadingMessage="Loading brands..."
-        sortConfig={sortConfig}
-        onSort={handleSort}
-        className="max-w-full"
-      />
+      {/* Table Container - Same structure as product page */}
+      <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
+            {/* Search Input - Same as product page */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search brands..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
+              />
+            </div>
+
+            {/* Action Buttons - Same structure as product page */}
+            <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 md:justify-self-end">
+              {/* Bulk Delete Button - Show only when items are selected */}
+              {selectedItems.length > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete ({selectedItems.length})
+                </button>
+              )}
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
+                <button
+                  onClick={handleExport}
+                  className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Export
+                </button>
+
+                <div className="flex-1">
+                  <FilterComponent
+                    filters={filters}
+                    filterConfigs={filterConfigs}
+                    onFilterChange={handleFilterChange}
+                    onResetFilters={handleResetFilters}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Table - Same as product page */}
+        <DefaultTable
+          selectedItems={selectedItems}
+          onSelectAll={handleSelectAll}
+          onSelectItem={handleSelectItem}
+          columns={brandColumns}
+          data={processedData}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+        />
+      </div>
     </div>
   );
 }

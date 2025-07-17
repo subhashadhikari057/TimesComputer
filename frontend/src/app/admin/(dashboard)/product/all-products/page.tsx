@@ -1,128 +1,253 @@
+
+
+
+
+
+
+
 "use client";
 
-import { useState } from "react";
-import { GenericDataTable } from "@/components/form/table/table";
-import { Plus, DollarSign, CheckCircle, Package } from "lucide-react";
+import {
+  Plus,
+  DollarSign,
+  CheckCircle,
+  Package,
+  Search,
+  Download,
+  Eye,
+  Calendar,
+  Trash2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import {
-  Product,
-  useProductTable,
-  getProductTableColumns,
-  getProductTableHeader,
-  calculateProductStats,
-} from "./ProductTableConfig";
-
-// Mock data
-const mockProducts: Product[] = [
-  {
-    id: 1,
-    name: "MacBook Pro 16-inch M3 Max",
-    slug: "macbook-pro-16-inch-m3-max",
-    price: 2399.99,
-    stock: 25,
-    category: "Laptops",
-    brand: "Apple",
-    isPublished: true,
-    image: "/api/placeholder/150/150",
-    createdAt: "2024-01-15",
-    updatedAt: "2024-02-10",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "iPhone 15 Pro Max 256GB",
-    slug: "iphone-15-pro-max-256gb",
-    price: 999.99,
-    stock: 50,
-    category: "Smartphones",
-    brand: "Apple",
-    isPublished: true,
-    image: "/api/placeholder/150/150",
-    createdAt: "2024-01-20",
-    updatedAt: "2024-02-15",
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Samsung Galaxy S24 Ultra",
-    slug: "samsung-galaxy-s24-ultra",
-    price: 799.99,
-    stock: 0,
-    category: "Smartphones",
-    brand: "Samsung",
-    isPublished: false,
-    image: "/api/placeholder/150/150",
-    createdAt: "2024-01-10",
-    updatedAt: "2024-02-05",
-    status: "out_of_stock",
-  },
-  {
-    id: 4,
-    name: "Dell XPS 13 Plus Intel i7",
-    slug: "dell-xps-13-plus-intel-i7",
-    price: 1299.99,
-    stock: 15,
-    category: "Laptops",
-    brand: "Dell",
-    isPublished: true,
-    image: "/api/placeholder/150/150",
-    createdAt: "2024-01-08",
-    updatedAt: "2024-02-12",
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "HP Spectre x360 14-inch",
-    slug: "hp-spectre-x360-14-inch",
-    price: 1199.99,
-    stock: 8,
-    category: "Laptops",
-    brand: "HP",
-    isPublished: true,
-    image: "/api/placeholder/150/150",
-    createdAt: "2024-01-25",
-    updatedAt: "2024-02-08",
-    status: "low_stock",
-  },
-];
+import FilterComponent from "@/components/admin/product/filter";
+import DefaultTable, { Column } from "@/components/form/table/newTable";
+import { useTableData } from "@/hooks/useTableState";
 
 // Main Component
 export default function ViewProductsPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
 
-  // Use the product table hook
+  // Sample data
+  const newData = [
+    {
+      id: 1,
+      product: "EcoSmart LED Bulb",
+      category: "Lighting",
+      brand: "EcoSmart",
+      price: "12.99",
+      stock: 120,
+      status: "Active",
+      createdAt: "2025-07-01",
+    },
+    {
+      id: 2,
+      product: "Smart WiFi Plug",
+      category: "Electronics",
+      brand: "TP-Link",
+      price: "19.99",
+      stock: 85,
+      status: "Inactive",
+      createdAt: "2025-06-24",
+    },
+    {
+      id: 3,
+      product: "Wireless Mouse",
+      category: "Accessories",
+      brand: "Logitech",
+      price: "29.95",
+      stock: 200,
+      status: "Active",
+      createdAt: "2025-07-15",
+    },
+    {
+      id: 4,
+      product: "Bluetooth Speaker",
+      category: "Electronics",
+      brand: "JBL",
+      price: "89.99",
+      stock: 45,
+      status: "Active",
+      createdAt: "2025-07-10",
+    },
+    {
+      id: 5,
+      product: "Desk Lamp",
+      category: "Lighting",
+      brand: "IKEA",
+      price: "24.99",
+      stock: 0,
+      status: "Inactive",
+      createdAt: "2025-06-30",
+    },
+  ];
+
+  // Define columns for the table
+  const newColumns: Column[] = [
+    {
+      id: "product",
+      label: "Product",
+      sortable: false,
+      filterable: true,
+      searchable: true, 
+      width: "300px",
+      render: (product: any) => (
+        <div className="flex items-center space-x-4">
+          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+            <Package className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-gray-900 truncate">
+              {product.product}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "category",
+      label: "Category",
+      sortable: false,
+      filterable: true, 
+      searchable: true,
+      width: "120px",
+      render: (product: any) => (
+        <div className="text-sm text-gray-900">{product.category}</div>
+      ),
+    },
+    {
+      id: "brand",
+      label: "Brand",
+      sortable: true,
+      filterable: true, 
+      searchable: true,
+      width: "100px",
+      render: (product: any) => (
+        <div className="text-sm font-medium text-gray-900">{product.brand}</div>
+      ),
+    },
+    {
+      id: "price",
+      label: "Price",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "100px",
+      render: (product: any) => {
+        const price =
+          typeof product.price === "string"
+            ? parseFloat(product.price.replace("$", ""))
+            : product.price;
+
+        return (
+          <div className="flex items-center space-x-1">
+            <span className="text-sm font-semibold text-gray-900">
+              ${price.toFixed(2)}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "stock",
+      label: "Stock",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "100px",
+      render: (product: any) => (
+        <div
+          className={`text-sm font-medium ${
+            product.stock === 0
+              ? "text-red-600"
+              : product.stock < 10
+              ? "text-yellow-600"
+              : "text-gray-900"
+          }`}
+        >
+          {product.stock} units
+        </div>
+      ),
+    },
+    {
+      id: "status",
+      label: "Status",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      width: "120px",
+      render: (product: any) => {
+        const isPublished = product.status === "Active";
+
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+              isPublished
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {isPublished ? (
+              <>
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Published
+              </>
+            ) : (
+              <>
+                <Eye className="w-3 h-3 mr-1" />
+                Draft
+              </>
+            )}
+          </span>
+        );
+      },
+    },
+    {
+      id: "createdAt",
+      label: "Created At",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      width: "120px",
+      render: (product: any) => (
+        <div className="flex items-center text-sm text-gray-600">
+          <Calendar className="w-3 h-3 mr-1" />
+          {new Date(product.createdAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+  ];
+
+  // Use custom hook for table data management
+  // This hook handles search, filters, sorting, and selection state
   const {
-    sortedProducts,
-    selectedProducts,
+    searchTerm,
     filters,
-    updateFilter,
-    resetFilters,
     sortConfig,
+    selectedItems,
+    processedData,
+    filterConfigs,
+    handleSearchChange,
+    handleFilterChange,
+    handleResetFilters,
     handleSort,
     handleSelectAll,
-    handleSelectProduct,
-    clearSelections,
-  } = useProductTable(mockProducts);
+    handleSelectItem,
+    handleBulkDelete,
+  } = useTableData({
+    data: newData,
+    columns: newColumns, // Pass the columns array directly
+    defaultSort: { key: 'createdAt', direction: 'desc' }
+  });
 
-  // Calculate statistics
-  const stats = calculateProductStats(mockProducts);
+ 
 
-  // Event handlers
-  const handleEdit = (productId: number) => {
-    router.push(`/admin/product/${productId}/edit`);
+  const handleEdit = (row: any, index: number) => {
+    router.push(`/admin/product/${row.id}/edit`);
   };
 
-  const handleDelete = (productId: number) => {
-    console.log("Delete product:", productId);
-    // TODO: Implement delete functionality
-  };
-
-  const handleBulkDelete = () => {
-    console.log("Bulk delete products:", selectedProducts);
-    clearSelections();
-    // TODO: Implement bulk delete functionality
+  const handleDelete = (row: any, index: number) => {
+    console.log("Delete:", row, index);
   };
 
   const handleExport = () => {
@@ -133,18 +258,6 @@ export default function ViewProductsPage() {
   const handleAddProduct = () => {
     router.push("/admin/product/create");
   };
-
-  // Get table configuration
-  const tableHeader = getProductTableHeader(
-    filters,
-    updateFilter,
-    resetFilters,
-    selectedProducts,
-    handleBulkDelete,
-    handleExport
-  );
-
-  const columns = getProductTableColumns();
 
   return (
     <div className="p-6 space-y-6">
@@ -171,45 +284,89 @@ export default function ViewProductsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Products"
-          value={stats.totalProducts.toString()}
+          value={newData.length.toString()}
           change="+12% from last month"
           Icon={Package}
           color="text-blue-600"
         />
         <StatCard
           title="Published Products"
-          value={stats.publishedCount.toString()}
-          change={`${stats.publishedPercentage}% published`}
+          value={newData.filter(p => p.status === 'Active').length.toString()}
+          change="100%"
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
           title="Total Value"
-          value={`$${stats.totalValue.toLocaleString()}`}
+          value="$177.91"
           change="Current stock value"
           Icon={DollarSign}
           color="text-purple-600"
         />
       </div>
 
-      {/* Products Table */}
-      <GenericDataTable
-        header={tableHeader}
-        data={sortedProducts}
-        columns={columns}
-        selectedItems={selectedProducts}
-        onSelectItem={(id) => handleSelectProduct(id as number)}
-        onSelectAll={handleSelectAll}
-        onEdit={(product) => handleEdit(product.id)}
-        onDelete={(product) => handleDelete(product.id)}
-        showSelection={true}
-        getItemId={(product) => product.id}
-        loading={loading}
-        loadingMessage="Loading products..."
-        sortConfig={sortConfig}
-        onSort={handleSort}
-        className="max-w-full"
-      />
+      <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 md:justify-self-end">
+              {/* Bulk Delete Button - Show only when items are selected */}
+              {selectedItems.length > 0 && (
+                <button
+                  onClick={handleBulkDelete}
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Delete ({selectedItems.length})
+                </button>
+              )}
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
+                <button
+                  onClick={handleExport}
+                  className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <Download className="h-4 w-4 mr-1" />
+                  Export
+                </button>
+
+                <div className="flex-1">
+                  <FilterComponent
+                    filters={filters}
+                    filterConfigs={filterConfigs}
+                    onFilterChange={handleFilterChange}
+                    onResetFilters={handleResetFilters}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DefaultTable
+          selectedItems={selectedItems}
+          onSelectAll={handleSelectAll}
+          onSelectItem={handleSelectItem}
+          columns={newColumns}
+          data={processedData} // Using processedData from the hook
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+        />
+      </div>
     </div>
   );
 }

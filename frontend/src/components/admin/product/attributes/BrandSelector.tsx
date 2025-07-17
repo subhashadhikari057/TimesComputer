@@ -54,9 +54,7 @@ export default function BrandSelector({
     }
   };
 
-  const updateForm = (updates: Partial<BrandFormData>) => {
-    setForm((prev) => ({ ...prev, ...updates }));
-  };
+
 
   const handleBrandChange = (value: string | number | null) => {
     onBrandChange(value as number | null);
