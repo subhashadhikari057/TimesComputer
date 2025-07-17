@@ -6,10 +6,7 @@ import { Package, Plus, Tag, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import { toast } from "sonner";
-import AddDetailsPopup from "@/components/common/popup";
-import DefaultInput from "@/components/form/form-elements/DefaultInput";
-import PhotoUpload from "@/components/admin/product/photoUpload";
-import IconUpload from "@/components/admin/product/iconUpload";
+
 
 // Import the refactored configuration
 import {
@@ -20,30 +17,13 @@ import {
   calculateCategoryStats,
 } from "./CategoryTableConfig";
 import { categoryService } from "@/services/categoryService";
-
-// Form data interface
-interface CategoryFormData {
-  name: string;
-  image: File | null;
-  imagePreview: string;
-  icon: File | null;
-  iconPreview: string;
-}
-
-const INITIAL_CATEGORY_FORM: CategoryFormData = {
-  name: "",
-  image: null,
-  imagePreview: "",
-  icon: null,
-  iconPreview: "",
-};
+import AttributePopup, { ATTRIBUTE_CONFIGS } from "../attribute_popup";
 
 // Enhanced mock data for categories
 const mockCategories: Category[] = [
   {
     id: 1,
     name: "Laptops",
-
     productCount: 45,
     isActive: true,
     createdAt: "2024-01-15",
@@ -68,7 +48,6 @@ const mockCategories: Category[] = [
   {
     id: 3,
     name: "Tablets",
-
     productCount: 12,
     isActive: false,
     createdAt: "2024-01-25",
@@ -81,7 +60,6 @@ const mockCategories: Category[] = [
   {
     id: 4,
     name: "Accessories",
-
     productCount: 67,
     isActive: true,
     createdAt: "2024-01-08",
@@ -94,7 +72,6 @@ const mockCategories: Category[] = [
   {
     id: 5,
     name: "Gaming",
-
     productCount: 28,
     isActive: true,
     createdAt: "2024-01-20",
@@ -107,7 +84,6 @@ const mockCategories: Category[] = [
   {
     id: 6,
     name: "Audio",
-
     productCount: 19,
     isActive: false,
     createdAt: "2024-01-18",
@@ -123,13 +99,7 @@ const mockCategories: Category[] = [
 export default function CategoryManagementPage() {
   const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<CategoryFormData>({
-    ...INITIAL_CATEGORY_FORM,
-  });
-  const [showValidation, setShowValidation] = useState(false);
+  const [categories, setCategories] = useState<Category[]>(mockCategories);
 
   // Use the custom hook for table logic
   const {
@@ -143,10 +113,10 @@ export default function CategoryManagementPage() {
     handleSelectAll,
     handleSelectCategory,
     clearSelections,
-  } = useCategoryTable(mockCategories);
+  } = useCategoryTable(categories);
 
   // Calculate statistics
-  const stats = calculateCategoryStats(mockCategories);
+  const stats = calculateCategoryStats(categories);
 
   // Event handlers
   const handleEdit = (categoryId: number) => {
@@ -154,18 +124,14 @@ export default function CategoryManagementPage() {
   };
 
   const handleDelete = (categoryId: number) => {
-    console.log("Delete category:", categoryId);
+    setCategories(prev => prev.filter(category => category.id !== categoryId));
     toast.success("Category deleted successfully!");
-    // TODO: Implement actual delete logic
   };
 
   const handleBulkDelete = () => {
-    console.log("Bulk delete categories:", selectedCategories);
-    toast.success(
-      `${selectedCategories.length} categories deleted successfully!`
-    );
+    setCategories(prev => prev.filter(category => !selectedCategories.includes(category.id)));
+    toast.success(`${selectedCategories.length} categories deleted successfully!`);
     clearSelections();
-    // TODO: Implement actual bulk delete logic
   };
 
   const handleExport = () => {
@@ -174,82 +140,50 @@ export default function CategoryManagementPage() {
     // TODO: Implement export functionality
   };
 
-  // Form handlers
-  const handleCancel = () => {
-    setShowAddPopup(false);
-    setForm({ ...INITIAL_CATEGORY_FORM });
-    setShowValidation(false);
-    setError(null);
+  const handleAddCategory = () => {
+    setShowAddPopup(true);
   };
 
-  const isFormValid = () => {
-    return form.name.trim() !== "" && form.image !== null && form.icon !== null;
-  };
-
-  const handleSave = async () => {
-    setShowValidation(true);
-
-    if (!isFormValid()) return;
-
+  // Category creation handler
+  const handleCategorySave = async (data: any) => {
     try {
-      setLoading(true);
-      setError(null);
+      // If using the service, uncomment this:
+      // const newCategory = await categoryService.createCategory({
+      //   name: data.name,
+      //   image: data.image!,
+      //   icon: data.icon!,
+      // });
 
-      const newCategory = await categoryService.createCategory({
-        name: form.name,
-        image: form.image!,
-        icon: form.icon!,
-      });
-
-      // Create a complete Category object with all required properties
-      const fullCategory: Category = {
-        id: newCategory.id,
-        name: newCategory.name,
+      // Create new category object
+      const newCategory: Category = {
+        id: Date.now(),
+        name: data.name,
         productCount: 0,
         isActive: true,
-        createdAt: newCategory.createdAt,
-        updatedAt: newCategory.updatedAt,
-        image: newCategory.image,
-        icon: newCategory.icon,
-        parentId: null,
-        sortOrder: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        image: data.image ? URL.createObjectURL(data.image) : "/api/placeholder/150/150",
+        icon: data.icon ? URL.createObjectURL(data.icon) : "/api/placeholder/icon/50/50",
+        parentId: data.parentId || null,
+        sortOrder: categories.length + 1,
       };
 
-      setCategories((prev) => [...prev, fullCategory]);
-      handleCancel();
+      // Add to categories list
+      setCategories(prev => [...prev, newCategory]);
+      
+      // TODO: Implement actual API call here
+      console.log("Creating category with:", data);
     } catch (err) {
-      setError("Failed to create category");
       console.error("Error creating category:", err);
-    } finally {
-      setLoading(false);
+      throw err; // Re-throw to let AttributePopup handle the error
     }
   };
 
-  const handleImageUpload = (files: File[], imageType: "image" | "icon") => {
-    const file = files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
-      updateForm({
-        [imageType]: file,
-        [previewKey]: e.target?.result as string,
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemove = (imageType: "image" | "icon") => {
-    const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
-    updateForm({
-      [imageType]: null,
-      [previewKey]: "",
-    });
-  };
-
-  const updateForm = (updates: Partial<CategoryFormData>) => {
-    setForm((prev) => ({ ...prev, ...updates }));
+  // Create category configuration with custom save handler and parent options
+  const categoryConfig = {
+    ...ATTRIBUTE_CONFIGS.category,
+    parentOptions: categories.map(cat => ({ id: cat.id, name: cat.name })),
+    onSave: handleCategorySave
   };
 
   // Get table configuration
@@ -276,7 +210,7 @@ export default function CategoryManagementPage() {
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={() => setShowAddPopup(true)}
+            onClick={handleAddCategory}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <Plus className="h-4 w-4 mr-1" />
@@ -286,73 +220,11 @@ export default function CategoryManagementPage() {
       </div>
 
       {/* Add Category Popup */}
-      <AddDetailsPopup
+      <AttributePopup
         isOpen={showAddPopup}
-        onClose={handleCancel}
-        title="Add New Category"
-        description="Create a new category for your products"
-        onSave={handleSave}
-        onCancel={handleCancel}
-        saveButtonText={loading ? "Creating..." : "Add Category"}
-        maxWidth="md"
-      >
-        <div className="space-y-6">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          <DefaultInput
-            label="Category Name *"
-            name="categoryName"
-            value={form.name}
-            onChange={(e) => updateForm({ name: e.target.value })}
-            placeholder="Enter category name (e.g., Laptops, Smartphones)"
-            required
-          />
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <PhotoUpload
-                label="Category Image"
-                required
-                images={form.image ? [form.image] : []}
-                imagePreviews={form.imagePreview ? [form.imagePreview] : []}
-                onImageUpload={(e) =>
-                  handleImageUpload(Array.from(e.target.files || []), "image")
-                }
-                onRemoveImage={() => handleRemove("image")}
-                maxImages={1}
-                maxSizeText="up to 10MB each"
-                acceptedFormats="PNG, JPG"
-                uploadText="Click to upload image"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category Icon *
-              </label>
-              <IconUpload
-                images={form.icon ? [form.icon] : []}
-                imagePreviews={form.iconPreview ? [form.iconPreview] : []}
-                onImageUpload={(e) =>
-                  handleImageUpload(Array.from(e.target.files || []), "icon")
-                }
-                onRemoveImage={() => handleRemove("icon")}
-                maxImages={1}
-              />
-            </div>
-          </div>
-
-          {!isFormValid() && showValidation && !loading && (
-            <p className="text-sm text-red-600">
-              Please fill in all required fields: name, image, and icon.
-            </p>
-          )}
-        </div>
-      </AddDetailsPopup>
+        onClose={() => setShowAddPopup(false)}
+        config={categoryConfig}
+      />
 
       {/* Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -394,10 +266,10 @@ export default function CategoryManagementPage() {
         getItemId={(category) => category.id}
         emptyMessage="No categories found matching your criteria"
         emptyIcon={<Tag className="w-12 h-12 text-gray-400" />}
-        loading={loading}
         loadingMessage="Loading categories..."
         sortConfig={sortConfig}
         onSort={handleSort}
+        className="max-w-full"
       />
     </div>
   );

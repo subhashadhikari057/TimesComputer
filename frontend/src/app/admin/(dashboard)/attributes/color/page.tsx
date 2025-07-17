@@ -1,54 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import {
-  GenericDataTable,
-  TableColumn,
-  TableHeader,
-} from "@/components/form/table/table";
-import {
-  Package,
-  Trash2,
-  Plus,
-  Palette,
-  CheckCircle,
-  XCircle,
-  Calendar,
-  Download,
-  Search,
-} from "lucide-react";
+import { GenericDataTable } from "@/components/form/table/table";
+import { Package, Plus, Palette, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import FilterComponent, {
-  FilterConfig,
-} from "@/components/admin/product/filter";
-import { useFilters } from "@/hooks/useFilter";
-import { useSort, createSortableColumn } from "@/hooks/useSort";
 import { toast } from "sonner";
-import AddDetailsPopup from "@/components/common/popup";
-import DefaultInput from "@/components/form/form-elements/DefaultInput";
 
-// Type definitions
-interface Color {
-  id: number;
-  name: string;
-  hexCode: string;
-  productCount: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  sortOrder: number;
-}
 
-interface ColorFormData {
-  name: string;
-  hexCode: string;
-}
-
-const INITIAL_COLOR_FORM: ColorFormData = {
-  name: "",
-  hexCode: "#000000",
-};
+// Import the refactored configuration
+import {
+  Color,
+  useColorTable,
+  getColorTableColumns,
+  getColorTableHeader,
+  calculateColorStats,
+} from "./ColorTableConfig";
+import AttributePopup, { ATTRIBUTE_CONFIGS } from "../attribute_popup";
 
 // Enhanced mock data for colors
 const mockColors: Color[] = [
@@ -134,168 +102,43 @@ const mockColors: Color[] = [
   },
 ];
 
-// Define sortable columns for colors
-const colorSortableColumns = {
-  color: createSortableColumn(
-    'color',
-    (color: Color) => color.name,
-    'string'
-  ),
-  products: createSortableColumn(
-    'products',
-    (color: Color) => color.productCount,
-    'number'
-  ),
-  hexCode: createSortableColumn(
-    'hexCode',
-    (color: Color) => color.hexCode,
-    'string'
-  ),
-  status: createSortableColumn(
-    'status',
-    (color: Color) => color.isActive,
-    'boolean'
-  ),
-  created: createSortableColumn(
-    'created',
-    (color: Color) => color.createdAt,
-    'date'
-  ),
-  updated: createSortableColumn(
-    'updated',
-    (color: Color) => color.updatedAt,
-    'date'
-  ),
-};
-
 // Main Component
 export default function ColorManagementPage() {
   const router = useRouter();
-  const [selectedColors, setSelectedColors] = useState<number[]>([]);
   const [showAddPopup, setShowAddPopup] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [form, setForm] = useState<ColorFormData>({
-    ...INITIAL_COLOR_FORM,
-  });
-  const [showValidation, setShowValidation] = useState(false);
+  const [colors, setColors] = useState<Color[]>(mockColors);
 
-  // Initialize filters using the custom hook
-  const { filters, updateFilter, resetFilters } = useFilters({
-    initialFilters: {
-      search: "",
-      status: "all",
-      productCount: "all",
-    },
-  });
-
-  // Filter colors first
-  const filteredColors = mockColors.filter((color) => {
-    const searchTerm = filters.search as string;
-    const filterStatus = filters.status as string;
-    const filterProductCount = filters.productCount as string;
-
-    const matchesSearch =
-      color.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      color.hexCode.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus =
-      filterStatus === "all" ||
-      (filterStatus === "active" && color.isActive) ||
-      (filterStatus === "inactive" && !color.isActive);
-
-    const matchesProductCount = (() => {
-      if (filterProductCount === "all") return true;
-      const count = color.productCount;
-      switch (filterProductCount) {
-        case "high":
-          return count >= 50;
-        case "medium":
-          return count >= 10 && count <= 49;
-        case "low":
-          return count >= 1 && count <= 9;
-        case "empty":
-          return count === 0;
-        default:
-          return true;
-      }
-    })();
-
-    return matchesSearch && matchesStatus && matchesProductCount;
-  });
-
-  // Use the sorting hook with initial sort by name
-  const { sortedData: sortedColors, sortConfig, handleSort } = useSort(
-    filteredColors,
-    colorSortableColumns,
-    { column: 'color', direction: 'asc' }
-  );
-
-  // Filter configuration for the reusable filter component
-  const filterConfigs: FilterConfig[] = [
-    {
-      key: "status",
-      label: "Status",
-      type: "radio",
-      gridSpan: 2,
-      options: [
-        { value: "all", label: "All Status" },
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-      ],
-    },
-    {
-      key: "productCount",
-      label: "Product Count",
-      type: "select",
-      gridSpan: 2,
-      options: [
-        { value: "all", label: "All Colors" },
-        { value: "high", label: "High (50+)" },
-        { value: "medium", label: "Medium (10-49)" },
-        { value: "low", label: "Low (1-9)" },
-        { value: "empty", label: "Empty (0)" },
-      ],
-    },
-  ];
+  // Use the custom hook for table logic
+  const {
+    sortedColors,
+    selectedColors,
+    filters,
+    updateFilter,
+    resetFilters,
+    sortConfig,
+    handleSort,
+    handleSelectAll,
+    handleSelectColor,
+    clearSelections,
+  } = useColorTable(colors);
 
   // Calculate statistics
-  const activeCount = mockColors.filter((c) => c.isActive).length;
-  const totalProducts = mockColors.reduce((sum, c) => sum + c.productCount, 0);
-  const averageProducts = Math.round(totalProducts / mockColors.length);
+  const stats = calculateColorStats(colors);
 
   // Event handlers
-  const handleSelectAll = () => {
-    setSelectedColors(
-      selectedColors.length === sortedColors.length
-        ? []
-        : sortedColors.map((c) => c.id)
-    );
-  };
-
-  const handleSelectColor = (colorId: number) => {
-    setSelectedColors((prev) =>
-      prev.includes(colorId)
-        ? prev.filter((id) => id !== colorId)
-        : [...prev, colorId]
-    );
-  };
-
   const handleEdit = (colorId: number) => {
     router.push(`/admin/attributes/color/${colorId}/edit`);
   };
 
   const handleDelete = (colorId: number) => {
-    console.log("Delete color:", colorId);
+    setColors(prev => prev.filter(color => color.id !== colorId));
     toast.success("Color deleted successfully!");
-    // TODO: Implement actual delete logic
   };
 
   const handleBulkDelete = () => {
-    console.log("Bulk delete colors:", selectedColors);
+    setColors(prev => prev.filter(color => !selectedColors.includes(color.id)));
     toast.success(`${selectedColors.length} colors deleted successfully!`);
-    setSelectedColors([]);
-    // TODO: Implement actual bulk delete logic
+    clearSelections();
   };
 
   const handleExport = () => {
@@ -308,211 +151,49 @@ export default function ColorManagementPage() {
     setShowAddPopup(true);
   };
 
-  // Form handlers
-  const handleCancel = () => {
-    setShowAddPopup(false);
-    setForm({ ...INITIAL_COLOR_FORM });
-    setShowValidation(false);
-    setError(null);
-  };
-
-  const isFormValid = () => {
-    return form.name.trim() !== "" && form.hexCode.trim() !== "";
-  };
-
-  const handleSave = async () => {
-    setShowValidation(true);
-
-    if (!isFormValid()) return;
-
+  // Color creation handler
+  const handleColorSave = async (data: any) => {
     try {
-      setLoading(true);
-      setError(null);
-
-      // TODO: Implement actual API call
-      console.log("Creating color with:", {
-        name: form.name,
-        hexCode: form.hexCode,
-      });
-
-      // Mock successful creation
-      const newColor = {
+      // Create new color object
+      const newColor: Color = {
         id: Date.now(),
-        name: form.name,
-        hexCode: form.hexCode,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      const fullColor: Color = {
-        id: newColor.id,
-        name: newColor.name,
-        hexCode: newColor.hexCode,
+        name: data.name,
+        hexCode: data.color, // AttributePopup uses 'color' field for hex values
         productCount: 0,
         isActive: true,
-        createdAt: newColor.createdAt,
-        updatedAt: newColor.updatedAt,
-        sortOrder: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        sortOrder: colors.length + 1,
       };
 
-      toast.success("Color created successfully!");
-      handleCancel();
+      // Add to colors list
+      setColors(prev => [...prev, newColor]);
+      
+      // TODO: Implement actual API call here
+      console.log("Creating color with:", data);
     } catch (err) {
-      setError("Failed to create color");
       console.error("Error creating color:", err);
-    } finally {
-      setLoading(false);
+      throw err; // Re-throw to let AttributePopup handle the error
     }
   };
 
-  const updateForm = (updates: Partial<ColorFormData>) => {
-    setForm((prev) => ({ ...prev, ...updates }));
+  // Create color configuration with custom save handler
+  const colorConfig = {
+    ...ATTRIBUTE_CONFIGS.color,
+    onSave: handleColorSave
   };
 
-  // Table configuration
-  const tableHeader: TableHeader = {
-    headerActions: (
-      <div className="flex items-center justify-between">
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search colors..."
-            value={(filters.search as string) || ""}
-            onChange={(e) => updateFilter("search", e.target.value)}
-            className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300"
-          />
-        </div>
+  // Get table configuration
+  const tableHeader = getColorTableHeader(
+    filters,
+    updateFilter,
+    resetFilters,
+    selectedColors,
+    handleBulkDelete,
+    handleExport
+  );
 
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-2">
-          {selectedColors.length > 0 && (
-            <button
-              onClick={handleBulkDelete}
-              className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Delete ({selectedColors.length})
-            </button>
-          )}
-          <button
-            onClick={handleExport}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <Download className="h-4 w-4 mr-1" />
-            Export
-          </button>
-
-          {/* Reusable Filter Component */}
-          <FilterComponent
-            filters={filters}
-            filterConfigs={filterConfigs}
-            onFilterChange={updateFilter}
-            onResetFilters={resetFilters}
-            buttonText="Filters"
-            dropdownWidth="w-96"
-            dropdownPosition="right"
-          />
-        </div>
-      </div>
-    ),
-  };
-
-  const columns: TableColumn<Color>[] = [
-    {
-      id: "color",
-      label: "Color",
-      width: "300px",
-      sortable: true,
-      render: (color) => (
-        <div className="flex items-center space-x-4">
-          <div
-            className="h-12 w-12 rounded-lg border border-gray-300 shadow-sm"
-            style={{ backgroundColor: color.hexCode }}
-          ></div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {color.name}
-            </div>
-            <div className="text-xs text-gray-500 font-mono">
-              {color.hexCode}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "products",
-      label: "Products",
-      width: "120px",
-      sortable: true,
-      render: (color) => (
-        <div className="flex items-center space-x-2">
-          <Package className="w-4 h-4 text-gray-400" />
-          <span
-            className={`text-sm font-medium ${
-              color.productCount === 0
-                ? "text-red-600"
-                : color.productCount < 10
-                ? "text-yellow-600"
-                : "text-gray-900"
-            }`}
-          >
-            {color.productCount}
-          </span>
-        </div>
-      ),
-    },
-    {
-      id: "hexCode",
-      label: "Hex Code",
-      width: "120px",
-      sortable: true,
-      render: (color) => (
-        <div className="text-sm font-mono text-gray-900">{color.hexCode}</div>
-      ),
-    },
-    {
-      id: "status",
-      label: "Status",
-      width: "120px",
-      sortable: true,
-      render: (color) => (
-        <span
-          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-            color.isActive
-              ? "bg-green-100 text-green-800"
-              : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {color.isActive ? (
-            <>
-              <CheckCircle className="w-3 h-3 mr-1" />
-              Active
-            </>
-          ) : (
-            <>
-              <XCircle className="w-3 h-3 mr-1" />
-              Inactive
-            </>
-          )}
-        </span>
-      ),
-    },
-    {
-      id: "created",
-      label: "Created",
-      width: "120px",
-      sortable: true,
-      render: (color) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(color.createdAt).toLocaleDateString()}
-        </div>
-      ),
-    },
-  ];
+  const columns = getColorTableColumns();
 
   return (
     <div className="p-6 space-y-6">
@@ -536,91 +217,32 @@ export default function ColorManagementPage() {
       </div>
 
       {/* Add Color Popup */}
-      <AddDetailsPopup
+      <AttributePopup
         isOpen={showAddPopup}
-        onClose={handleCancel}
-        title="Add New Color"
-        description="Create a new color for your products"
-        onSave={handleSave}
-        onCancel={handleCancel}
-        saveButtonText={loading ? "Creating..." : "Add Color"}
-        maxWidth="md"
-      >
-        <div className="space-y-6">
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          <DefaultInput
-            label="Color Name *"
-            name="colorName"
-            value={form.name}
-            onChange={(e) => updateForm({ name: e.target.value })}
-            placeholder="Enter color name (e.g., Midnight Black, Ocean Blue)"
-            required
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Color & Hex Code *
-            </label>
-            <div className="flex items-center space-x-3">
-              <div
-                className="w-12 h-12 rounded-lg border border-gray-300 shadow-sm"
-                style={{ backgroundColor: form.hexCode }}
-              ></div>
-              <div className="flex-1">
-                <input
-                  type="color"
-                  value={form.hexCode}
-                  onChange={(e) => updateForm({ hexCode: e.target.value })}
-                  className="w-full h-12 rounded-lg border border-gray-300 cursor-pointer"
-                />
-              </div>
-              <div className="flex-2">
-                <input
-                  type="text"
-                  value={form.hexCode}
-                  onChange={(e) => updateForm({ hexCode: e.target.value })}
-                  placeholder="#000000"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          {!isFormValid() && showValidation && !loading && (
-            <p className="text-sm text-red-600">
-              Please fill in all required fields: name and hex code.
-            </p>
-          )}
-        </div>
-      </AddDetailsPopup>
+        onClose={() => setShowAddPopup(false)}
+        config={colorConfig}
+      />
 
       {/* Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Colors"
-          value={mockColors.length.toString()}
+          value={stats.totalColors.toString()}
           change="+12% from last month"
           Icon={Palette}
           color="text-purple-600"
         />
         <StatCard
           title="Active Colors"
-          value={activeCount.toString()}
-          change={`${Math.round(
-            (activeCount / mockColors.length) * 100
-          )}% active`}
+          value={stats.activeCount.toString()}
+          change={`${stats.activePercentage}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
           title="Total Products"
-          value={totalProducts.toString()}
-          change={`Avg ${averageProducts} per color`}
+          value={stats.totalProducts.toString()}
+          change={`Avg ${stats.averageProducts} per color`}
           Icon={Package}
           color="text-blue-600"
         />
@@ -641,7 +263,6 @@ export default function ColorManagementPage() {
         getItemId={(color) => color.id}
         emptyMessage="No colors found matching your criteria"
         emptyIcon={<Palette className="w-12 h-12 text-gray-400" />}
-        loading={loading}
         loadingMessage="Loading colors..."
         sortConfig={sortConfig}
         onSort={handleSort}
