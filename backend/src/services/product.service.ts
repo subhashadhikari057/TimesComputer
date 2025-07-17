@@ -49,22 +49,16 @@ export const createProductService = async (data: any) => {
       specs,
       brand: brandId ? { connect: { id: brandId } } : undefined,
       category: categoryId ? { connect: { id: categoryId } } : undefined,
-      images: images?.length ? images.map((img: { url: string }) => img.url) : [],
-      featureTags: featureTagIds?.length ? {
-        createMany: {
-          data: featureTagIds.map((tagId: number) => ({ tagId })),
-        },
-      } : undefined,
-      marketingTags: marketingTagIds?.length ? {
-        createMany: {
-          data: marketingTagIds.map((tagId: number) => ({ tagId })),
-        },
-      } : undefined,
-      colors: colorIds?.length ? {
-        createMany: {
-          data: colorIds.map((colorId: number) => ({ colorId })),
-        },
-      } : undefined,
+      images,
+      featureTags: featureTagIds?.length
+        ? { createMany: { data: featureTagIds.map((tagId: number) => ({ tagId })) } }
+        : undefined,
+      marketingTags: marketingTagIds?.length
+        ? { createMany: { data: marketingTagIds.map((tagId: number) => ({ tagId })) } }
+        : undefined,
+      colors: colorIds?.length
+        ? { createMany: { data: colorIds.map((colorId: number) => ({ colorId })) } }
+        : undefined,
     },
     include: productIncludes,
   });
