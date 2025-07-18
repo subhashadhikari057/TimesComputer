@@ -4,6 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import path from "path";
+import morgan from "morgan";
 
 // import csrf from 'csurf'; // ✅ NEW: CSRF middleware
 
@@ -25,6 +27,7 @@ import initController from './routes/init.route'
 dotenv.config();
 
 const app = express();
+const uploadPath = path.join(__dirname, "uploads");
 
 // ✅ Security Middlewares
 app.use(helmet());
@@ -43,6 +46,8 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(uploadPath));
+app.use(morgan("dev"));
 
 // // ✅ CSRF Protection (must come AFTER cookie + json parser)
 // app.use(csrf({ cookie: true }));

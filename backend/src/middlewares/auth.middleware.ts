@@ -2,7 +2,10 @@ import type { Request, Response, NextFunction } from "express";
 import jwt, { type Secret } from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 
-const ACCESS_SECRET: Secret = process.env.JWT_SECRET as string;
+interface jwtPayloads {
+    email: string;
+    role: string;
+}
 
 // ✅ Middleware: Authenticated user & attach user to req
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
@@ -10,7 +13,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const decoded = jwt.verify(token, ACCESS_SECRET) as { email: string; role: string };
+        const decoded = jwt.verify(token, process.env.ACCESS_SECRET as string) as jwtPayloads;
         (req as any).user = { email: decoded.email, role: decoded.role };
         next();
     } catch (err) {

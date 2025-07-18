@@ -15,7 +15,6 @@ export const addBrand = async (req: Request, res: Response) => {
         const { name } = req.body;
         const files = req.files as { [fieldname: string]: Express.Multer.File[] };
         const imageFiles = files && files['image'] ? files['image'] : [];
-        const iconFiles = files && files['icon'] ? files['icon'] : [];
 
         if (!name || typeof name !== 'string') {
             return res.status(400).json({ error: "Brand name is required and must be a string." });
@@ -23,13 +22,9 @@ export const addBrand = async (req: Request, res: Response) => {
         if (!imageFiles || imageFiles.length === 0) {
             return res.status(400).json({ error: "One image file is required." });
         }
-        if (!iconFiles || iconFiles.length === 0) {
-            return res.status(400).json({ error: "One SVG icon file is required." });
-        }
 
         const imagePath = imageFiles[0].path;
-        const iconPath = iconFiles[0].path;
-        const Brand = await addBrandService({ name, image: imagePath, icon: iconPath });
+        const Brand = await addBrandService({ name, image: imagePath });
 
         res.status(201).json({ message: "Brand created successfully.", data: Brand });
     } catch (error: any) {

@@ -18,11 +18,6 @@ model AdminUser {
   auditLogs AuditLog[] @relation("ActorRelation")
 }
 
-enum Role {
-  SUPERADMIN
-  ADMIN
-}
-
 model LoginLog {
   id        String   @id @default(uuid())
   email     String
@@ -33,57 +28,55 @@ model LoginLog {
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
-  actorId   String // Who performed the action
-  targetId  String? // Optional: user affected by the action
-  action    String // e.g., "CREATE_ADMIN", "DELETE_ADMIN"
-  message   String? // Optional readable log
-  ip        String? // Optional: client IP
-  userAgent String? // Optional: browser info
-  createdAt DateTime @default(now())
-
-  actor AdminUser @relation("ActorRelation", fields: [actorId], references: [id])
+  id        String    @id @default(uuid())
+  actorId   String
+  targetId  String?
+  action    String
+  message   String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+  actor     AdminUser @relation("ActorRelation", fields: [actorId], references: [id])
 }
 
 model Product {
   id            Int                   @id @default(autoincrement())
   name          String
   slug          String                @unique
-  description   String? // nullable
+  description   String?
   price         Float
   stock         Int                   @default(0)
   isPublished   Boolean               @default(true)
-  brochure      String? // nullable
+  brochure      String?
   specs         Json
   views         Int                   @default(0)
   brandId       Int?
-  brand         Brand?                @relation(fields: [brandId], references: [id])
   categoryId    Int?
-  category      Category?             @relation(fields: [categoryId], references: [id])
   images        String[]
-  featureTags   ProductFeatureTag[]
-  marketingTags ProductMarketingTag[]
-  colors        ProductColor[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
+  brand         Brand?                @relation(fields: [brandId], references: [id])
+  category      Category?             @relation(fields: [categoryId], references: [id])
+  colors        ProductColor[]
+  featureTags   ProductFeatureTag[]
+  marketingTags ProductMarketingTag[]
 }
 
 model Brand {
   id        Int       @id @default(autoincrement())
   name      String    @unique
   image     String
-  icon      String // SVG icon path
-  products  Product[]
   createdAt DateTime  @default(now())
+  products  Product[]
 }
 
 model Category {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  image     String // category photo
-  icon      String // SVG icon path
-  products  Product[]
+  image     String
+  icon      String
   createdAt DateTime  @default(now())
+  products  Product[]
 }
 
 model FeatureTag {
@@ -101,9 +94,8 @@ model MarketingTag {
 model ProductFeatureTag {
   productId Int
   tagId     Int
-
-  product Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  tag     FeatureTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       FeatureTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([productId, tagId])
 }
@@ -111,9 +103,8 @@ model ProductFeatureTag {
 model ProductMarketingTag {
   productId Int
   tagId     Int
-
-  product Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
-  tag     MarketingTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       MarketingTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([productId, tagId])
 }
@@ -128,9 +119,8 @@ model Color {
 model ProductColor {
   productId Int
   colorId   Int
-
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  color     Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@id([productId, colorId])
 }
@@ -138,8 +128,8 @@ model ProductColor {
 model AdBanner {
   id        Int      @id @default(autoincrement())
   images    String[]
-  link      String?
   createdAt DateTime @default(now())
+  link      String?
 }
 
 model Blog {
@@ -152,4 +142,9 @@ model Blog {
   metadata   Json     @default("{}")
   createdAt  DateTime @default(now())
   updateedAt DateTime @default(now())
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
 }
