@@ -9,22 +9,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
-
-const laptopCategories = [
-  { label: "All Products", value: "all-products" },  // Changed from "all-products" to "all"
-  { label: "Gaming Laptops", value: "gaming-laptop" },
-  { label: "Business Laptops", value: "business-laptop" },
-  { label: "Student Laptops", value: "student-laptop" },
-  { label: "Everyday Laptops", value: "everyday-laptop" },
-  { label: "Macbooks", value: "mac" },
-];
-
-const navLinks = [
-  { title: "Home", href: "/" },
-  { title: "About", href: "/about" },
-  { title: "Blog", href: "/blog" },
-  { title: "More", href: "/more" },
-];
+import { laptopCategories, navLinks } from "@/lib/dummyData";
 
 export default function Navbar() {
   const searchParams = useSearchParams()
@@ -43,7 +28,14 @@ export default function Navbar() {
     }
     // On category pages, return the category
     if (pathname.startsWith('/category/')) {
-      return pathname.split('/').pop();
+      const categoryFromUrl = decodeURIComponent(pathname.split('/').pop() || '');
+      // Find matching category in our options
+      const matchingCategory = laptopCategories.find(cat => cat.value === categoryFromUrl);
+      return matchingCategory ? matchingCategory.value : undefined;
+    }
+    // On brand pages, return undefined to show placeholder
+    if (pathname.startsWith('/brand/')) {
+      return undefined;
     }
     // Default to undefined to show placeholder
     return undefined;
@@ -54,14 +46,18 @@ export default function Navbar() {
   const currentCategory = getCurrentCategory();
 
   const handleCategoryChange = (value: string | undefined) => {
-    const selectedValue = value || "all-products";
+    if (value === undefined) {
+      // When cleared, navigate to home page
+      router.push("/");
+      return;
+    }
     
-    if (selectedValue === "all-products") {
+    if (value === "all-products") {
       // For "All Products", go to products page
       router.push("/products");
     } else {
       // For specific categories, go to category page
-      router.push(`/category/${selectedValue}`);
+      router.push(`/category/${value}`);
     }
   };
 

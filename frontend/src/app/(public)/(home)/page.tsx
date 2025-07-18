@@ -11,12 +11,17 @@ const HomePage = () => {
   return (
     <div className="max-w-[1920px] mx-auto">
       <BannerSection />
-      <FeaturedProductsSection />
-      <TopCategories />
+     <div id="category">
+     <FeaturedProductsSection />
+     <TopCategories/>
+     </div>
+      
       <UpperSingleBannerSection />
       <PopularProductsSection />
+      <div id="brand">
       <LowerSingleBannerSection />
-      <BrandScroller />
+        <BrandScroller/>
+      </div>
       <Blog />
     </div>
   );

@@ -1,39 +1,44 @@
-'use client'
+'use client';
 
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import Dropdown from './form/form-elements/dropdown';
 
 const sortOptions = [
-  { label: "Featured", value: "featured" },
-  { label: "Price (Low-High)", value: "price-low-high" },
-  { label: "Price (High-Low)", value: "price-high-low" },
-  { label: "Product Name (A-Z)", value: "product-name-a-z" },
-  { label: "Product Name (Z-A)", value: "product-name-z-a" }
-]
+  { label: 'Featured', value: 'featured' },
+  { label: 'Price (Low-High)', value: 'price-low-high' },
+  { label: 'Price (High-Low)', value: 'price-high-low' },
+  { label: 'Product Name (A-Z)', value: 'product-name-a-z' },
+  { label: 'Product Name (Z-A)', value: 'product-name-z-a' },
+];
 
 interface SortSelectProps {
   sort?: string;
 }
 
 export default function SortSelect({ sort: initialSort }: SortSelectProps) {
-  const searchParams = useSearchParams()
-  const pathname = usePathname()
-  const router = useRouter()
-  const sort = searchParams.get('sort') || initialSort || undefined // Allow undefined for showing placeholder
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Determine the current sort value from the URL or initial props
+  const sort = searchParams.get('sort') || initialSort || undefined;
 
   const handleSortChange = (value: string | undefined) => {
-    const params = new URLSearchParams(searchParams.toString())
-    
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Update or remove the sort parameter
     if (value === undefined) {
-      params.delete('sort') // Remove sort parameter when clearing
+      params.delete('sort');
     } else {
-      params.set('sort', value)
+      params.set('sort', value);
     }
-    
-    params.set('page', '1') // Reset to first page when changing sort
-    
-    router.push(`${pathname}?${params.toString()}`)
-  }
+
+    // Always reset to page 1 when changing sort
+    params.set('page', '1');
+
+    // Update the route with the new parameters
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <Dropdown
@@ -43,5 +48,5 @@ export default function SortSelect({ sort: initialSort }: SortSelectProps) {
       onChange={handleSortChange}
       allowDeselect={true}
     />
-  )
+  );
 }
