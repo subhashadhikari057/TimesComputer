@@ -4,42 +4,12 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 
 const brands = [
-  {
-    name: 'Dell',
-    logo: 'DELL',
-    bgColor: 'bg-blue-500',
-    textColor: 'text-white',
-  },
-  {
-    name: 'Apple',
-    logo: '🍎',
-    bgColor: 'bg-gray-400',
-    textColor: 'text-white',
-  },
-  {
-    name: 'Lenovo',
-    logo: 'lenovo',
-    bgColor: 'bg-white',
-    textColor: 'text-red-500',
-  },
-  {
-    name: 'ASUS',
-    logo: 'ASUS',
-    bgColor: 'bg-black',
-    textColor: 'text-white',
-  },
-  {
-    name: 'HP',
-    logo: 'hp',
-    bgColor: 'bg-blue-600',
-    textColor: 'text-white',
-  },
-  {
-    name: 'Acer',
-    logo: 'acer',
-    bgColor: 'bg-green-500',
-    textColor: 'text-white',
-  },
+  { name: 'Dell', logo: 'DELL', bgColor: 'bg-blue-500', textColor: 'text-white' },
+  { name: 'Apple', logo: '🍎', bgColor: 'bg-gray-400', textColor: 'text-white' },
+  { name: 'Lenovo', logo: 'lenovo', bgColor: 'bg-white', textColor: 'text-red-500' },
+  { name: 'ASUS', logo: 'ASUS', bgColor: 'bg-black', textColor: 'text-white' },
+  { name: 'HP', logo: 'hp', bgColor: 'bg-blue-600', textColor: 'text-white' },
+  { name: 'Acer', logo: 'acer', bgColor: 'bg-green-500', textColor: 'text-white' },
   {
     name: 'Microsoft',
     logo: '⊞',
@@ -48,20 +18,25 @@ const brands = [
   },
 ];
 
-export default function BrandCarousel() {
+type BrandCarouselProps = {
+  title?: string;
+  titleClassName?: string;
+};
+
+export default function BrandCarousel({
+  title = 'Shop by brands',
+  titleClassName = '',
+}: BrandCarouselProps) {
   const [isPaused, setIsPaused] = useState(false);
   const [translateX, setTranslateX] = useState(0);
-  const [brandWidth, setBrandWidth] = useState(208); // Default width
-
+  const [brandWidth, setBrandWidth] = useState(208);
   const animationRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLAnchorElement>(null);
   const startTimeRef = useRef<number | undefined>(undefined);
   const pausedTimeRef = useRef<number>(0);
-
   const SCROLL_SPEED = 35;
 
-  // Measure actual brand card width (responsive)
   useEffect(() => {
     if (cardRef.current) {
       const width = cardRef.current.offsetWidth + 16; // gap-4 = 16px
@@ -113,7 +88,9 @@ export default function BrandCarousel() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-8">Shop by brands</h2>
+      <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
+        {title}
+      </h2>
 
       <div className="relative overflow-hidden">
         <div
@@ -121,7 +98,7 @@ export default function BrandCarousel() {
           className="flex gap-4 transition-transform duration-100 ease-out"
           style={{
             transform: `translateX(-${translateX}px)`,
-            width: `${brandWidth * brands.length * 2}px`, // doubled for seamless scroll
+            width: `${brandWidth * brands.length * 2}px`,
           }}
         >
           {[...brands, ...brands].map((brand, index) => (
