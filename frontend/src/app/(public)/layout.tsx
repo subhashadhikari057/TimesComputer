@@ -7,7 +7,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hideBreadcrumbRoutes = ['/blogs']; 
+  const hideBreadcrumbRoutes = ['/blogs','/about']; 
   const shouldHideBreadcrumbs = hideBreadcrumbRoutes.includes(pathname);
 
   return (
