@@ -10,14 +10,14 @@ import {
   Calendar,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import BrandPopup from "./brandPopup";
+import { getAllBrands } from "@/api/brand"; // ✅ Imported from API
 
 // Brand interface
 interface Brand {
@@ -27,90 +27,30 @@ interface Brand {
   createdAt: string;
   updatedAt: string;
   image: string;
-  icon?: string;
 }
 
-// Main Component
 export default function BrandManagementPage() {
+  const [brandData, setBrandData] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
-  // Sample data matching the product page structure
-  const brandData: Brand[] = [
-    {
-      id: 1,
-      name: "Apple",
-      productCount: 45,
-    
-      createdAt: "2025-07-01",
-      updatedAt: "2025-07-15",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/50/50",
-    },
-    {
-      id: 2,
-      name: "Samsung",
-      productCount: 32,
-    
-      createdAt: "2025-06-24",
-      updatedAt: "2025-07-10",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/50/50",
-    },
-    {
-      id: 3,
-      name: "Google",
-      productCount: 12,
-   
-      createdAt: "2025-07-15",
-      updatedAt: "2025-07-15",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/50/50",
-    },
-    {
-      id: 4,
-      name: "Microsoft",
-      productCount: 67,
-  
-      createdAt: "2025-07-10",
-      updatedAt: "2025-07-12",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/50/50",
-    },
-    {
-      id: 5,
-      name: "Dell",
-      productCount: 28,
-    
-      createdAt: "2025-06-30",
-      updatedAt: "2025-07-08",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/50/50",
-    },
-    {
-      id: 6,
-      name: "HP",
-      productCount: 19,
-    
-      createdAt: "2025-06-25",
-      updatedAt: "2025-07-05",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/50/50",
-    },
-    {
-      id: 7,
-      name: "Sony",
-      productCount: 0,
-      
-      createdAt: "2025-06-22",
-      updatedAt: "2025-07-01",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/50/50",
-    },
-  ];
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const res = await getAllBrands();
+        setBrandData(res.data || res); // Adjust depending on backend shape
+      } catch (err) {
+        toast.error("Failed to fetch brands.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBrands();
+  }, []);
 
-  // Define columns for the table (similar to product page)
   const brandColumns: Column[] = [
     {
       id: "name",
@@ -164,7 +104,6 @@ export default function BrandManagementPage() {
         </div>
       ),
     },
-    
     {
       id: "createdAt",
       label: "Created At",
@@ -181,7 +120,6 @@ export default function BrandManagementPage() {
     },
   ];
 
-  // Use custom hook for table data management (same as product page)
   const {
     searchTerm,
     filters,
@@ -202,14 +140,13 @@ export default function BrandManagementPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  // Event handlers
-  const handleEdit = (row: any, index: number) => {
+  const handleEdit = (row: any) => {
     setEditingBrand(row);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any, index: number) => {
-    console.log("Delete brand:", row, index);
+  const handleDelete = (row: any) => {
+    console.log("Delete brand:", row);
     toast.success("Brand deleted successfully!");
   };
 
@@ -231,17 +168,19 @@ export default function BrandManagementPage() {
     setEditingBrand(null);
   };
 
-  // Calculate stats
   const totalBrands = brandData.length;
-  const activeBrands = "5";
+  const activeBrands = "5"; // optional: update dynamically
   const totalProducts = brandData.reduce(
     (sum, brand) => sum + brand.productCount,
     0
   );
 
+  if (loading) {
+    return <div className="p-6">Loading brands...</div>;
+  }
+
   return (
     <div className="p-6 space-y-6">
-      {/* Page Header - Same structure as product page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Brands</h1>
@@ -260,17 +199,13 @@ export default function BrandManagementPage() {
         </div>
       </div>
 
-      {/* Add Brand Popup */}
       <BrandPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
-
-      {/* Edit Brand Popup */}
       <BrandPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
         initialData={editingBrand || undefined}
       />
 
-      {/* Statistics - Same structure as product page */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Brands"
@@ -282,7 +217,7 @@ export default function BrandManagementPage() {
         <StatCard
           title="Active Brands"
           value={activeBrands.toString()}
-          change={`${Math.round((  totalBrands) * 100)}% active`}
+          change={`${Math.round(totalBrands * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
@@ -295,11 +230,9 @@ export default function BrandManagementPage() {
         />
       </div>
 
-      {/* Table Container - Same structure as product page */}
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
-            {/* Search Input - Same as product page */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -311,9 +244,7 @@ export default function BrandManagementPage() {
               />
             </div>
 
-            {/* Action Buttons - Same structure as product page */}
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 md:justify-self-end">
-              {/* Bulk Delete Button - Show only when items are selected */}
               {selectedItems.length > 0 && (
                 <button
                   onClick={handleBulkDelete}
@@ -346,7 +277,6 @@ export default function BrandManagementPage() {
           </div>
         </div>
 
-        {/* Table - Same as product page */}
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}

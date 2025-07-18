@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import { toast } from "sonner";
-import { colorService } from "@/services/colorService";
+import { createColor, updateColor } from "@/api/color";
 
 interface ColorFormData {
   id?: number;
@@ -46,7 +46,7 @@ export default function ColorPopup({
   // Reset form when popup opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
-      const updatedForm: ColorFormData = { 
+      const updatedForm: ColorFormData = {
         ...INITIAL_FORM_DATA,
         id: initialData.id,
         name: initialData.name || "",
@@ -60,13 +60,13 @@ export default function ColorPopup({
   }, [isOpen]);
 
   const resetForm = () => {
-    const resetData: ColorFormData = { 
+    const resetData: ColorFormData = {
       ...INITIAL_FORM_DATA,
       id: initialData.id,
       name: initialData.name || "",
       color: initialData.color || "#000000",
     };
-    
+
     setForm(resetData);
     setShowValidation(false);
     setError(null);
@@ -96,18 +96,18 @@ export default function ColorPopup({
       };
 
       if (isEditMode) {
-        await colorService.updateColor(initialData.id!, saveData);
+        await updateColor(initialData.id!, saveData);
         toast.success("Color updated successfully!");
       } else {
-        await colorService.createColor(saveData);
+        await createColor(saveData);
         toast.success("Color created successfully!");
       }
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 
+      const errorMessage = err.response?.data?.message || err.message ||
         `Failed to ${isEditMode ? "update" : "create"} color`;
-      
+
       setError(errorMessage);
       toast.error(errorMessage);
       console.error(`Error ${isEditMode ? "updating" : "creating"} color:`, err);

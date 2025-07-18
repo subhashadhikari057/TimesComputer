@@ -6,12 +6,13 @@ export const CreateAdminSchema = z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email(),
     password: z.string().min(6, "Password must be at least 6 characters"),
-    role: z.nativeEnum(Role),
+    // role: z.nativeEnum(Role),
 });
 
 // ✅ Schema: Update Admin (partial, for PATCH)
 export const UpdateAdminSchema = z.object({
     name: z.string().min(1).optional(),
+    email: z.string().email().optional(),
     role: z.enum(["ADMIN", "SUPERADMIN"]).optional(),
     isActive: z.boolean().optional()
 }).strict();

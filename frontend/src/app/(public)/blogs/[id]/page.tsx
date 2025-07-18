@@ -1,14 +1,32 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { blogs } from "@/lib/blogdummy";
+import { getBlogById } from "@/api/blog";
 
 const BlogDetailPage = () => {
   const { id } = useParams();
-  const blog = blogs.find((b) => b.id === id);
-
+  const [blog, setBlog] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    async function fetchBlog() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getBlogById(Number(id));
+        setBlog(data);
+      } catch (err) {
+        setError("Failed to fetch blog");
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (id) fetchBlog();
+  }, [id]);
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-center py-10 text-red-500">{error}</div>;
   if (!blog) return <div className="text-center py-10">Blog not found</div>;
 
   return (

@@ -19,7 +19,7 @@ export default function NotFound() {
       <h1 className="text-6xl font-bold mb-4">404</h1>
       <p className="text-2xl mb-6">Oops! Page not found.</p>
       <p className="mb-8 max-w-md">
-        The page you’re looking for doesn’t exist or has been moved.
+        The page you&apos;re looking for doesn&apos;t exist or has been moved.
       </p>
       <button
         onClick={handleGoBack}

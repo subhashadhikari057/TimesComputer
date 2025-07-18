@@ -13,256 +13,85 @@ import {
   Shield,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import UserPopup from "./userPopup";
+import { getAllAdmins, deleteAdminUser } from "@/api/adminUser";
 
 // User interface
 interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
-  status: string;
-  emailVerified: boolean;
-  registeredAt: string;
-  lastLogin: string;
-  avatar: string;
 }
 
 // Main Component
 export default function UsersPage() {
   const router = useRouter();
-  
+
   // Popup state management
   const [isAddUserPopupOpen, setIsAddUserPopupOpen] = useState(false);
   const [isEditUserPopupOpen, setIsEditUserPopupOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample data matching the product page structure
-  const userData: User[] = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "admin",
-      status: "Active",
-      emailVerified: true,
-      registeredAt: "2025-07-01",
-      lastLogin: "2025-07-15",
-      avatar: "/api/placeholder/40/40",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      role: "manager",
-      status: "Active",
-      emailVerified: true,
-      registeredAt: "2025-06-24",
-      lastLogin: "2025-07-14",
-      avatar: "/api/placeholder/40/40",
-    },
-    {
-      id: 3,
-      name: "Bob Johnson",
-      email: "bob.johnson@example.com",
-      role: "customer",
-      status: "Inactive",
-      emailVerified: false,
-      registeredAt: "2025-07-15",
-      lastLogin: "2025-07-15",
-      avatar: "/api/placeholder/40/40",
-    },
-    {
-      id: 4,
-      name: "Alice Wilson",
-      email: "alice.wilson@example.com",
-      role: "customer",
-      status: "Active",
-      emailVerified: true,
-      registeredAt: "2025-07-10",
-      lastLogin: "2025-07-13",
-      avatar: "/api/placeholder/40/40",
-    },
-    {
-      id: 5,
-      name: "Mike Davis",
-      email: "mike.davis@example.com",
-      role: "manager",
-      status: "Active",
-      emailVerified: true,
-      registeredAt: "2025-06-30",
-      lastLogin: "2025-07-12",
-      avatar: "/api/placeholder/40/40",
-    },
-    {
-      id: 6,
-      name: "Sarah Brown",
-      email: "sarah.brown@example.com",
-      role: "customer",
-      status: "Inactive",
-      emailVerified: false,
-      registeredAt: "2025-06-25",
-      lastLogin: "2025-07-01",
-      avatar: "/api/placeholder/40/40",
-    },
-  ];
+  useEffect(() => {
+    async function fetchUsers() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getAllAdmins();
+        setUsers(Array.isArray(data) ? data : (data.users || []));
+      } catch (err) {
+        setError("Failed to fetch users");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUsers();
+  }, []);
 
   // Define columns for the table (similar to product page)
   const userColumns: Column[] = [
     {
       id: "name",
-      label: "User",
+      label: "Name",
       sortable: false,
       filterable: true,
       searchable: true,
       width: "300px",
       render: (user: User) => (
         <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center overflow-hidden">
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <Users className="h-6 w-6 text-indigo-600" />
-            )}
-          </div>
+
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
               {user.name}
             </div>
-            <div className="text-xs text-gray-500 truncate flex items-center">
-              <Mail className="w-3 h-3 mr-1" />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "email",
+      label: "Email",
+      sortable: false,
+      filterable: true,
+      searchable: true,
+      width: "300px",
+      render: (user: User) => (
+        <div className="flex items-center space-x-4">
+
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-gray-900 truncate">
               {user.email}
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      id: "role",
-      label: "Role",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (user: User) => {
-        const roleColors = {
-          admin: "bg-red-100 text-red-800",
-          manager: "bg-blue-100 text-blue-800",
-          customer: "bg-gray-100 text-gray-800",
-        };
-
-        return (
-          <div className="flex items-center space-x-1">
-            <Shield className="w-3 h-3 text-gray-400" />
-            <span
-              className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                roleColors[user.role as keyof typeof roleColors] ||
-                "bg-gray-100 text-gray-800"
-              }`}
-            >
-              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      id: "status",
-      label: "Status",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (user: User) => {
-        const isActive = user.status === "Active";
-
-        return (
-          <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-              isActive
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {isActive ? (
-              <>
-                <UserCheck className="w-3 h-3 mr-1" />
-                Active
-              </>
-            ) : (
-              <>
-                <UserX className="w-3 h-3 mr-1" />
-                Inactive
-              </>
-            )}
-          </span>
-        );
-      },
-    },
-    {
-      id: "emailVerified",
-      label: "Email Status",
-      sortable: true,
-      filterable: true,
-      searchable: false,
-      width: "120px",
-      render: (user: User) => (
-        <span
-          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-            user.emailVerified
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {user.emailVerified ? (
-            <>
-              <UserCheck className="w-3 h-3 mr-1" />
-              Verified
-            </>
-          ) : (
-            <>
-              <Mail className="w-3 h-3 mr-1" />
-              Pending
-            </>
-          )}
-        </span>
-      ),
-    },
-    {
-      id: "registeredAt",
-      label: "Registered",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (user: User) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(user.registeredAt).toLocaleDateString()}
-        </div>
-      ),
-    },
-    {
-      id: "lastLogin",
-      label: "Last Login",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (user: User) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(user.lastLogin).toLocaleDateString()}
         </div>
       ),
     },
@@ -284,23 +113,25 @@ export default function UsersPage() {
     handleSelectItem,
     handleBulkDelete,
   } = useTableData({
-    data: userData,
+    data: users,
     columns: userColumns,
     defaultSort: { key: "registeredAt", direction: "desc" },
   });
 
   // Event handlers
   const handleEdit = (row: any, index: number) => {
-    console.log("Edit user:", row, index);
     setSelectedUser(row);
     setIsEditUserPopupOpen(true);
   };
 
-  const handleDelete = (row: any, index: number) => {
-    console.log("Delete user:", row, index);
-    // Here you would typically show a confirmation dialog
-    // For now, just show a toast
-    toast.success("User deleted successfully!");
+  const handleDelete = async (row: any, index: number) => {
+    try {
+      await deleteAdminUser(row.id);
+      setUsers((prev) => prev.filter((u) => u.id !== row.id));
+      toast.success("User deleted successfully");
+    } catch (err) {
+      toast.error("Failed to delete user");
+    }
   };
 
   const handleExport = () => {
@@ -324,9 +155,9 @@ export default function UsersPage() {
   };
 
   // Calculate stats
-  const totalUsers = userData.length;
-  const activeUsers = userData.filter((u) => u.status === "Active").length;
-  const verifiedUsers = userData.filter((u) => u.emailVerified).length;
+  const totalUsers = users.length;
+  const activeUsers = "5"
+  const verifiedUsers = "5"
 
   return (
     <div className="p-6 space-y-6">
@@ -361,14 +192,14 @@ export default function UsersPage() {
         <StatCard
           title="Active Users"
           value={activeUsers.toString()}
-          change={`${Math.round((activeUsers / totalUsers) * 100)}% active`}
+          change={`${Math.round((  totalUsers) * 100)}% active`}
           Icon={UserCheck}
           color="text-green-600"
         />
         <StatCard
           title="Verified Users"
           value={verifiedUsers.toString()}
-          change={`${Math.round((verifiedUsers / totalUsers) * 100)}% verified`}
+          change={`${Math.round(( totalUsers) * 100)}% verified`}
           Icon={Mail}
           color="text-blue-600"
         />
@@ -426,17 +257,23 @@ export default function UsersPage() {
         </div>
 
         {/* Table -  */}
-        <DefaultTable
-          selectedItems={selectedItems}
-          onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
-          columns={userColumns}
-          data={processedData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-        />
+        {loading ? (
+          <div className="text-center py-8">Loading users...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
+          <DefaultTable
+            selectedItems={selectedItems}
+            onSelectAll={handleSelectAll}
+            onSelectItem={handleSelectItem}
+            columns={userColumns}
+            data={processedData}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+        )}
       </div>
 
       {/* User Popups */}

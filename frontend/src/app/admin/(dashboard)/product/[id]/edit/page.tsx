@@ -13,6 +13,7 @@ import PhotoUpload from "@/components/admin/product/photoUpload";
 import Specifications from "@/components/admin/product/specification";
 import AttributeSelector from "@/components/admin/product/attributes";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
+import { getProductById, updateProduct } from "@/api/product";
 
 interface FormData {
   name: string;
@@ -45,32 +46,22 @@ const INITIAL_FORM_DATA: FormData = {
 // Mock function to fetch product data
 // TODO: Replace with actual API call
 const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Mock data - replace with actual API response
+  // Use real API call
+  const data = await getProductById(Number(id));
+  // Map API response to FormData shape if needed
   return {
-    id,
-    name: "MacBook Pro 16-inch M3 Max",
-    description:
-      "The most powerful MacBook Pro ever with M3 Max chip, featuring incredible performance for professional workflows.",
-    price: 2399.99,
-    stock: 25,
-    isPublished: true,
-    brochure: "",
-    brandId: 1,
-    categoryId: 2,
-    colorIds: [1, 2, 3],
-    specs: [
-      { key: "Processor", value: "Apple M3 Max" },
-      { key: "Memory", value: "32GB Unified Memory" },
-      { key: "Storage", value: "1TB SSD" },
-      { key: "Display", value: "16-inch Liquid Retina XDR" },
-    ],
-    images: [
-      { file: new File([], "image1.jpg"), preview: "/api/placeholder/300/300" },
-      { file: new File([], "image2.jpg"), preview: "/api/placeholder/300/300" },
-    ],
+    id: data.id,
+    name: data.name,
+    description: data.description,
+    price: data.price,
+    stock: data.stock,
+    isPublished: data.isPublished,
+    brochure: data.brochure || "",
+    brandId: data.brandId || null,
+    categoryId: data.categoryId || null,
+    colorIds: data.colorIds || [],
+    specs: data.specs ? Object.entries(data.specs).map(([key, value]) => ({ key, value })) : [{ key: "", value: "" }],
+    images: (data.images || []).map((url: string) => ({ file: new File([], url), preview: url })),
   };
 };
 
@@ -114,7 +105,7 @@ export default function EditProduct() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -141,9 +132,7 @@ export default function EditProduct() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-
     setIsSubmitting(true);
-
     try {
       const specsObject = form.specs.reduce((acc, spec) => {
         if (spec.key && spec.value) {
@@ -151,32 +140,20 @@ export default function EditProduct() {
         }
         return acc;
       }, {} as Record<string, string>);
-
-      const submitData = {
-        id,
-        name: form.name,
-        description: form.description,
-        price: form.price,
-        stock: form.stock,
-        isPublished: form.isPublished,
-        brochure: form.brochure,
-        brandId: form.brandId,
-        categoryId: form.categoryId,
-        specs: specsObject,
-        images: form.images.map(img => img.file),
-        selectedColors: form.colorIds,
-      };
-
-      // TODO: Replace with actual API call
-      console.log("Updating product:", submitData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Show success message
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("description", form.description);
+      formData.append("price", String(form.price));
+      formData.append("stock", String(form.stock));
+      formData.append("isPublished", String(form.isPublished));
+      formData.append("brochure", form.brochure);
+      if (form.brandId) formData.append("brandId", String(form.brandId));
+      if (form.categoryId) formData.append("categoryId", String(form.categoryId));
+      form.colorIds.forEach((id) => formData.append("colorIds", String(id)));
+      form.images.forEach((img) => formData.append("images", img.file));
+      formData.append("specs", JSON.stringify(specsObject));
+      await updateProduct(Number(id), formData);
       toast.success("Product updated successfully!");
-
-      // Redirect to products list
       router.push("/admin/product/all-products");
     } catch (error) {
       console.error("Error updating product:", error);

@@ -6,14 +6,13 @@ import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
 import IconUpload from "@/components/admin/product/iconUpload";
 import { toast } from "sonner";
-import { brandService } from "@/services/brandService";
+import { createBrand, updateBrand } from "@/api/brand";
 
 interface BrandFormData {
   id?: number;
   name: string;
   image: File | null;
   imagePreview: string;
-  icon: File | null;
   iconPreview: string;
 }
 
@@ -22,7 +21,6 @@ interface BrandData {
   id?: number;
   name: string;
   image?: string | File;
-  icon?: string | File;
   [key: string]: any; // Allow other properties
 }
 
@@ -36,7 +34,6 @@ const INITIAL_FORM_DATA: BrandFormData = {
   name: "",
   image: null,
   imagePreview: "",
-  icon: null,
   iconPreview: "",
 };
 
@@ -55,7 +52,7 @@ export default function BrandPopup({
   // Reset form when popup opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
-      const updatedForm: BrandFormData = { 
+      const updatedForm: BrandFormData = {
         ...INITIAL_FORM_DATA,
         id: initialData.id,
         name: initialData.name || "",
@@ -69,14 +66,6 @@ export default function BrandPopup({
         updatedForm.image = initialData.image;
       }
 
-      // Handle existing icons for edit mode
-      if (initialData.icon && typeof initialData.icon === "string") {
-        updatedForm.iconPreview = initialData.icon;
-        updatedForm.icon = null;
-      } else if (initialData.icon instanceof File) {
-        updatedForm.icon = initialData.icon;
-      }
-
       setForm(updatedForm);
       setShowValidation(false);
       setError(null);
@@ -84,20 +73,20 @@ export default function BrandPopup({
   }, [isOpen]);
 
   const resetForm = () => {
-    const resetData: BrandFormData = { 
+    const resetData: BrandFormData = {
       ...INITIAL_FORM_DATA,
       id: initialData.id,
       name: initialData.name || "",
     };
-    
+
     if (initialData.image && typeof initialData.image === "string") {
       resetData.imagePreview = initialData.image;
     }
-    
+
     if (initialData.icon && typeof initialData.icon === "string") {
       resetData.iconPreview = initialData.icon;
     }
-    
+
     setForm(resetData);
     setShowValidation(false);
     setError(null);
@@ -111,8 +100,7 @@ export default function BrandPopup({
   const isFormValid = () => {
     return (
       form.name.trim() !== "" &&
-      (form.image !== null || form.imagePreview !== "") &&
-      (form.icon !== null || form.iconPreview !== "")
+      (form.image !== null || form.imagePreview !== "")
     );
   };
 
@@ -125,7 +113,7 @@ export default function BrandPopup({
       setLoading(true);
       setError(null);
 
-      if (!form.image || !form.icon) {
+      if (!form.image) {
         setError("Both image and icon are required.");
         setLoading(false);
         return;
@@ -134,22 +122,21 @@ export default function BrandPopup({
       const saveData = {
         name: form.name,
         image: form.image,
-        icon: form.icon,
       };
 
       if (isEditMode) {
-        await brandService.updateBrand(initialData.id!, saveData);
+        await updateBrand(initialData.id!, saveData);
         toast.success("Brand updated successfully!");
       } else {
-        await brandService.createBrand(saveData);
+        await createBrand(saveData);
         toast.success("Brand created successfully!");
       }
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 
+      const errorMessage = err.response?.data?.message || err.message ||
         `Failed to ${isEditMode ? "update" : "create"} brand`;
-      
+
       setError(errorMessage);
       toast.error(errorMessage);
       console.error(`Error ${isEditMode ? "updating" : "creating"} brand:`, err);
@@ -165,7 +152,7 @@ export default function BrandPopup({
     // Validate file type
     let allowedTypes: string[];
     let errorMessage: string;
-    
+
     if (imageType === "icon") {
       allowedTypes = ['image/svg+xml'];
       errorMessage = "Invalid file type. Please upload SVG files only for icons.";
@@ -252,24 +239,7 @@ export default function BrandPopup({
               }
               onRemoveImage={() => handleRemove("image")}
               maxImages={1}
-             
-            />
-          </div>
 
-          <div>
-            <IconUpload
-              label="Brand Icon"
-              images={form.icon ? [form.icon] : []}
-              required={true}
-              imagePreviews={form.iconPreview ? [form.iconPreview] : []}
-              onImageUpload={(e) =>
-                handleImageUpload(Array.from(e.target.files || []), "icon")
-              }
-              onRemoveImage={() => handleRemove("icon")}
-              maxImages={1}
-              acceptedFormats="SVG"
-              maxSizeText="up to 10MB each"
-              uploadText="Click to upload SVG icon"
             />
           </div>
         </div>

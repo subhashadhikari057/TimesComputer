@@ -26,21 +26,23 @@ export const createAdminUser = async (req: Request, res: Response) => {
     const body = CreateAdminSchema.safeParse(req.body);
 
     if (!body.success) return res.status(400).json({ message: body.error.errors });
-    
-    if (body.data.role === 'SUPERADMIN')
-        return res.status(403).json({ message: "Only one super_admin is allowed." });
 
     try {
         const user = await createAdmin(body.data);
-        const currentUser = (req as any).user;
-        await logAudit({
-            actorId: currentUser?.id,
-            targetId: user.id,
-            action: "CREATE_ADMIN",
-            message: `Created admin: ${user.email}`,
-            ip: req.ip,
-            userAgent: req.headers["user-agent"]
-        });
+
+        try {
+            const currentUser = (req as any).user;
+            await logAudit({
+                actorId: currentUser?.id,
+                targetId: user.id,
+                action: "CREATE_ADMIN",
+                message: `Created admin: ${user.email}`,
+                ip: req.ip,
+                userAgent: req.headers["user-agent"]
+            });
+        } catch (logError) {
+            console.error("Audit log error:", logError);
+        }
 
         res.status(201).json({
             message: "Admin user created successfully",
@@ -48,17 +50,22 @@ export const createAdminUser = async (req: Request, res: Response) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                role: user.role,
-                isActive: user.isActive,
             },
         });
     } catch (err: any) {
         if (err.code === "P2002") {
             return res.status(409).json({ message: "Email already exists" });
         }
-        res.status(500).json({ message: "Failed to create admin", error: err });
+
+        console.error("Create Admin Error:", err);
+
+        res.status(500).json({
+            message: "Failed to create admin",
+            error: err?.message || "Internal Server Error"
+        });
     }
 };
+
 
 // ✅ PATCH /admin/users/:id
 export const updateAdminUser = async (req: Request, res: Response) => {
