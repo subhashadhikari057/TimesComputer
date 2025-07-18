@@ -6,6 +6,7 @@ import {
   updateCategoryService,
   deleteCategoryService,
 } from "../services/category.service";
+import prisma from "../prisma/client";
 
 export const addCategory = async (req: Request, res: Response) => {
   try {
@@ -55,7 +56,8 @@ export const getCategoryById = async (req: Request, res: Response) => {
     if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
 
     const category = await getCategoryByIdService(id);
-    res.status(200).json({ message: "Category retrieved successfully.", data: category });
+    const product = await prisma.product.findMany({ where: { id } });
+    res.status(200).json({ message: "Category retrieved successfully.", data: category, product });
   } catch (error: any) {
     const status = error.message === "Category not found." ? 404 : 500;
     res.status(status).json({ error: error.message });
