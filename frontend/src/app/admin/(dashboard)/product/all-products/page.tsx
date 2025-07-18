@@ -113,7 +113,7 @@ export default function ViewProductsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {product.product}
+              {product.name || product.product}
             </div>
           </div>
         </div>
@@ -127,7 +127,9 @@ export default function ViewProductsPage() {
       searchable: true,
       width: "120px",
       render: (product: any) => (
-        <div className="text-sm text-gray-900">{product.category}</div>
+        <div className="text-sm text-gray-900">
+          {product.category?.name || product.category || 'No Category'}
+        </div>
       ),
     },
     {
@@ -138,7 +140,9 @@ export default function ViewProductsPage() {
       searchable: true,
       width: "100px",
       render: (product: any) => (
-        <div className="text-sm font-medium text-gray-900">{product.brand}</div>
+        <div className="text-sm font-medium text-gray-900">
+          {product.brand?.name || product.brand || 'No Brand'}
+        </div>
       ),
     },
     {
@@ -191,7 +195,9 @@ export default function ViewProductsPage() {
       searchable: true,
       width: "120px",
       render: (product: any) => {
-        const isPublished = product.status === "Active";
+        const isPublished = product.isPublished !== undefined 
+          ? product.isPublished 
+          : product.status === "Active";
 
         return (
           <span
@@ -308,7 +314,7 @@ export default function ViewProductsPage() {
         />
         <StatCard
           title="Published Products"
-          value={products.filter((p) => p.status === "Active").length.toString()}
+          value={products.filter((p) => p.isPublished).length.toString()}
           change="100%"
           Icon={CheckCircle}
           color="text-green-600"

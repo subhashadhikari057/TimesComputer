@@ -12,6 +12,21 @@ import {
     ChangePasswordSchema,
 } from "../validations/auth.schema";
 
+// ✅ GET /auth/verify
+export const verify = async (req: Request, res: Response) => {
+    // If we reach here, the authenticate middleware has already verified the token
+    const user = (req as any).user;
+    res.json({ 
+        message: "Token is valid",
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+        }
+    });
+};
+
 
 export const login = async (req: Request, res: Response) => {
     const body = LoginSchema.safeParse(req.body);

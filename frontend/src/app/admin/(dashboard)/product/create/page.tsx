@@ -17,6 +17,7 @@ import { createProduct } from "@/api/product";
 
 interface FormData {
   name: string;
+  slug: string;
   description: string;
   price: number;
   stock: number;
@@ -25,12 +26,15 @@ interface FormData {
   brandId: number | null;
   categoryId: number | null;
   colorIds: number[];
+  featureTagIds: number[];
+  marketingTagIds: number[];
   specs: { key: string; value: string }[];
   images: { file: File; preview: string }[];
 }
 
 const INITIAL_FORM_DATA: FormData = {
   name: "",
+  slug: "",
   description: "",
   price: 0,
   stock: 0,
@@ -39,6 +43,8 @@ const INITIAL_FORM_DATA: FormData = {
   brandId: null,
   categoryId: null,
   colorIds: [],
+  featureTagIds: [],
+  marketingTagIds: [],
   specs: [{ key: "", value: "" }],
   images: [],
 };
@@ -48,14 +54,34 @@ export default function CreateProduct() {
   const [form, setForm] = useState<FormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Function to generate slug from name
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  };
+
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : (type === "number" ? Number(value) : value),
-    }));
+    
+    setForm((prev) => {
+      const newForm = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : (type === "number" ? Number(value) : value),
+      };
+
+      // Auto-generate slug when name changes
+      if (name === "name" && value) {
+        newForm.slug = generateSlug(value);
+      }
+
+      return newForm;
+    });
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +131,9 @@ export default function CreateProduct() {
       formData.append("brochure", form.brochure);
       if (form.brandId) formData.append("brandId", String(form.brandId));
       if (form.categoryId) formData.append("categoryId", String(form.categoryId));
-      form.colorIds.forEach((id) => formData.append("colorIds", String(id)));
+      formData.append("colorIds", JSON.stringify(form.colorIds));
+      formData.append("featureTagIds", JSON.stringify(form.featureTagIds));
+      formData.append("marketingTagIds", JSON.stringify(form.marketingTagIds));
       form.images.forEach((img) => formData.append("images", img.file));
       formData.append("specs", JSON.stringify(specsObject));
 
@@ -149,6 +177,15 @@ export default function CreateProduct() {
                     value={form.name}
                     onChange={handleFormChange}
                     placeholder="Enter product name"
+                    required
+                  />
+
+                  <DefaultInput
+                    label="Product Slug"
+                    name="slug"
+                    value={form.slug}
+                    onChange={handleFormChange}
+                    placeholder="product-slug (auto-generated from name)"
                     required
                   />
 
@@ -233,7 +270,7 @@ export default function CreateProduct() {
               {/* Brand & Category */}
               <ComponentCard
                 title="Product Attributes"
-                desc="Set brand, category, and colors"
+                desc="Set brand, category, colors, and tags"
               >
                 <AttributeSelector
                   selectedBrandId={form.brandId}
@@ -242,6 +279,10 @@ export default function CreateProduct() {
                   onCategoryChange={(categoryId) => setForm(prev => ({ ...prev, categoryId }))}
                   selectedColorIds={form.colorIds}
                   onColorsChange={(colorIds) => setForm(prev => ({ ...prev, colorIds }))}
+                  selectedFeatureTagIds={form.featureTagIds}
+                  onFeatureTagsChange={(featureTagIds) => setForm(prev => ({ ...prev, featureTagIds }))}
+                  selectedMarketingTagIds={form.marketingTagIds}
+                  onMarketingTagsChange={(marketingTagIds) => setForm(prev => ({ ...prev, marketingTagIds }))}
                 />
               </ComponentCard>
 

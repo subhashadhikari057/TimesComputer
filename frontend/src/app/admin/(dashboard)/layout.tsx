@@ -3,7 +3,9 @@
 import Header from "@/components/admin/layout/AdminHeader";
 import Sidebar from "@/components/admin/layout/AdminSidebar";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { apiRequest } from "@/lib/axiosInstance";
+import { toast } from "sonner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,7 +15,28 @@ export default function DashboardLayout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true); // Default to true for desktop
   const [activeMenus, setActiveMenus] = useState<string[]>(["dashboard"]);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Try to make an authenticated request to verify token
+        await apiRequest("GET", "/auth/verify");
+        setIsAuthenticated(true);
+      } catch (error) {
+        toast.error("Please login to access admin dashboard");
+        router.push("/admin/login");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   // Set initial sidebar state based on screen size (only on mount)
   useEffect(() => {
@@ -52,6 +75,20 @@ export default function DashboardLayout({ children }: LayoutProps) {
       prev.includes(menu) ? prev.filter((m) => m !== menu) : [...prev, menu]
     );
   };
+
+  // Show loading spinner while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">

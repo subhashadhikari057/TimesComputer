@@ -3,8 +3,14 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { colorService, Color } from "@/services/colorService";
+import { getAllColors, createColor } from "@/api/color";
 import Dropdown from "@/components/form/form-elements/DefaultDropdown";
+
+interface Color {
+  id: number;
+  name: string;
+  hexCode: string;
+}
 
 interface ColorSelectorProps {
   selectedColorIds: number[];
@@ -38,8 +44,8 @@ export default function ColorSelector({
   const loadColors = async () => {
     try {
       setLoading(true);
-      const colorsData = await colorService.getAllColors();
-      setColors(colorsData);
+      const response = await getAllColors();
+      setColors(response.data || []);
     } catch (err) {
       console.error("Error loading colors:", err);
     } finally {
