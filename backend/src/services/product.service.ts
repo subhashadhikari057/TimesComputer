@@ -36,6 +36,7 @@ export const createProductService = async (data: any) => {
     brochure, specs, brandId, categoryId,
     images, featureTagIds, marketingTagIds, colorIds
   } = data;
+  
 
   return prisma.product.create({
     data: {
