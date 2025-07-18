@@ -6,14 +6,14 @@ import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
 import IconUpload from "@/components/admin/product/iconUpload";
 import { toast } from "sonner";
-import { categoryService } from "@/services/categoryService";
+
 
 interface CategoryFormData {
   id?: number;
   name: string;
-  image?: File; 
+  image?: File;
   imagePreview: string;
-  icon?: File; 
+  icon?: File;
   iconPreview: string;
 }
 
@@ -46,11 +46,9 @@ export default function CategoryPopup({
 
   const isEditMode = Boolean(initialData?.id);
 
-  // Reset form when popup opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        // Edit mode - populate with existing data
         setForm({
           id: initialData.id,
           name: initialData.name,
@@ -58,8 +56,6 @@ export default function CategoryPopup({
           iconPreview: initialData.icon,
         });
       } else {
-
-        // Create mode - reset to initial state
         setForm(INITIAL_FORM_DATA);
       }
       setShowValidation(false);
@@ -79,44 +75,35 @@ export default function CategoryPopup({
   };
 
   const isFormValid = () => {
-    const hasName = form.name.trim() !== "";
-    const hasImage = form.image !== undefined || form.imagePreview !== "";
-    const hasIcon = form.icon !== undefined || form.iconPreview !== "";
-    
-    return hasName && hasImage && hasIcon;
+    return (
+      form.name.trim() !== "" &&
+      (form.image || form.imagePreview) &&
+      (form.icon || form.iconPreview)
+    );
   };
 
   const handleSave = async () => {
     setShowValidation(true);
+    if (!isFormValid()) return;
 
     try {
       setLoading(true);
       setError(null);
 
+      const formData = new FormData();
+      formData.append("name", form.name);
+      if (form.image) formData.append("image", form.image);
+      if (form.icon) formData.append("icon", form.icon);
+
       if (isEditMode) {
-        // For edit mode, we need new files for both image and icon
         if (!form.image || !form.icon) {
           setLoading(false);
           return;
         }
-        
-        await categoryService.updateCategory(form.id!, {
-          name: form.name,
-          image: form.image,
-          icon: form.icon,
-        });
+        await updateCategory(form.id!, formData);
         toast.success("Category updated successfully!");
       } else {
-        if (!form.image || !form.icon) {
-          setLoading(false);
-          return;
-        }
-        
-        await categoryService.createCategory({
-          name: form.name,
-          image: form.image,
-          icon: form.icon,
-        });
+        await createCategory(formData);
         toast.success("Category created successfully!");
       }
 
@@ -127,7 +114,9 @@ export default function CategoryPopup({
         err.message ||
         `Failed to ${isEditMode ? "update" : "create"} category`;
       setError(errorMessage);
-      toast.error(`Error ${isEditMode ? "updating" : "creating"} category: ${errorMessage}`);
+      toast.error(
+        `Error ${isEditMode ? "updating" : "creating"} category: ${errorMessage}`
+      );
     } finally {
       setLoading(false);
     }
@@ -137,10 +126,8 @@ export default function CategoryPopup({
     const file = files[0];
     if (!file) return;
 
-    // Clear any previous errors
     setError(null);
 
-    // Validate file type
     let allowedTypes: string[];
     let errorMessage: string;
 
@@ -157,7 +144,6 @@ export default function CategoryPopup({
       return;
     }
 
-    // Validate file size (10MB limit) 
     if (file.size > 10 * 1024 * 1024) {
       setError("File size too large. Please upload files smaller than 10MB.");
       return;
@@ -202,8 +188,8 @@ export default function CategoryPopup({
             ? "Updating..."
             : "Creating..."
           : isEditMode
-          ? "Update Category"
-          : "Add Category"
+            ? "Update Category"
+            : "Add Category"
       }
       isLoading={loading}
       maxWidth="md"
@@ -215,7 +201,6 @@ export default function CategoryPopup({
           </div>
         )}
 
-        {/* Name Field */}
         <DefaultInput
           label="Category Name"
           name="name"
@@ -227,47 +212,43 @@ export default function CategoryPopup({
           required
         />
 
-        {/* Image and Icon Upload */}
         <div className="grid gap-4 grid-cols-2">
-          <div>
-            <PhotoUpload
-              label="Category Image"
-              required={true}
-              images={form.image ? [form.image] : []}
-              imagePreviews={form.imagePreview ? [form.imagePreview] : []}
-              onImageUpload={(e) =>
-                handleImageUpload(Array.from(e.target.files || []), "image")
-              }
-              onRemoveImage={() => handleRemove("image")}
-              maxImages={1}
-              maxSizeText="up to 10MB each"
-              acceptedFormats="PNG, JPG, WebP"
-              uploadText="Click to upload image"
-            />
-          </div>
+          <PhotoUpload
+            label="Category Image"
+            required
+            images={form.image ? [form.image] : []}
+            imagePreviews={form.imagePreview ? [form.imagePreview] : []}
+            onImageUpload={(e) =>
+              handleImageUpload(Array.from(e.target.files || []), "image")
+            }
+            onRemoveImage={() => handleRemove("image")}
+            maxImages={1}
+            maxSizeText="up to 10MB each"
+            acceptedFormats="PNG, JPG, WebP"
+            uploadText="Click to upload image"
+          />
 
-          <div>
-            <IconUpload
-              label="Category Icon"
-              required={true}
-              images={form.icon ? [form.icon] : []}
-              imagePreviews={form.iconPreview ? [form.iconPreview] : []}
-              onImageUpload={(e) =>
-                handleImageUpload(Array.from(e.target.files || []), "icon")
-              }
-              onRemoveImage={() => handleRemove("icon")}
-              maxImages={1}
-              acceptedFormats="SVG"
-              maxSizeText="up to 10MB each"
-              uploadText="Click to upload SVG icon"
-            />
-          </div>
+          <IconUpload
+            label="Category Icon"
+            required
+            images={form.icon ? [form.icon] : []}
+            imagePreviews={form.iconPreview ? [form.iconPreview] : []}
+            onImageUpload={(e) =>
+              handleImageUpload(Array.from(e.target.files || []), "icon")
+            }
+            onRemoveImage={() => handleRemove("icon")}
+            maxImages={1}
+            acceptedFormats="SVG"
+            maxSizeText="up to 10MB each"
+            uploadText="Click to upload SVG icon"
+          />
         </div>
 
-        {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-700 font-medium">Required fields missing:</p>
+            <p className="text-sm text-amber-700 font-medium">
+              Required fields missing:
+            </p>
             <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
               {form.name.trim() === "" && <li>Category name</li>}
               {!form.image && form.imagePreview === "" && <li>Category image</li>}
