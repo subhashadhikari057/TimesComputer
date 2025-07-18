@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 
 import Link from 'next/link'; 
+import { Product } from "../../../types/product";
 
 interface ProductCardProps {
   product: Product;
@@ -68,7 +69,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
           // </div>
         )} */}
 
-        <h3 className={`line-clamp-2 ${compact ? 'text-[10px]' : 'text-xs sm:text-sm'} font-medium text-gray-900 leading-snug`}>
+        <h3 className={`line-clamp-2 ${compact ? 'text-[14px]' : 'text-xs sm:text-sm'} font-medium text-gray-900 leading-snug`}>
           {product.title}
         </h3>
 
@@ -77,7 +78,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
             {product.currency} {product?.price || "not avilable"}
           </span>
 
-          {!compact && (
+          {(
          
 
 <Link
@@ -87,7 +88,6 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
   View
   <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
 </Link>
-
           )}
         </div>
       </div>
