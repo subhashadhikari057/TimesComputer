@@ -11,63 +11,64 @@ import { categoryService } from "@/services/categoryService";
 interface CategoryFormData {
   id?: number;
   name: string;
-  image: File | null;
+  image?: File; 
   imagePreview: string;
-  icon: File | null;
+  icon?: File; 
   iconPreview: string;
 }
 
 interface CategoryPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<CategoryFormData>;
+  initialData?: {
+    id: number;
+    name: string;
+    image: string;
+    icon: string;
+  };
 }
 
 const INITIAL_FORM_DATA: CategoryFormData = {
   name: "",
-  image: null,
   imagePreview: "",
-  icon: null,
   iconPreview: "",
 };
 
 export default function CategoryPopup({
   isOpen,
   onClose,
-  initialData = {},
+  initialData,
 }: CategoryPopupProps) {
   const [form, setForm] = useState<CategoryFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
 
-  const isEditMode = initialData && initialData.id;
+  const isEditMode = Boolean(initialData?.id);
 
   // Reset form when popup opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
-      const updatedForm = { ...INITIAL_FORM_DATA, ...initialData };
+      if (initialData) {
+        // Edit mode - populate with existing data
+        setForm({
+          id: initialData.id,
+          name: initialData.name,
+          imagePreview: initialData.image,
+          iconPreview: initialData.icon,
+        });
+      } else {
 
-      // Handle existing images for edit mode
-      if (initialData.image && typeof initialData.image === "string") {
-        updatedForm.imagePreview = initialData.image;
-        updatedForm.image = null;
+        // Create mode - reset to initial state
+        setForm(INITIAL_FORM_DATA);
       }
-
-      // Handle existing icons for edit mode
-      if (initialData.icon && typeof initialData.icon === "string") {
-        updatedForm.iconPreview = initialData.icon;
-        updatedForm.icon = null;
-      }
-
-      setForm(updatedForm);
       setShowValidation(false);
       setError(null);
     }
   }, [isOpen]);
 
   const resetForm = () => {
-    setForm({ ...INITIAL_FORM_DATA, ...initialData });
+    setForm(INITIAL_FORM_DATA);
     setShowValidation(false);
     setError(null);
   };
@@ -78,45 +79,44 @@ export default function CategoryPopup({
   };
 
   const isFormValid = () => {
-    return (
-      form.name.trim() !== "" &&
-      (form.image !== null || form.imagePreview !== "") &&
-      (form.icon !== null || form.iconPreview !== "")
-    );
+    const hasName = form.name.trim() !== "";
+    const hasImage = form.image !== undefined || form.imagePreview !== "";
+    const hasIcon = form.icon !== undefined || form.iconPreview !== "";
+    
+    return hasName && hasImage && hasIcon;
   };
 
   const handleSave = async () => {
     setShowValidation(true);
 
-    if (!isFormValid()) return;
-
     try {
       setLoading(true);
       setError(null);
 
-      // Only pass image and icon if they are File, otherwise omit them
-      const saveData: any = {
-        name: form.name,
-      };
-      if (form.image) saveData.image = form.image;
-      if (form.icon) saveData.icon = form.icon;
-
       if (isEditMode) {
+        // For edit mode, we need new files for both image and icon
         if (!form.image || !form.icon) {
-          setError(
-            "Both image and icon are required for updating the category."
-          );
           setLoading(false);
           return;
         }
-        await categoryService.updateCategory(initialData.id!, {
+        
+        await categoryService.updateCategory(form.id!, {
           name: form.name,
           image: form.image,
           icon: form.icon,
         });
         toast.success("Category updated successfully!");
       } else {
-        await categoryService.createCategory(saveData);
+        if (!form.image || !form.icon) {
+          setLoading(false);
+          return;
+        }
+        
+        await categoryService.createCategory({
+          name: form.name,
+          image: form.image,
+          icon: form.icon,
+        });
         toast.success("Category created successfully!");
       }
 
@@ -126,13 +126,8 @@ export default function CategoryPopup({
         err.response?.data?.message ||
         err.message ||
         `Failed to ${isEditMode ? "update" : "create"} category`;
-
       setError(errorMessage);
-      toast.error(errorMessage);
-      console.error(
-        `Error ${isEditMode ? "updating" : "creating"} category:`,
-        err
-      );
+      toast.error(`Error ${isEditMode ? "updating" : "creating"} category: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -142,18 +137,19 @@ export default function CategoryPopup({
     const file = files[0];
     if (!file) return;
 
+    // Clear any previous errors
+    setError(null);
+
     // Validate file type
     let allowedTypes: string[];
     let errorMessage: string;
 
     if (imageType === "icon") {
       allowedTypes = ["image/svg+xml"];
-      errorMessage =
-        "Invalid file type. Please upload SVG files only for icons.";
+      errorMessage = "Invalid file type. Please upload SVG files only for icons.";
     } else {
       allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      errorMessage =
-        "Invalid file type. Please upload PNG, JPG, or WebP files.";
+      errorMessage = "Invalid file type. Please upload PNG, JPG, or WebP files.";
     }
 
     if (!allowedTypes.includes(file.type)) {
@@ -161,7 +157,7 @@ export default function CategoryPopup({
       return;
     }
 
-    // Validate file size (10MB limit)
+    // Validate file size (10MB limit) 
     if (file.size > 10 * 1024 * 1024) {
       setError("File size too large. Please upload files smaller than 10MB.");
       return;
@@ -183,7 +179,7 @@ export default function CategoryPopup({
     const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
     setForm((prev) => ({
       ...prev,
-      [imageType]: null,
+      [imageType]: undefined,
       [previewKey]: "",
     }));
   };
@@ -195,8 +191,8 @@ export default function CategoryPopup({
       title={isEditMode ? "Edit Category" : "Add New Category"}
       description={
         isEditMode
-          ? "Edit the category for your products"
-          : "Create a new category for your products"
+          ? "Edit the category details. Only upload new files if you want to replace them."
+          : "Create a new category for your products. Both image and icon are required."
       }
       onSave={handleSave}
       onCancel={handleCancel}
@@ -206,7 +202,7 @@ export default function CategoryPopup({
             ? "Updating..."
             : "Creating..."
           : isEditMode
-          ? "Update"
+          ? "Update Category"
           : "Add Category"
       }
       isLoading={loading}
@@ -253,8 +249,8 @@ export default function CategoryPopup({
           <div>
             <IconUpload
               label="Category Icon"
-              images={form.icon ? [form.icon] : []}
               required={true}
+              images={form.icon ? [form.icon] : []}
               imagePreviews={form.iconPreview ? [form.iconPreview] : []}
               onImageUpload={(e) =>
                 handleImageUpload(Array.from(e.target.files || []), "icon")
@@ -270,9 +266,14 @@ export default function CategoryPopup({
 
         {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
-          <p className="text-sm text-red-600">
-            Please fill in all required fields: name, image, icon.
-          </p>
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-700 font-medium">Required fields missing:</p>
+            <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
+              {form.name.trim() === "" && <li>Category name</li>}
+              {!form.image && form.imagePreview === "" && <li>Category image</li>}
+              {!form.icon && form.iconPreview === "" && <li>Category icon</li>}
+            </ul>
+          </div>
         )}
       </div>
     </AddDetailsPopup>

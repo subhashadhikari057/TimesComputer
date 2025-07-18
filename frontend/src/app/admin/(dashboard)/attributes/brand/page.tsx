@@ -7,16 +7,14 @@ import {
   Package,
   Search,
   Download,
-
   Calendar,
   Trash2,
-
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
-import DefaultTable, { Column } from "@/components/form/table/newTable";
+import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import BrandPopup from "./brandPopup";
@@ -26,7 +24,6 @@ interface Brand {
   id: number;
   name: string;
   productCount: number;
-  status: string;
   createdAt: string;
   updatedAt: string;
   image: string;
@@ -35,7 +32,6 @@ interface Brand {
 
 // Main Component
 export default function BrandManagementPage() {
-  const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -46,7 +42,7 @@ export default function BrandManagementPage() {
       id: 1,
       name: "Apple",
       productCount: 45,
-      status: "Active",
+    
       createdAt: "2025-07-01",
       updatedAt: "2025-07-15",
       image: "/api/placeholder/150/150",
@@ -56,7 +52,7 @@ export default function BrandManagementPage() {
       id: 2,
       name: "Samsung",
       productCount: 32,
-      status: "Active",
+    
       createdAt: "2025-06-24",
       updatedAt: "2025-07-10",
       image: "/api/placeholder/150/150",
@@ -66,7 +62,7 @@ export default function BrandManagementPage() {
       id: 3,
       name: "Google",
       productCount: 12,
-      status: "Inactive",
+   
       createdAt: "2025-07-15",
       updatedAt: "2025-07-15",
       image: "/api/placeholder/150/150",
@@ -76,7 +72,7 @@ export default function BrandManagementPage() {
       id: 4,
       name: "Microsoft",
       productCount: 67,
-      status: "Active",
+  
       createdAt: "2025-07-10",
       updatedAt: "2025-07-12",
       image: "/api/placeholder/150/150",
@@ -86,7 +82,7 @@ export default function BrandManagementPage() {
       id: 5,
       name: "Dell",
       productCount: 28,
-      status: "Active",
+    
       createdAt: "2025-06-30",
       updatedAt: "2025-07-08",
       image: "/api/placeholder/150/150",
@@ -96,7 +92,7 @@ export default function BrandManagementPage() {
       id: 6,
       name: "HP",
       productCount: 19,
-      status: "Inactive",
+    
       createdAt: "2025-06-25",
       updatedAt: "2025-07-05",
       image: "/api/placeholder/150/150",
@@ -106,7 +102,7 @@ export default function BrandManagementPage() {
       id: 7,
       name: "Sony",
       productCount: 0,
-      status: "Active",
+      
       createdAt: "2025-06-22",
       updatedAt: "2025-07-01",
       image: "/api/placeholder/150/150",
@@ -127,8 +123,8 @@ export default function BrandManagementPage() {
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
             {brand.image ? (
-              <img 
-                src={brand.image} 
+              <img
+                src={brand.image}
                 alt={brand.name}
                 className="h-full w-full object-cover"
               />
@@ -154,35 +150,21 @@ export default function BrandManagementPage() {
       render: (brand: Brand) => (
         <div className="flex items-center space-x-1">
           <Package className="w-4 h-4 text-gray-400" />
-          <span className={`text-sm font-medium ${
-            brand.productCount === 0
-              ? "text-red-600"
-              : brand.productCount < 10
-              ? "text-yellow-600"
-              : "text-gray-900"
-          }`}>
+          <span
+            className={`text-sm font-medium ${
+              brand.productCount === 0
+                ? "text-red-600"
+                : brand.productCount < 10
+                ? "text-yellow-600"
+                : "text-gray-900"
+            }`}
+          >
             {brand.productCount} items
           </span>
         </div>
       ),
     },
-    {
-      id: "status",
-      label: "Status",
-      sortable: true,
-      filterable: true,
-      searchable: false,
-      width: "120px",
-      render: (brand: Brand) => (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          brand.status === "Active"
-            ? "bg-green-100 text-green-800"
-            : "bg-red-100 text-red-800"
-        }`}>
-          {brand.status}
-        </span>
-      ),
-    },
+    
     {
       id: "createdAt",
       label: "Created At",
@@ -217,7 +199,7 @@ export default function BrandManagementPage() {
   } = useTableData({
     data: brandData,
     columns: brandColumns,
-    defaultSort: { key: 'createdAt', direction: 'desc' }
+    defaultSort: { key: "createdAt", direction: "desc" },
   });
 
   // Event handlers
@@ -251,8 +233,11 @@ export default function BrandManagementPage() {
 
   // Calculate stats
   const totalBrands = brandData.length;
-  const activeBrands = brandData.filter(b => b.status === "Active").length;
-  const totalProducts = brandData.reduce((sum, brand) => sum + brand.productCount, 0);
+  const activeBrands = "5";
+  const totalProducts = brandData.reduce(
+    (sum, brand) => sum + brand.productCount,
+    0
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -276,10 +261,7 @@ export default function BrandManagementPage() {
       </div>
 
       {/* Add Brand Popup */}
-      <BrandPopup
-        isOpen={showAddPopup}
-        onClose={handleCloseAddPopup}
-      />
+      <BrandPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
 
       {/* Edit Brand Popup */}
       <BrandPopup
@@ -300,7 +282,7 @@ export default function BrandManagementPage() {
         <StatCard
           title="Active Brands"
           value={activeBrands.toString()}
-          change={`${Math.round((activeBrands / totalBrands) * 100)}% active`}
+          change={`${Math.round((  totalBrands) * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />

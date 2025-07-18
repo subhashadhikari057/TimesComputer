@@ -14,30 +14,37 @@ import Specifications from "@/components/admin/product/specification";
 import AttributeSelector from "@/components/admin/product/attributes";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
 
-interface ProductFormData {
+interface FormData {
   name: string;
   description: string;
   price: number;
   stock: number;
   isPublished: boolean;
   brochure: string;
+  brandId: number | null;
+  categoryId: number | null;
+  colorIds: number[];
+  specs: { key: string; value: string }[];
+  images: { file: File; preview: string }[];
 }
 
-interface ProductData extends ProductFormData {
-  id: string;
-  images?: File[];
-  imagePreviews?: string[];
-  specs?: { key: string; value: string }[];
-  brandId?: number | null;
-  categoryId?: number | null;
-  colorIds?: number[];
-}
-
-const INITIAL_SPECS = [{ key: "", value: "" }];
+const INITIAL_FORM_DATA: FormData = {
+  name: "",
+  description: "",
+  price: 0,
+  stock: 0,
+  isPublished: true,
+  brochure: "",
+  brandId: null,
+  categoryId: null,
+  colorIds: [],
+  specs: [{ key: "", value: "" }],
+  images: [],
+};
 
 // Mock function to fetch product data
 // TODO: Replace with actual API call
-const fetchProduct = async (id: string): Promise<ProductData> => {
+const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -51,65 +58,36 @@ const fetchProduct = async (id: string): Promise<ProductData> => {
     stock: 25,
     isPublished: true,
     brochure: "",
-    imagePreviews: ["/api/placeholder/300/300", "/api/placeholder/300/300"],
+    brandId: 1,
+    categoryId: 2,
+    colorIds: [1, 2, 3],
     specs: [
       { key: "Processor", value: "Apple M3 Max" },
       { key: "Memory", value: "32GB Unified Memory" },
       { key: "Storage", value: "1TB SSD" },
       { key: "Display", value: "16-inch Liquid Retina XDR" },
     ],
-    brandId: 1,
-    categoryId: 2,
-    colorIds: [1, 2, 3],
+    images: [
+      { file: new File([], "image1.jpg"), preview: "/api/placeholder/300/300" },
+      { file: new File([], "image2.jpg"), preview: "/api/placeholder/300/300" },
+    ],
   };
 };
 
 export default function EditProduct() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const [productData, setProductData] = useState<ProductData | null>(null);
+  const [form, setForm] = useState<FormData>(INITIAL_FORM_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Form state
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: "",
-    description: "",
-    price: 0,
-    stock: 0,
-    isPublished: true,
-    brochure: "",
-  });
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [specs, setSpecs] = useState<{ key: string; value: string }[]>(INITIAL_SPECS);
-  const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [productColorIds, setProductColorIds] = useState<number[]>([]);
 
   useEffect(() => {
     const loadProduct = async () => {
       try {
         setIsLoading(true);
         const data = await fetchProduct(id);
-        setProductData(data);
-        
-        // Update form state with loaded data
-        setFormData({
-          name: data.name,
-          description: data.description,
-          price: data.price,
-          stock: data.stock,
-          isPublished: data.isPublished,
-          brochure: data.brochure,
-        });
-        setImages(data.images || []);
-        setImagePreviews(data.imagePreviews || []);
-        setSpecs(data.specs || INITIAL_SPECS);
-        setSelectedBrandId(data.brandId || null);
-        setSelectedCategoryId(data.categoryId || null);
-        setProductColorIds(data.colorIds || []);
+        setForm(data);
       } catch (err) {
         console.error("Error fetching product:", err);
         setError("Failed to load product data");
@@ -124,37 +102,37 @@ export default function EditProduct() {
     }
   }, [id]);
 
-  const handleInputChange = (
+  const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setForm((prev) => ({
       ...prev,
-      [name]: type === "number" ? Number(value) : value,
+      [name]: type === "checkbox" ? checked : (type === "number" ? Number(value) : value),
     }));
-  };
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setImages((prev) => [...prev, ...files]);
-
+    
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreviews((prev) => [...prev, e.target?.result as string]);
+        const preview = e.target?.result as string;
+        setForm((prev) => ({
+          ...prev,
+          images: [...prev.images, { file, preview }]
+        }));
       };
       reader.readAsDataURL(file);
     });
   };
 
   const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const handleCancel = () => {
@@ -167,7 +145,7 @@ export default function EditProduct() {
     setIsSubmitting(true);
 
     try {
-      const specsObject = specs.reduce((acc, spec) => {
+      const specsObject = form.specs.reduce((acc, spec) => {
         if (spec.key && spec.value) {
           acc[spec.key] = spec.value;
         }
@@ -175,13 +153,18 @@ export default function EditProduct() {
       }, {} as Record<string, string>);
 
       const submitData = {
-        ...formData,
         id,
-        brandId: selectedBrandId,
-        categoryId: selectedCategoryId,
+        name: form.name,
+        description: form.description,
+        price: form.price,
+        stock: form.stock,
+        isPublished: form.isPublished,
+        brochure: form.brochure,
+        brandId: form.brandId,
+        categoryId: form.categoryId,
         specs: specsObject,
-        images,
-        selectedColors: productColorIds,
+        images: form.images.map(img => img.file),
+        selectedColors: form.colorIds,
       };
 
       // TODO: Replace with actual API call
@@ -286,8 +269,8 @@ export default function EditProduct() {
                   <DefaultInput
                     label="Product Name"
                     name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
+                    value={form.name}
+                    onChange={handleFormChange}
                     placeholder="Enter product name"
                     required
                   />
@@ -295,8 +278,8 @@ export default function EditProduct() {
                   <DefaultTextarea
                     label="Description"
                     name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
+                    value={form.description}
+                    onChange={handleFormChange}
                     placeholder="Enter product description"
                     rows={4}
                   />
@@ -310,9 +293,9 @@ export default function EditProduct() {
               >
                 <PhotoUpload
                   label="Product Images"
-                  images={images}
+                  images={form.images.map(img => img.file)}
                   required={false}
-                  imagePreviews={imagePreviews}
+                  imagePreviews={form.images.map(img => img.preview)}
                   onImageUpload={handleImageUpload}
                   onRemoveImage={removeImage}
                   maxImages={10}
@@ -324,8 +307,8 @@ export default function EditProduct() {
 
               {/* Specifications */}
               <Specifications
-                specifications={specs}
-                onSpecificationsChange={setSpecs}
+                specifications={form.specs}
+                onSpecificationsChange={(specs) => setForm(prev => ({ ...prev, specs }))}
               />
             </div>
 
@@ -340,8 +323,8 @@ export default function EditProduct() {
                   <DefaultNumberInput
                     label="Price"
                     name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
+                    value={form.price}
+                    onChange={handleFormChange}
                     min={0}
                     step={0.01}
                     placeholder="0.00"
@@ -352,8 +335,8 @@ export default function EditProduct() {
                   <DefaultNumberInput
                     label="Stock Quantity"
                     name="stock"
-                    value={formData.stock}
-                    onChange={handleInputChange}
+                    value={form.stock}
+                    onChange={handleFormChange}
                     min={0}
                     placeholder="0"
                     required
@@ -363,8 +346,8 @@ export default function EditProduct() {
                   <DefaultCheckbox
                     label="Published"
                     name="isPublished"
-                    checked={formData.isPublished}
-                    onChange={handleCheckboxChange}
+                    checked={form.isPublished}
+                    onChange={handleFormChange}
                     helpText="Make this product visible to customers"
                   />
                 </div>
@@ -376,12 +359,12 @@ export default function EditProduct() {
                 desc="Update brand, category, and colors"
               >
                 <AttributeSelector
-                  selectedBrandId={selectedBrandId}
-                  selectedCategoryId={selectedCategoryId}
-                  onBrandChange={setSelectedBrandId}
-                  onCategoryChange={setSelectedCategoryId}
-                  selectedColorIds={productColorIds}
-                  onColorsChange={setProductColorIds}
+                  selectedBrandId={form.brandId}
+                  selectedCategoryId={form.categoryId}
+                  onBrandChange={(brandId) => setForm(prev => ({ ...prev, brandId }))}
+                  onCategoryChange={(categoryId) => setForm(prev => ({ ...prev, categoryId }))}
+                  selectedColorIds={form.colorIds}
+                  onColorsChange={(colorIds) => setForm(prev => ({ ...prev, colorIds }))}
                 />
               </ComponentCard>
 
@@ -396,13 +379,13 @@ export default function EditProduct() {
                     placeholder="https://example.com/brochure.pdf"
                     label="Brochure URL"
                     name="brochure"
-                    value={formData.brochure}
-                    onChange={handleInputChange}
+                    value={form.brochure}
+                    onChange={handleFormChange}
                     helpText="Supported formats: PDF, DOC, DOCX, PPT, PPTX (max 50MB)"
                   />
 
                   {/* URL Preview */}
-                  {formData.brochure && (
+                  {form.brochure && (
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                       <div className="flex-shrink-0">
                         <svg
@@ -421,11 +404,11 @@ export default function EditProduct() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-600 truncate">
-                          {formData.brochure}
+                          {form.brochure}
                         </p>
                       </div>
                       <a
-                        href={formData.brochure}
+                        href={form.brochure}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium"

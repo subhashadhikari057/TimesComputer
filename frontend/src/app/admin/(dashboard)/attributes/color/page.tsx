@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
-import DefaultTable, { Column } from "@/components/form/table/newTable";
+import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import ColorPopup from "./colorPopup";
@@ -249,7 +249,7 @@ export default function ColorManagementPage() {
 
   // Calculate stats
   const totalColors = colorData.length;
-  const colorsWithProducts = colorData.filter(c => c.productCount > 0).length;
+  const colorsWithProducts = colorData.filter((c) => c.productCount > 0).length;
   const totalProducts = colorData.reduce(
     (sum, color) => sum + color.productCount,
     0
@@ -277,10 +277,7 @@ export default function ColorManagementPage() {
       </div>
 
       {/* Add Color Popup */}
-      <ColorPopup
-        isOpen={showAddPopup}
-        onClose={handleCloseAddPopup}
-      />
+      <ColorPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
 
       {/* Edit Color Popup */}
       <ColorPopup
@@ -301,7 +298,9 @@ export default function ColorManagementPage() {
         <StatCard
           title="Colors in Use"
           value={colorsWithProducts.toString()}
-          change={`${Math.round((colorsWithProducts / totalColors) * 100)}% in use`}
+          change={`${Math.round(
+            (colorsWithProducts / totalColors) * 100
+          )}% in use`}
           Icon={CheckCircle}
           color="text-green-600"
         />

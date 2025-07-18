@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 "use client";
 
 import {
@@ -21,7 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
-import DefaultTable, { Column } from "@/components/form/table/newTable";
+import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 
 // Main Component
@@ -89,7 +82,7 @@ export default function ViewProductsPage() {
       label: "Product",
       sortable: false,
       filterable: true,
-      searchable: true, 
+      searchable: true,
       width: "300px",
       render: (product: any) => (
         <div className="flex items-center space-x-4">
@@ -108,7 +101,7 @@ export default function ViewProductsPage() {
       id: "category",
       label: "Category",
       sortable: false,
-      filterable: true, 
+      filterable: true,
       searchable: true,
       width: "120px",
       render: (product: any) => (
@@ -119,7 +112,7 @@ export default function ViewProductsPage() {
       id: "brand",
       label: "Brand",
       sortable: true,
-      filterable: true, 
+      filterable: true,
       searchable: true,
       width: "100px",
       render: (product: any) => (
@@ -236,11 +229,9 @@ export default function ViewProductsPage() {
     handleBulkDelete,
   } = useTableData({
     data: newData,
-    columns: newColumns, // Pass the columns array directly
-    defaultSort: { key: 'createdAt', direction: 'desc' }
+    columns: newColumns, 
+    defaultSort: { key: "createdAt", direction: "desc" },
   });
-
- 
 
   const handleEdit = (row: any, index: number) => {
     router.push(`/admin/product/${row.id}/edit`);
@@ -281,7 +272,7 @@ export default function ViewProductsPage() {
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-3">
         <StatCard
           title="Total Products"
           value={newData.length.toString()}
@@ -291,7 +282,7 @@ export default function ViewProductsPage() {
         />
         <StatCard
           title="Published Products"
-          value={newData.filter(p => p.status === 'Active').length.toString()}
+          value={newData.filter((p) => p.status === "Active").length.toString()}
           change="100%"
           Icon={CheckCircle}
           color="text-green-600"

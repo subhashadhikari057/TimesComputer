@@ -10,13 +10,11 @@ import {
   Eye,
   Calendar,
   Trash2,
-  Image,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
-import DefaultTable, { Column } from "@/components/form/table/newTable";
+import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import CategoryPopup from "./categoryPopup";
@@ -26,26 +24,22 @@ interface Category {
   id: number;
   name: string;
   productCount: number;
-  status: string;
   createdAt: string;
   updatedAt: string;
   image: string;
   icon: string;
-  parentId: number | null;
-  sortOrder: number;
 }
 
 // Main Component
 export default function CategoryManagementPage() {
-  const router = useRouter();
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{
     id: number;
     name: string;
-    image?: string;
-    icon?: string;
-  } | null>(null);
+    image: string;
+    icon: string;
+  } | undefined>(undefined);
 
   // Sample data matching the product page structure
   const categoryData: Category[] = [
@@ -53,77 +47,71 @@ export default function CategoryManagementPage() {
       id: 1,
       name: "Laptops",
       productCount: 45,
-      status: "Active",
+    
       createdAt: "2025-07-01",
       updatedAt: "2025-07-15",
       image: "/api/placeholder/150/150",
       icon: "/api/placeholder/icon/50/50",
-      parentId: null,
-      sortOrder: 1,
+ 
     },
     {
       id: 2,
       name: "Smartphones",
       productCount: 32,
-      status: "Active",
+     
       createdAt: "2025-06-24",
       updatedAt: "2025-07-10",
       image: "/api/placeholder/150/150",
       icon: "/api/placeholder/icon/50/50",
-      parentId: null,
-      sortOrder: 2,
+   
     },
     {
       id: 3,
       name: "Tablets",
       productCount: 12,
-      status: "Inactive",
+   
       createdAt: "2025-07-15",
       updatedAt: "2025-07-15",
       image: "/api/placeholder/150/150",
       icon: "/api/placeholder/icon/50/50",
-      parentId: null,
-      sortOrder: 3,
+    
     },
     {
       id: 4,
       name: "Accessories",
       productCount: 67,
-      status: "Active",
+    
       createdAt: "2025-07-10",
       updatedAt: "2025-07-12",
       image: "/api/placeholder/150/150",
       icon: "/api/placeholder/icon/50/50",
-      parentId: null,
-      sortOrder: 4,
+      
     },
     {
       id: 5,
       name: "Gaming",
       productCount: 28,
-      status: "Active",
+   
       createdAt: "2025-06-30",
       updatedAt: "2025-07-08",
       image: "/api/placeholder/150/150",
       icon: "/api/placeholder/icon/50/50",
-      parentId: null,
-      sortOrder: 5,
+    
     },
     {
       id: 6,
       name: "Audio",
       productCount: 19,
-      status: "Inactive",
+      
       createdAt: "2025-06-25",
       updatedAt: "2025-07-05",
       image: "/api/placeholder/150/150",
       icon: "/api/placeholder/icon/50/50",
-      parentId: null,
-      sortOrder: 6,
+  
     },
   ];
 
-  // Define columns for the table (similar to product page)
+  // Define columns for the table 
   const categoryColumns: Column[] = [
     {
       id: "name",
@@ -135,15 +123,11 @@ export default function CategoryManagementPage() {
       render: (category: Category) => (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center overflow-hidden">
-            {category.image ? (
-              <img 
-                src={category.image} 
-                alt={category.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Tag className="h-6 w-6 text-purple-600" />
-            )}
+            <img
+              src={category.image}
+              alt={category.name}
+              className="h-full w-full object-cover"
+            />
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
@@ -163,51 +147,21 @@ export default function CategoryManagementPage() {
       render: (category: Category) => (
         <div className="flex items-center space-x-1">
           <Package className="w-4 h-4 text-gray-400" />
-          <span className={`text-sm font-medium ${
-            category.productCount === 0
-              ? "text-red-600"
-              : category.productCount < 10
-              ? "text-yellow-600"
-              : "text-gray-900"
-          }`}>
+          <span
+            className={`text-sm font-medium ${
+              category.productCount === 0
+                ? "text-red-600"
+                : category.productCount < 10
+                ? "text-yellow-600"
+                : "text-gray-900"
+            }`}
+          >
             {category.productCount} items
           </span>
         </div>
       ),
     },
-    {
-      id: "status",
-      label: "Status",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (category: Category) => {
-        const isActive = category.status === "Active";
-
-        return (
-          <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-              isActive
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {isActive ? (
-              <>
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Active
-              </>
-            ) : (
-              <>
-                <Eye className="w-3 h-3 mr-1" />
-                Inactive
-              </>
-            )}
-          </span>
-        );
-      },
-    },
+    
     {
       id: "createdAt",
       label: "Created At",
@@ -238,7 +192,7 @@ export default function CategoryManagementPage() {
     },
   ];
 
-  // Use custom hook for table data management (same as product page)
+  // Use custom hook for table data management
   const {
     searchTerm,
     filters,
@@ -256,17 +210,17 @@ export default function CategoryManagementPage() {
   } = useTableData({
     data: categoryData,
     columns: categoryColumns,
-    defaultSort: { key: 'createdAt', direction: 'desc' }
+    defaultSort: { key: "createdAt", direction: "desc" },
   });
 
   // Event handlers
   const handleEdit = (row: any, index: number) => {
-    // Convert Category to the format expected by CategoryPopup
+    
     const categoryData = {
       id: row.id,
       name: row.name,
-      image: row.image, // string URL
-      icon: row.icon,   // string URL
+      image: row.image, 
+      icon: row.icon, 
     };
     setEditingCategory(categoryData);
     setShowEditPopup(true);
@@ -292,13 +246,16 @@ export default function CategoryManagementPage() {
 
   const handleCloseEditPopup = () => {
     setShowEditPopup(false);
-    setEditingCategory(null);
+    setEditingCategory(undefined);
   };
 
   // Calculate stats
   const totalCategories = categoryData.length;
-  const activeCategories = categoryData.filter(c => c.status === "Active").length;
-  const totalProducts = categoryData.reduce((sum, cat) => sum + cat.productCount, 0);
+  const activeCategories = "5"
+  const totalProducts = categoryData.reduce(
+    (sum, cat) => sum + cat.productCount,
+    0
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -322,16 +279,13 @@ export default function CategoryManagementPage() {
       </div>
 
       {/* Add Category Popup */}
-      <CategoryPopup
-        isOpen={showAddPopup}
-        onClose={handleCloseAddPopup}
-      />
+      <CategoryPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
 
       {/* Edit Category Popup */}
       <CategoryPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
-        initialData={editingCategory || undefined}
+        initialData={editingCategory}
       />
 
       {/* Statistics - Same structure as product page */}
@@ -346,14 +300,18 @@ export default function CategoryManagementPage() {
         <StatCard
           title="Active Categories"
           value={activeCategories.toString()}
-          change={`${Math.round((activeCategories / totalCategories) * 100)}% active`}
+          change={`${Math.round(
+            (totalCategories) * 100
+          )}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
           title="Total Products"
           value={totalProducts.toString()}
-          change={`Avg ${Math.round(totalProducts / totalCategories)} per category`}
+          change={`Avg ${Math.round(
+            totalProducts / totalCategories
+          )} per category`}
           Icon={Package}
           color="text-blue-600"
         />
@@ -410,7 +368,7 @@ export default function CategoryManagementPage() {
           </div>
         </div>
 
-        {/* Table - Same as product page */}
+        {/* Table  */}
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}

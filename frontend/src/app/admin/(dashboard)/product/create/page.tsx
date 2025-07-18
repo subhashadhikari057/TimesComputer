@@ -14,78 +14,74 @@ import Specifications from "@/components/admin/product/specification";
 import AttributeSelector from "@/components/admin/product/attributes";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
 
-interface ProductFormData {
+interface FormData {
   name: string;
   description: string;
   price: number;
   stock: number;
   isPublished: boolean;
   brochure: string;
+  brandId: number | null;
+  categoryId: number | null;
+  colorIds: number[];
+  specs: { key: string; value: string }[];
+  images: { file: File; preview: string }[];
 }
 
-const INITIAL_FORM_DATA: ProductFormData = {
+const INITIAL_FORM_DATA: FormData = {
   name: "",
   description: "",
   price: 0,
   stock: 0,
   isPublished: true,
   brochure: "",
+  brandId: null,
+  categoryId: null,
+  colorIds: [],
+  specs: [{ key: "", value: "" }],
+  images: [],
 };
-
-const INITIAL_SPECS = [{ key: "", value: "" }];
 
 export default function CreateProduct() {
   const router = useRouter();
-  const [formData, setFormData] = useState<ProductFormData>(INITIAL_FORM_DATA);
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [specs, setSpecs] = useState<{ key: string; value: string }[]>(INITIAL_SPECS);
-  const [selectedBrandId, setSelectedBrandId] = useState<number | null>(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [productColorIds, setProductColorIds] = useState<number[]>([]);
+  const [form, setForm] = useState<FormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (
+  const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => ({
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setForm((prev) => ({
       ...prev,
-      [name]: type === "number" ? Number(value) : value,
+      [name]: type === "checkbox" ? checked : (type === "number" ? Number(value) : value),
     }));
-  };
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setImages((prev) => [...prev, ...files]);
-
+    
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreviews((prev) => [...prev, e.target?.result as string]);
+        const preview = e.target?.result as string;
+        setForm((prev) => ({
+          ...prev,
+          images: [...prev.images, { file, preview }]
+        }));
       };
       reader.readAsDataURL(file);
     });
   };
 
   const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
   };
 
   const resetForm = () => {
-    setFormData(INITIAL_FORM_DATA);
-    setImages([]);
-    setImagePreviews([]);
-    setSpecs(INITIAL_SPECS);
-    setSelectedBrandId(null);
-    setSelectedCategoryId(null);
-    setProductColorIds([]);
+    setForm(INITIAL_FORM_DATA);
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -94,7 +90,7 @@ export default function CreateProduct() {
     setIsSubmitting(true);
 
     try {
-      const specsObject = specs.reduce((acc, spec) => {
+      const specsObject = form.specs.reduce((acc, spec) => {
         if (spec.key && spec.value) {
           acc[spec.key] = spec.value;
         }
@@ -102,12 +98,17 @@ export default function CreateProduct() {
       }, {} as Record<string, string>);
 
       const submitData = {
-        ...formData,
-        brandId: selectedBrandId,
-        categoryId: selectedCategoryId,
+        name: form.name,
+        description: form.description,
+        price: form.price,
+        stock: form.stock,
+        isPublished: form.isPublished,
+        brochure: form.brochure,
+        brandId: form.brandId,
+        categoryId: form.categoryId,
         specs: specsObject,
-        images,
-        selectedColors: productColorIds,
+        images: form.images.map(img => img.file),
+        selectedColors: form.colorIds,
       };
 
       // TODO: Replace with actual API call
@@ -122,7 +123,6 @@ export default function CreateProduct() {
       // Redirect to products list
       router.push("/admin/product/all-products");
     } catch (error) {
-      console.error("Error creating product:", error);
       toast.error("Failed to create product. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -156,8 +156,8 @@ export default function CreateProduct() {
                   <DefaultInput
                     label="Product Name"
                     name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
+                    value={form.name}
+                    onChange={handleFormChange}
                     placeholder="Enter product name"
                     required
                   />
@@ -165,8 +165,8 @@ export default function CreateProduct() {
                   <DefaultTextarea
                     label="Description"
                     name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
+                    value={form.description}
+                    onChange={handleFormChange}
                     placeholder="Enter product description"
                     rows={4}
                   />
@@ -180,9 +180,9 @@ export default function CreateProduct() {
               >
                 <PhotoUpload
                   label="Product Images"
-                  images={images}
+                  images={form.images.map(img => img.file)}
                   required={true}
-                  imagePreviews={imagePreviews}
+                  imagePreviews={form.images.map(img => img.preview)}
                   onImageUpload={handleImageUpload}
                   onRemoveImage={removeImage}
                   maxImages={10}
@@ -194,8 +194,8 @@ export default function CreateProduct() {
 
               {/* Specifications */}
               <Specifications
-                specifications={specs}
-                onSpecificationsChange={setSpecs}
+                specifications={form.specs}
+                onSpecificationsChange={(specs) => setForm(prev => ({ ...prev, specs }))}
               />
             </div>
 
@@ -210,8 +210,8 @@ export default function CreateProduct() {
                   <DefaultNumberInput
                     label="Price"
                     name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
+                    value={form.price}
+                    onChange={handleFormChange}
                     min={0}
                     step={0.01}
                     placeholder="0.00"
@@ -222,8 +222,8 @@ export default function CreateProduct() {
                   <DefaultNumberInput
                     label="Stock Quantity"
                     name="stock"
-                    value={formData.stock}
-                    onChange={handleInputChange}
+                    value={form.stock}
+                    onChange={handleFormChange}
                     min={0}
                     placeholder="0"
                     required
@@ -233,8 +233,8 @@ export default function CreateProduct() {
                   <DefaultCheckbox
                     label="Published"
                     name="isPublished"
-                    checked={formData.isPublished}
-                    onChange={handleCheckboxChange}
+                    checked={form.isPublished}
+                    onChange={handleFormChange}
                     helpText="Make this product visible to customers"
                   />
                 </div>
@@ -246,12 +246,12 @@ export default function CreateProduct() {
                 desc="Set brand, category, and colors"
               >
                 <AttributeSelector
-                  selectedBrandId={selectedBrandId}
-                  selectedCategoryId={selectedCategoryId}
-                  onBrandChange={setSelectedBrandId}
-                  onCategoryChange={setSelectedCategoryId}
-                  selectedColorIds={productColorIds}
-                  onColorsChange={setProductColorIds}
+                  selectedBrandId={form.brandId}
+                  selectedCategoryId={form.categoryId}
+                  onBrandChange={(brandId) => setForm(prev => ({ ...prev, brandId }))}
+                  onCategoryChange={(categoryId) => setForm(prev => ({ ...prev, categoryId }))}
+                  selectedColorIds={form.colorIds}
+                  onColorsChange={(colorIds) => setForm(prev => ({ ...prev, colorIds }))}
                 />
               </ComponentCard>
 
@@ -266,13 +266,13 @@ export default function CreateProduct() {
                     placeholder="https://example.com/brochure.pdf"
                     label="Brochure URL"
                     name="brochure"
-                    value={formData.brochure}
-                    onChange={handleInputChange}
+                    value={form.brochure}
+                    onChange={handleFormChange}
                     helpText="Supported formats: PDF, DOC, DOCX, PPT, PPTX (max 50MB)"
                   />
 
                   {/* URL Preview */}
-                  {formData.brochure && (
+                  {form.brochure && (
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                       <div className="flex-shrink-0">
                         <svg
@@ -291,11 +291,11 @@ export default function CreateProduct() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-600 truncate">
-                          {formData.brochure}
+                          {form.brochure}
                         </p>
                       </div>
                       <a
-                        href={formData.brochure}
+                        href={form.brochure}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium"

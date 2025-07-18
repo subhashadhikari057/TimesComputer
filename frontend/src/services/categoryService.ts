@@ -15,6 +15,12 @@ export interface CreateCategoryData {
   icon: File;
 }
 
+export interface UpdateCategoryData {
+  name: string;
+  image?: File; 
+  icon?: File;  
+}
+
 export const categoryService = {
   // Get all categories
   getAllCategories: async (): Promise<Category[]> => {
@@ -43,17 +49,10 @@ export const categoryService = {
     try {
       const formData = new FormData();
       formData.append("name", data.name);
-
-      if (data.image) {
-        formData.append("image", data.image);
-      }
-
-      if (data.icon) {
-        formData.append("icon", data.icon);
-      }
+      formData.append("image", data.image);
+      formData.append("icon", data.icon);
 
       const response = await apiRequest("POST", "/category", formData);
-
       return response.data.data;
     } catch (error) {
       console.error("Error creating category:", error);
@@ -64,29 +63,23 @@ export const categoryService = {
   // Update an existing category
   updateCategory: async (
     id: number,
-    data: CreateCategoryData
+    data: UpdateCategoryData
   ): Promise<Category> => {
     try {
       const formData = new FormData();
       formData.append("name", data.name);
 
-     
-      // Only append image if it exists (user uploaded new image)
+      // Only append image if user uploaded a new one
       if (data.image) {
         formData.append("image", data.image);
       }
 
-      // Only append icon if it exists (user uploaded new icon)
+      // Only append icon if user uploaded a new one
       if (data.icon) {
         formData.append("icon", data.icon);
       }
 
-      const response = await axios.put(`/category/update/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      const response = await apiRequest("PUT", `/category/update/${id}`, formData);
       return response.data.data;
     } catch (error) {
       console.error("Error updating category:", error);
@@ -97,9 +90,19 @@ export const categoryService = {
   // Delete Category
   deleteCategory: async (id: number): Promise<void> => {
     try {
-      await axios.delete(`/category/delete/${id}`);
+      await apiRequest("DELETE", `/category/delete/${id}`);
     } catch (error) {
       console.error("Error deleting category:", error);
+      throw error;
+    }
+  },
+
+  // Bulk delete categories
+  bulkDeleteCategories: async (ids: number[]): Promise<void> => {
+    try {
+      await apiRequest("DELETE", "/category/bulk-delete", { ids });
+    } catch (error) {
+      console.error("Error bulk deleting categories:", error);
       throw error;
     }
   },

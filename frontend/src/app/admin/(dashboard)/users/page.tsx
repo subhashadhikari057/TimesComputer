@@ -16,9 +16,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
-import DefaultTable, { Column } from "@/components/form/table/newTable";
+import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
+import UserPopup from "./userPopup";
 
 // User interface
 interface User {
@@ -36,6 +37,11 @@ interface User {
 // Main Component
 export default function UsersPage() {
   const router = useRouter();
+  
+  // Popup state management
+  const [isAddUserPopupOpen, setIsAddUserPopupOpen] = useState(false);
+  const [isEditUserPopupOpen, setIsEditUserPopupOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Sample data matching the product page structure
   const userData: User[] = [
@@ -120,8 +126,8 @@ export default function UsersPage() {
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center overflow-hidden">
             {user.avatar ? (
-              <img 
-                src={user.avatar} 
+              <img
+                src={user.avatar}
                 alt={user.name}
                 className="w-full h-full object-cover"
               />
@@ -158,9 +164,12 @@ export default function UsersPage() {
         return (
           <div className="flex items-center space-x-1">
             <Shield className="w-3 h-3 text-gray-400" />
-            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-              roleColors[user.role as keyof typeof roleColors] || "bg-gray-100 text-gray-800"
-            }`}>
+            <span
+              className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                roleColors[user.role as keyof typeof roleColors] ||
+                "bg-gray-100 text-gray-800"
+              }`}
+            >
               {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
             </span>
           </div>
@@ -259,7 +268,7 @@ export default function UsersPage() {
     },
   ];
 
-  // Use custom hook for table data management (same as product page)
+  // Use custom hook for table data management 
   const {
     searchTerm,
     filters,
@@ -277,17 +286,20 @@ export default function UsersPage() {
   } = useTableData({
     data: userData,
     columns: userColumns,
-    defaultSort: { key: 'registeredAt', direction: 'desc' }
+    defaultSort: { key: "registeredAt", direction: "desc" },
   });
 
-  // Event handlers (similar to product page)
+  // Event handlers
   const handleEdit = (row: any, index: number) => {
     console.log("Edit user:", row, index);
-    toast.success("Edit functionality coming soon!");
+    setSelectedUser(row);
+    setIsEditUserPopupOpen(true);
   };
 
   const handleDelete = (row: any, index: number) => {
     console.log("Delete user:", row, index);
+    // Here you would typically show a confirmation dialog
+    // For now, just show a toast
     toast.success("User deleted successfully!");
   };
 
@@ -298,17 +310,27 @@ export default function UsersPage() {
 
   const handleAddUser = () => {
     console.log("Add user clicked");
-    toast.success("Add user functionality coming soon!");
+    setIsAddUserPopupOpen(true);
+  };
+
+  // Popup close handlers
+  const handleCloseAddUserPopup = () => {
+    setIsAddUserPopupOpen(false);
+  };
+
+  const handleCloseEditUserPopup = () => {
+    setIsEditUserPopupOpen(false);
+    setSelectedUser(null);
   };
 
   // Calculate stats
   const totalUsers = userData.length;
-  const activeUsers = userData.filter(u => u.status === "Active").length;
-  const verifiedUsers = userData.filter(u => u.emailVerified).length;
+  const activeUsers = userData.filter((u) => u.status === "Active").length;
+  const verifiedUsers = userData.filter((u) => u.emailVerified).length;
 
   return (
     <div className="p-6 space-y-6">
-      {/* Page Header - Same structure as product page */}
+      {/* Page Header  */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Users</h1>
@@ -327,7 +349,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Statistics - Same structure as product page */}
+      {/* Statistics  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Users"
@@ -352,11 +374,11 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* Table Container - Same structure as product page */}
+      {/* Table Container - */}
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
-            {/* Search Input - Same as product page */}
+            {/* Search Input -  */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -368,7 +390,7 @@ export default function UsersPage() {
               />
             </div>
 
-            {/* Action Buttons - Same structure as product page */}
+            {/* Action Buttons -  */}
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 md:justify-self-end">
               {/* Bulk Delete Button - Show only when items are selected */}
               {selectedItems.length > 0 && (
@@ -403,7 +425,7 @@ export default function UsersPage() {
           </div>
         </div>
 
-        {/* Table - Same as product page */}
+        {/* Table -  */}
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}
@@ -416,6 +438,22 @@ export default function UsersPage() {
           onSort={handleSort}
         />
       </div>
+
+      {/* User Popups */}
+      <UserPopup
+        isOpen={isAddUserPopupOpen}
+        onClose={handleCloseAddUserPopup}
+      />
+
+      <UserPopup
+        isOpen={isEditUserPopupOpen}
+        onClose={handleCloseEditUserPopup}
+        initialData={selectedUser ? {
+          id: selectedUser.id,
+          name: selectedUser.name,
+          email: selectedUser.email,
+        } : {}}
+      />
     </div>
   );
 }
