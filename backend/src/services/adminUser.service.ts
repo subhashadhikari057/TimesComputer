@@ -22,12 +22,10 @@ export const createAdmin = async ({
     name,
     email,
     password,
-    role,
 }: {
     name: string;
     email: string;
     password: string;
-    role: Role;
 }) => {
     const hashed = await hashPassword(password);
 
@@ -35,9 +33,7 @@ export const createAdmin = async ({
         data: {
             name,
             email,
-            password: hashed,
-            role,
-            isActive: true,
+            password: hashed
         },
     });
 };

@@ -13,6 +13,7 @@ import PhotoUpload from "@/components/admin/product/photoUpload";
 import Specifications from "@/components/admin/product/specification";
 import AttributeSelector from "@/components/admin/product/attributes";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
+import { createProduct } from "@/api/product";
 
 interface FormData {
   name: string;
@@ -59,7 +60,7 @@ export default function CreateProduct() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -86,9 +87,7 @@ export default function CreateProduct() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-
     setIsSubmitting(true);
-
     try {
       const specsObject = form.specs.reduce((acc, spec) => {
         if (spec.key && spec.value) {
@@ -97,30 +96,21 @@ export default function CreateProduct() {
         return acc;
       }, {} as Record<string, string>);
 
-      const submitData = {
-        name: form.name,
-        description: form.description,
-        price: form.price,
-        stock: form.stock,
-        isPublished: form.isPublished,
-        brochure: form.brochure,
-        brandId: form.brandId,
-        categoryId: form.categoryId,
-        specs: specsObject,
-        images: form.images.map(img => img.file),
-        selectedColors: form.colorIds,
-      };
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("description", form.description);
+      formData.append("price", String(form.price));
+      formData.append("stock", String(form.stock));
+      formData.append("isPublished", String(form.isPublished));
+      formData.append("brochure", form.brochure);
+      if (form.brandId) formData.append("brandId", String(form.brandId));
+      if (form.categoryId) formData.append("categoryId", String(form.categoryId));
+      form.colorIds.forEach((id) => formData.append("colorIds", String(id)));
+      form.images.forEach((img) => formData.append("images", img.file));
+      formData.append("specs", JSON.stringify(specsObject));
 
-      // TODO: Replace with actual API call
-      console.log("Creating product:", submitData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Show success message
+      await createProduct(formData);
       toast.success("Product created successfully!");
-      
-      // Redirect to products list
       router.push("/admin/product/all-products");
     } catch (error) {
       toast.error("Failed to create product. Please try again.");

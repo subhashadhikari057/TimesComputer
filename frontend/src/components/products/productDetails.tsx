@@ -1,14 +1,16 @@
-// "use client"
+"use client"
 
-// import { useState } from "react"
-// import { Star} from "lucide-react"
-// import { Button } from "@/components/ui/button"
-// import { Card,CardContent } from "@/components/ui/card"
-// import Image from "next/image"
-// import { PiWhatsappLogoThin } from "react-icons/pi";
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { getProductById } from "@/api/product";
+import { Star } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import Image from "next/image"
+import { PiWhatsappLogoThin } from "react-icons/pi";
 
 
-// // Dummy data structure - easy to replace with API data
+// Dummy data structure - easy to replace with API data
 // const productData = {
 //   id: 1,
 //   title: 'Apple MacBook Pro 2024 - M3 Pro | 18GB RAM 512GB SSD | 16.2" XDR Display | 1 Year Warranty',
@@ -79,168 +81,188 @@
 //   ],
 // }
 
-// export default function ProductDetail() {
-//   const [selectedImage, setSelectedImage] = useState(0)
-//   const [activeTab, setActiveTab] = useState("specifications")
+export default function ProductDetail() {
+  const router = useRouter();
+  const { id } = useParams<{ id: string }>();
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    async function fetchProduct() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getProductById(Number(id));
+        setProduct(data);
+      } catch (err) {
+        setError("Failed to fetch product");
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (id) fetchProduct();
+  }, [id]);
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+  if (!product) return <div>No product found.</div>;
 
-//   const renderStars = (rating: number) => {
-//     return Array.from({ length: 5 }, (_, index) => (
-//       <Star
-//         key={index}
-//         className={`w-4 h-4 ${
-//           index < Math.floor(rating)
-//             ? "fill-yellow-400 text-yellow-400"
-//             : index < rating
-//               ? "fill-yellow-400/50 text-yellow-400"
-//               : "text-gray-300"
-//         }`}
-//       />
-//     ))
-//   }
+  const [selectedImage, setSelectedImage] = useState(0)
+  const [activeTab, setActiveTab] = useState("specifications")
 
-//   return (
-//     <div className="max-w-7xl mx-auto mt-10 p-6 bg-white">
-//       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-//         {/* Thumbnail Images */}
-//         <div className="lg:col-span-1 order-2 lg:order-1">
-//           <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible">
-//             {productData.thumbnails.map((thumb, index) => (
-//               <button
-//                 key={index}
-//                 onClick={() => setSelectedImage(index)}
-//                 className={`flex-shrink-0 w-20 h-20 border-2 rounded-lg overflow-hidden ${
-//                   selectedImage === index ? "border-blue-500" : "border-gray-200"
-//                 }`}
-//               >
-//                 <Image
-//                   src={thumb || "/placeholder.svg"}
-//                   alt={`Product view ${index + 1}`}
-//                   className="w-full h-full object-cover"
-//                   height={129.21}
-//                   width={149.31}
-//                 />
-//               </button>
-//             ))}
-//           </div>
-//         </div>
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <Star
+        key={index}
+        className={`w-4 h-4 ${index < Math.floor(rating)
+            ? "fill-yellow-400 text-yellow-400"
+            : index < rating
+              ? "fill-yellow-400/50 text-yellow-400"
+              : "text-gray-300"
+          }`}
+      />
+    ))
+  }
 
-//         {/* Main Product Image */}
-//         <div className="lg:col-span-6 order-1 lg:order-2">
-//           <div className="bg-gray-50 rounded-lg p-8 flex items-center justify-center">
-//             <Image
-//               src={productData.mainImage || "/placeholder.svg"}
-//               alt={productData.title}
-//               className="max-w-full max-h-96 object-contain"
-//               height={551.72}
-//               width={688.28}
-//             />
-//           </div>
-//         </div>
+  return (
+    <div className="max-w-7xl mx-auto mt-10 p-6 bg-white">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Thumbnail Images */}
+        <div className="lg:col-span-1 order-2 lg:order-1">
+          <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible">
+            {product.thumbnails.map((thumb: string, index: number) => (
+              <button
+                key={index}
+                onClick={() => setSelectedImage(index)}
+                className={`flex-shrink-0 w-20 h-20 border-2 rounded-lg overflow-hidden ${selectedImage === index ? "border-blue-500" : "border-gray-200"
+                  }`}
+              >
+                <Image
+                  src={thumb || "/placeholder.svg"}
+                  alt={`Product view ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  height={129.21}
+                  width={149.31}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
 
-//         {/* Product Information */}
-//         <div className="lg:col-span-5 order-3 space-y-6">
-//           <div>
-//             <h1 className="text-2xl font-semibold text-gray-900 mb-4">{productData.title}</h1>
+        {/* Main Product Image */}
+        <div className="lg:col-span-6 order-1 lg:order-2">
+          <div className="bg-gray-50 rounded-lg p-8 flex items-center justify-center">
+            <Image
+              src={product.mainImage || "/placeholder.svg"}
+              alt={product.title}
+              className="max-w-full max-h-96 object-contain"
+              height={551.72}
+              width={688.28}
+            />
+          </div>
+        </div>
 
-//             <div className="flex items-center gap-2 mb-4">
-//               <div className="flex items-center">{renderStars(productData.rating)}</div>
-//               <span className="text-sm text-gray-600">
-//                 {productData.rating} ({productData.reviewCount})
-//               </span>
-//             </div>
+        {/* Product Information */}
+        <div className="lg:col-span-5 order-3 space-y-6">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4">{product.title}</h1>
 
-//             <div className="mb-6">
-//               <span className="text-sm text-gray-600">Price: </span>
-//               <span className="text-2xl font-bold text-blue-600">
-//                 {productData.currency}
-//                 {productData.price}
-//               </span>
-//               <span className="text-sm text-gray-500 ml-2">/pcs</span>
-//             </div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center">{renderStars(product.rating)}</div>
+              <span className="text-sm text-gray-600">
+                {product.rating} ({product.reviewCount})
+              </span>
+            </div>
 
-//             <Button className="w-full bg-primary text-white py-3 mb-4">Buy in bulk</Button>
-//             <div className="flex items-center gap-2 text-sm text-gray-600">
-//               <span>You will be forwarded to a</span>
-//               <PiWhatsappLogoThin className="w-4 h-4"/>
-//               <span>whatsapp chat with the selected product</span>
-//             </div>
-//           </div>
+            <div className="mb-6">
+              <span className="text-sm text-gray-600">Price: </span>
+              <span className="text-2xl font-bold text-blue-600">
+                {product.currency}
+                {product.price}
+              </span>
+              <span className="text-sm text-gray-500 ml-2">/pcs</span>
+            </div>
 
-//           {/* Key Features */}
-//           <div>
-//             <h3 className="text-lg font-semibold mb-4">Key Features</h3>
-//             <div className="space-y-2">
-//               {productData.keyFeatures.map((feature, index) => (
-//                 <div key={index} className="flex">
-//                   <span className="font-medium text-gray-700 min-w-24">{feature.label}:</span>
-//                   <span className="text-gray-600 ml-2">{feature.value}</span>
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         </div>
-//       </div>
+            <Button className="w-full bg-primary text-white py-3 mb-4">Buy in bulk</Button>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>You will be forwarded to a</span>
+              <PiWhatsappLogoThin className="w-4 h-4" />
+              <span>whatsapp chat with the selected product</span>
+            </div>
+          </div>
 
-//       {/* Tabs and Specifications */}
-//       <div className="mt-12">
-//         <div className="border-b border-gray-200">
-//           <nav className="flex space-x-8">
-//             <button
-//               onClick={() => setActiveTab("specifications")}
-//               className={`py-2 px-1 border-b-2 font-medium text-sm ${
-//                 activeTab === "specifications"
-//                   ? "border-blue-500 text-blue-600"
-//                   : "border-transparent text-gray-500 hover:text-gray-700"
-//               }`}
-//             >
-//               Specifications
-//             </button>
-//             <button
-//               onClick={() => setActiveTab("description")}
-//               className={`py-2 px-1 border-b-2 font-medium text-sm ${
-//                 activeTab === "description"
-//                   ? "border-blue-500 text-blue-600"
-//                   : "border-transparent text-gray-500 hover:text-gray-700"
-//               }`}
-//             >
-//               Description
-//             </button>
-//           </nav>
-//         </div>
+          {/* Key Features */}
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Key Features</h3>
+            <div className="space-y-2">
+              {product.keyFeatures.map((feature: any, index: number) => (
+                <div key={index} className="flex">
+                  <span className="font-medium text-gray-700 min-w-24">{feature.label}:</span>
+                  <span className="text-gray-600 ml-2">{feature.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-//         <div className="mt-6">
-//           {activeTab === "specifications" && (
-//             <Card>
-//               <CardContent className="p-0">
-//                 <div className="overflow-x-auto">
-//                   <table className="w-full">
-//                     <tbody>
-//                       {productData.specifications.map((spec, index) => (
-//                         <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-//                           <td className="px-6 py-4 font-medium text-gray-900 w-1/4 align-top">{spec.category}</td>
-//                           <td className="px-6 py-4 text-gray-700 whitespace-pre-line">{spec.description}</td>
-//                         </tr>
-//                       ))}
-//                     </tbody>
-//                   </table>
-//                 </div>
-//               </CardContent>
-//             </Card>
-//           )}
+      {/* Tabs and Specifications */}
+      <div className="mt-12">
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab("specifications")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "specifications"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+            >
+              Specifications
+            </button>
+            <button
+              onClick={() => setActiveTab("description")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "description"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+            >
+              Description
+            </button>
+          </nav>
+        </div>
 
-//           {activeTab === "description" && (
-//             <Card>
-//               <CardContent className="p-6">
-//                 <p className="text-gray-700">
-//                   The Apple MacBook Pro 2024 with M3 Pro chip delivers exceptional performance for professional
-//                   workflows. With its advanced architecture and unified memory, this laptop handles demanding tasks with
-//                   ease while maintaining excellent battery life.
-//                 </p>
-//               </CardContent>
-//             </Card>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
+        <div className="mt-6">
+          {activeTab === "specifications" && (
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <tbody>
+                      {product.specifications.map((spec: any, index: number) => (
+                        <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                          <td className="px-6 py-4 font-medium text-gray-900 w-1/4 align-top">{spec.category}</td>
+                          <td className="px-6 py-4 text-gray-700 whitespace-pre-line">{spec.description}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {activeTab === "description" && (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-gray-700">
+                  The Apple MacBook Pro 2024 with M3 Pro chip delivers exceptional performance for professional
+                  workflows. With its advanced architecture and unified memory, this laptop handles demanding tasks with
+                  ease while maintaining excellent battery life.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -2,11 +2,10 @@ import prisma from "../prisma/client";
 
 interface BrandInput {
     name: string,
-    image: string,
-    icon: string,
+    image: string
 }
 
-export const addBrandService = async ({ name, image, icon }: BrandInput) => {
+export const addBrandService = async ({ name, image }: BrandInput) => {
     const existing = await prisma.brand.findUnique({ where: { name } });
     if (existing) throw new Error("Brand already exists.");
 
@@ -14,7 +13,6 @@ export const addBrandService = async ({ name, image, icon }: BrandInput) => {
         data: {
             name,
             image,
-            icon,
         },
     });
 
@@ -32,7 +30,7 @@ export const getBrandByIdService = async (id: number) => {
     return Brand;
 };
 
-export const updateBrandService = async (id: number, updateData: { name?: string; image?: string; icon?: string }) => {
+export const updateBrandService = async (id: number, updateData: { name?: string; image?: string}) => {
     const exist = await prisma.brand.findUnique({ where: { id } });
     if (!exist) throw new Error("Brand not found.");
 

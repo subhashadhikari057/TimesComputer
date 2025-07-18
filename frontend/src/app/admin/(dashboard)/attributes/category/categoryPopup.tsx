@@ -6,6 +6,7 @@ import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
 import IconUpload from "@/components/admin/product/iconUpload";
 import { toast } from "sonner";
+import { createCategory, updateCategory } from "@/api/category";
 
 
 interface CategoryFormData {

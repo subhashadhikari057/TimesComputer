@@ -72,7 +72,6 @@ model Brand {
   id        Int       @id @default(autoincrement())
   name      String    @unique
   image     String
-  icon      String // SVG icon path
   products  Product[]
   createdAt DateTime  @default(now())
 }
