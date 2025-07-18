@@ -25,14 +25,3 @@ export const ChangePasswordSchema = z
         message: "New passwords do not match",
         path: ["confirmPassword"],
     });
-
-// Superadmin resets admin's password (no oldPassword)
-export const AdminResetPasswordSchema = z
-    .object({
-        newPassword: z.string().min(6),
-        confirmPassword: z.string().min(6),
-    })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-    });

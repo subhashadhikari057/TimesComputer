@@ -1,4 +1,4 @@
-type Product = {
+export type Product = {
     category?: string,
     tag?: string ,
     id?: number,
@@ -15,9 +15,10 @@ type Product = {
     description?:string,
     isPublished?:boolean,
     brochure?:string,
-    specs?:JSON,
+    specs?: { [key: string]: string },
     views?:number,
     featureTags?:string[],
     marketingTags?:string[],
-    colors?:string[]
+    colors?:string[],
+    popular?:boolean
 };

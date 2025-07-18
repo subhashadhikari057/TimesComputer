@@ -21,7 +21,7 @@ export const AdminIdParamSchema = z.object({
     id: z.string().uuid(),
 });
 
-// ✅ Schema: Password Reset
+// ✅ Schema: SuperAdmin resets admin's Password
 export const ResetPasswordSchema = z.object({
     newPassword: z.string().min(6),
     confirmPassword: z.string().min(6)
