@@ -21,6 +21,7 @@ interface CategoryFormData {
 interface CategoryPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   initialData?: {
     id: number;
     name: string;
@@ -38,6 +39,7 @@ const INITIAL_FORM_DATA: CategoryFormData = {
 export default function CategoryPopup({
   isOpen,
   onClose,
+  onSuccess,
   initialData,
 }: CategoryPopupProps) {
   const [form, setForm] = useState<CategoryFormData>(INITIAL_FORM_DATA);
@@ -97,15 +99,15 @@ export default function CategoryPopup({
       if (form.icon) formData.append("icon", form.icon);
 
       if (isEditMode) {
-        if (!form.image || !form.icon) {
-          setLoading(false);
-          return;
-        }
         await updateCategory(form.id!, formData);
         toast.success("Category updated successfully!");
       } else {
         await createCategory(formData);
         toast.success("Category created successfully!");
+      }
+
+      if (onSuccess) {
+        onSuccess();
       }
 
       handleCancel();

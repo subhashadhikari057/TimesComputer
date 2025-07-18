@@ -41,10 +41,10 @@ export const menuItems: MenuItem[] = [
     icon: Palette,
     hasSubmenu: true,
     subItems: [
-      { label: "Category", href: "/admin/attributes/category" },
+      { label: "Categories", href: "/admin/attributes/category" },
       { label: "Brands", href: "/admin/attributes/brand" },
       { label: "Colors", href: "/admin/attributes/color" },
-      { label: "Feature Tags", href: "/admin/attributes/tag" },
+      { label: "Feature Tags", href: "/admin/attributes/feature-tag" },
       { label: "Marketing Tags", href: "/admin/attributes/marketing-tag" },
     ],
   },

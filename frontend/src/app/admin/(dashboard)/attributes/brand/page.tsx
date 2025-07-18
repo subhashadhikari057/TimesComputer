@@ -17,13 +17,12 @@ import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import BrandPopup from "./brandPopup";
-import { getAllBrands } from "@/api/brand"; // ✅ Imported from API
+import { deleteBrand, getAllBrands } from "@/api/brand"; // ✅ Imported from API
 
 // Brand interface
 interface Brand {
   id: number;
   name: string;
-  productCount: number;
   createdAt: string;
   updatedAt: string;
   image: string;
@@ -32,22 +31,24 @@ interface Brand {
 export default function BrandManagementPage() {
   const [brandData, setBrandData] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+  const [editingBrand, setEditingBrand] = useState<Brand | undefined>(
+    undefined
+  );
+
+  const fetchBrands = async () => {
+    try {
+      const res = await getAllBrands();
+      setBrandData(res.data || res); // Adjust depending on backend shape
+    } catch (err) {
+      toast.error("Failed to fetch brands.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const res = await getAllBrands();
-        setBrandData(res.data || res); // Adjust depending on backend shape
-      } catch (err) {
-        toast.error("Failed to fetch brands.");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchBrands();
   }, []);
 
@@ -77,30 +78,6 @@ export default function BrandManagementPage() {
               {brand.name}
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      id: "productCount",
-      label: "Products",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (brand: Brand) => (
-        <div className="flex items-center space-x-1">
-          <Package className="w-4 h-4 text-gray-400" />
-          <span
-            className={`text-sm font-medium ${
-              brand.productCount === 0
-                ? "text-red-600"
-                : brand.productCount < 10
-                ? "text-yellow-600"
-                : "text-gray-900"
-            }`}
-          >
-            {brand.productCount} items
-          </span>
         </div>
       ),
     },
@@ -145,9 +122,14 @@ export default function BrandManagementPage() {
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any) => {
-    console.log("Delete brand:", row);
-    toast.success("Brand deleted successfully!");
+  const handleDelete = async (row: any) => {
+    try {
+      await deleteBrand(row.id);
+      toast.success("Brand deleted successfully");
+      await fetchBrands();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete brand");
+    }
   };
 
   const handleExport = () => {
@@ -165,19 +147,17 @@ export default function BrandManagementPage() {
 
   const handleCloseEditPopup = () => {
     setShowEditPopup(false);
-    setEditingBrand(null);
+    setEditingBrand(undefined);
   };
 
   const totalBrands = brandData.length;
   const activeBrands = "5"; // optional: update dynamically
-  const totalProducts = brandData.reduce(
-    (sum, brand) => sum + brand.productCount,
-    0
-  );
+  // const totalProducts = brandData.reduce(
+  //   (sum, brand) => sum + brand.productCount,
+  //   0
+  // );
 
-  if (loading) {
-    return <div className="p-6">Loading brands...</div>;
-  }
+ 
 
   return (
     <div className="p-6 space-y-6">
@@ -199,11 +179,16 @@ export default function BrandManagementPage() {
         </div>
       </div>
 
-      <BrandPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
+      <BrandPopup
+        isOpen={showAddPopup}
+        onClose={handleCloseAddPopup}
+        onSuccess={fetchBrands}
+      />
       <BrandPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
-        initialData={editingBrand || undefined}
+        onSuccess={fetchBrands}
+        initialData={editingBrand}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -221,13 +206,13 @@ export default function BrandManagementPage() {
           Icon={CheckCircle}
           color="text-green-600"
         />
-        <StatCard
+        {/* <StatCard
           title="Total Products"
           value={totalProducts.toString()}
           change={`Avg ${Math.round(totalProducts / totalBrands)} per brand`}
           Icon={Package}
           color="text-purple-600"
-        />
+        /> */}
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
@@ -277,17 +262,21 @@ export default function BrandManagementPage() {
           </div>
         </div>
 
-        <DefaultTable
-          selectedItems={selectedItems}
-          onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
-          columns={brandColumns}
-          data={processedData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-        />
+        {loading ? (
+          <div className="p-6">Loading brands...</div>
+        ) : (
+          <DefaultTable
+            selectedItems={selectedItems}
+            onSelectAll={handleSelectAll}
+            onSelectItem={handleSelectItem}
+            columns={brandColumns}
+            data={processedData}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+        )}
       </div>
     </div>
   );

@@ -19,14 +19,22 @@ export async function getProductByColorId(id: number) {
 }
 
 // POST /color → create a new color
-export async function createColor(data: { name: string; hexCode: string }) {
-  const response = await axios.post("/colors", data);
+export async function createColor(formData: FormData) {
+  const response = await axios.post("/colors", formData, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
   return response.data;
 }
 
 // PATCH /color/:id → update a color
-export async function updateColor(id: number, data: { name?: string; hex?: string }) {
-  const response = await axios.patch(`/colors/${id}`, data);
+export async function updateColor(id: number, formData: FormData) {
+  const response = await axios.patch(`/colors/${id}`, formData, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
   return response.data;
 }
 

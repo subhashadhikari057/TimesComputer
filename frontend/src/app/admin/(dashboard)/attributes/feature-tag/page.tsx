@@ -15,51 +15,51 @@ import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
-import MarketingTagPopup from "./marketingTagPopup";
-import { deleteMarketingTag, getAllMarketingTags } from "@/api/marketingTag"; // ✅ API import
+import FeatureTagPopup from "./featureTagPopup";
+import { deleteFeatureTag, getAllFeatureTags } from "@/api/featureTag"; // ✅ API import
 
-interface MarketingTag {
+interface FeatureTag {
   id: number;
   name: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export default function MarketingTagManagementPage() {
-  const [marketingTagData, setMarketingTagData] = useState<MarketingTag[]>([]);
+export default function FeatureTagPage() {
+  const [featureTagData, setFeatureTagData] = useState<FeatureTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingMarketingTag, setEditingMarketingTag] = useState<MarketingTag | undefined>(undefined);
+  const [editingFeatureTag, setEditingFeatureTag] = useState<FeatureTag | undefined>(undefined);
 
-  const fetchMarketingTags = async () => {
+  const fetchFeatureTags = async () => {
       try {
-        const res = await getAllMarketingTags();
-        setMarketingTagData(res.data);
+        const res = await getAllFeatureTags();
+        setFeatureTagData(res.data);
       } catch (err) {
-        toast.error("Failed to fetch marketingTags.");
+        toast.error("Failed to fetch featureTags.");
       } finally {
         setLoading(false);
       }
     };
 
   useEffect(() => {
-    fetchMarketingTags();
+    fetchFeatureTags();
   }, []);
 
-  const marketingTagColumns: Column[] = [
+  const featureTagColumns: Column[] = [
     {
       id: "name",
-      label: "MarketingTag",
+      label: "FeatureTag",
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "300px",
-      render: (marketingTag: MarketingTag) => (
+      width: "200px",
+      render: (featureTag: FeatureTag) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {marketingTag.name}
+              {featureTag.name}
             </div>
           </div>
         </div>
@@ -72,10 +72,10 @@ export default function MarketingTagManagementPage() {
       filterable: false,
       searchable: false,
       width: "120px",
-      render: (marketingTag: MarketingTag) => (
+      render: (featureTag: FeatureTag) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
-          {new Date(marketingTag.createdAt).toLocaleDateString()}
+          {new Date(featureTag.createdAt).toLocaleDateString()}
         </div>
       ),
     },
@@ -96,33 +96,34 @@ export default function MarketingTagManagementPage() {
     handleSelectItem,
     handleBulkDelete,
   } = useTableData({
-    data: marketingTagData,
-    columns: marketingTagColumns,
+    data: featureTagData,
+    columns: featureTagColumns,
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
   const handleEdit = (row: any) => {
-    setEditingMarketingTag(row);
+    setEditingFeatureTag(row);
     setShowEditPopup(true);
   };
 
   const handleDelete = async (row: any) => {
     try {
-              await deleteMarketingTag(row.id);
-              toast.success("Marketing Tag deleted successfully");
-              await fetchMarketingTags();
+          await deleteFeatureTag(row.id);
+          toast.success("Feature tag deleted successfully");
+          await fetchFeatureTags();
 
-            } catch (error: any) {
-              toast.error(error.response?.data?.error || "Failed to delete marketing tag");
-            }
+        } catch (error: any) {
+          toast.error(error.response?.data?.error || "Failed to delete feature tag");
+        }
+   
   };
 
   const handleExport = () => {
-    console.log("Export marketingTags");
-    toast.success("MarketingTags exported successfully!");
+    console.log("Export featureTags");
+    toast.success("FeatureTags exported successfully!");
   };
 
-  const handleAddMarketingTag = () => {
+  const handleAddFeatureTag = () => {
     setShowAddPopup(true);
   };
 
@@ -132,62 +133,62 @@ export default function MarketingTagManagementPage() {
 
   const handleCloseEditPopup = () => {
     setShowEditPopup(false);
-    setEditingMarketingTag(undefined);
+    setEditingFeatureTag(undefined);
   };
 
-  const totalMarketingTags = marketingTagData.length;
-  const activeMarketingTags = "5"; // Optional: Replace with actual logic
-  // const totalProducts = marketingTagData.reduce(
+  const totalFeatureTags = featureTagData.length;
+  const activeFeatureTags = "5"; // Optional: Replace with actual logic
+  // const totalProducts = featureTagData.reduce(
   //   (sum, cat) => sum + cat.productCount,
   //   0
   // );
 
-
+  
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Marketing Tags</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">FeatureTags</h1>
           <p className="text-gray-600">
-            Manage your product Marketing Tags and organize your catalog
+            Manage your product Feature Tags and organize your catalog
           </p>
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={handleAddMarketingTag}
+            onClick={handleAddFeatureTag}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Add Marketing Tags
+            Add Feature Tags
           </button>
         </div>
       </div>
 
-      <MarketingTagPopup 
-      isOpen={showAddPopup}
-       onClose={handleCloseAddPopup}
-       onSuccess={fetchMarketingTags}
-        />
-      <MarketingTagPopup
+      <FeatureTagPopup 
+      isOpen={showAddPopup} 
+      onClose={handleCloseAddPopup} 
+      onSuccess={fetchFeatureTags}
+      />
+      <FeatureTagPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
-        onSuccess={fetchMarketingTags}
-        initialData={editingMarketingTag}
+        onSuccess={fetchFeatureTags}
+        initialData={editingFeatureTag}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Total MarketingTags"
-          value={totalMarketingTags.toString()}
+          title="Total FeatureTags"
+          value={totalFeatureTags.toString()}
           change="+12% from last month"
           Icon={Tag}
           color="text-purple-600"
         />
         <StatCard
-          title="Active MarketingTags"
-          value={activeMarketingTags.toString()}
-          change={`${Math.round(totalMarketingTags * 100)}% active`}
+          title="Active FeatureTags"
+          value={activeFeatureTags.toString()}
+          change={`${Math.round(totalFeatureTags * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
@@ -195,8 +196,8 @@ export default function MarketingTagManagementPage() {
           title="Total Products"
           value={totalProducts.toString()}
           change={`Avg ${Math.round(
-            totalProducts / totalMarketingTags
-          )} per marketingTag`}
+            totalProducts / totalFeatureTags
+          )} per featureTag`}
           Icon={Package}
           color="text-blue-600"
         /> */}
@@ -209,7 +210,7 @@ export default function MarketingTagManagementPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search marketingTags..."
+                placeholder="Search featureTags..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
@@ -253,7 +254,7 @@ export default function MarketingTagManagementPage() {
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}
           onSelectItem={handleSelectItem}
-          columns={marketingTagColumns}
+          columns={featureTagColumns}
           data={processedData}
           onEdit={handleEdit}
           onDelete={handleDelete}

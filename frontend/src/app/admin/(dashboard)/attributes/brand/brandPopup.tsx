@@ -4,90 +4,64 @@ import { useState, useEffect } from "react";
 import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
-import IconUpload from "@/components/admin/product/iconUpload";
+
 import { toast } from "sonner";
 import { createBrand, updateBrand } from "@/api/brand";
 
 interface BrandFormData {
   id?: number;
   name: string;
-  image: File | null;
+  image?: File;
   imagePreview: string;
-  iconPreview: string;
-}
-
-// Interface for data coming from the table (with string URLs)  //remove this
-interface BrandData {
-  id?: number;
-  name: string;
-  image?: string | File;
-  [key: string]: any; // Allow other properties
 }
 
 interface BrandPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<BrandData>;
+  onSuccess?: () => void;
+  initialData?: {
+    id: number;
+    name: string;
+    image: string;
+  };
 }
 
 const INITIAL_FORM_DATA: BrandFormData = {
   name: "",
-  image: null,
   imagePreview: "",
-  iconPreview: "",
 };
 
 export default function BrandPopup({
   isOpen,
   onClose,
-  initialData = {},
+  onSuccess,
+  initialData,
 }: BrandPopupProps) {
   const [form, setForm] = useState<BrandFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
 
-  const isEditMode = initialData && initialData.id;
+  const isEditMode = Boolean(initialData?.id);
 
-  // Reset form when popup opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
-      const updatedForm: BrandFormData = {
-        ...INITIAL_FORM_DATA,
-        id: initialData.id,
-        name: initialData.name || "",
-      };
-
-      // Handle existing images for edit mode
-      if (initialData.image && typeof initialData.image === "string") {
-        updatedForm.imagePreview = initialData.image;
-        updatedForm.image = null;
-      } else if (initialData.image instanceof File) {
-        updatedForm.image = initialData.image;
+      if (initialData) {
+        setForm({
+          id: initialData.id,
+          name: initialData.name,
+          imagePreview: initialData.image,
+        });
+      } else {
+        setForm(INITIAL_FORM_DATA);
       }
-
-      setForm(updatedForm);
       setShowValidation(false);
       setError(null);
     }
   }, [isOpen]);
 
   const resetForm = () => {
-    const resetData: BrandFormData = {
-      ...INITIAL_FORM_DATA,
-      id: initialData.id,
-      name: initialData.name || "",
-    };
-
-    if (initialData.image && typeof initialData.image === "string") {
-      resetData.imagePreview = initialData.image;
-    }
-
-    if (initialData.icon && typeof initialData.icon === "string") {
-      resetData.iconPreview = initialData.icon;
-    }
-
-    setForm(resetData);
+    setForm(INITIAL_FORM_DATA);
     setShowValidation(false);
     setError(null);
   };
@@ -106,59 +80,58 @@ export default function BrandPopup({
 
   const handleSave = async () => {
     setShowValidation(true);
-
     if (!isFormValid()) return;
 
     try {
       setLoading(true);
       setError(null);
 
-      if (!form.image) {
-        setError("Both image and icon are required.");
-        setLoading(false);
-        return;
-      }
-
-      const saveData = {
-        name: form.name,
-        image: form.image,
-      };
+      const formData = new FormData();
+      formData.append("name", form.name);
+      if (form.image) formData.append("image", form.image);
 
       if (isEditMode) {
-        await updateBrand(initialData.id!, saveData);
+        await updateBrand(form.id!, formData);
         toast.success("Brand updated successfully!");
       } else {
-        await createBrand(saveData);
+        await createBrand(formData);
         toast.success("Brand created successfully!");
+      }
+
+      if (onSuccess) {
+        onSuccess();
       }
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message ||
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
         `Failed to ${isEditMode ? "update" : "create"} brand`;
 
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error(`Error ${isEditMode ? "updating" : "creating"} brand:`, err);
+      console.error(
+        `Error ${isEditMode ? "updating" : "creating"} brand:`,
+        err
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleImageUpload = (files: File[], imageType: "image" | "icon") => {
+  const handleImageUpload = (files: File[], imageType: "image") => {
     const file = files[0];
     if (!file) return;
 
     // Validate file type
-    let allowedTypes: string[];
-    let errorMessage: string;
+    let allowedTypes: string[] = [];
+    let errorMessage: string = "";
 
-    if (imageType === "icon") {
-      allowedTypes = ['image/svg+xml'];
-      errorMessage = "Invalid file type. Please upload SVG files only for icons.";
-    } else {
-      allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      errorMessage = "Invalid file type. Please upload PNG, JPG, or WebP files.";
+    if (imageType === "image") {
+      allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+      errorMessage =
+        "Invalid file type. Please upload PNG, JPG, or WebP files.";
     }
 
     if (!allowedTypes.includes(file.type)) {
@@ -174,8 +147,8 @@ export default function BrandPopup({
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
-      setForm(prev => ({
+      const previewKey = "imagePreview";
+      setForm((prev) => ({
         ...prev,
         [imageType]: file,
         [previewKey]: e.target?.result as string,
@@ -184,11 +157,11 @@ export default function BrandPopup({
     reader.readAsDataURL(file);
   };
 
-  const handleRemove = (imageType: "image" | "icon") => {
-    const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
-    setForm(prev => ({
+  const handleRemove = (imageType: "image") => {
+    const previewKey = "imagePreview";
+    setForm((prev) => ({
       ...prev,
-      [imageType]: null,
+      [imageType]: undefined,
       [previewKey]: "",
     }));
   };
@@ -198,13 +171,21 @@ export default function BrandPopup({
       isOpen={isOpen}
       onClose={handleCancel}
       title={isEditMode ? "Edit Brand" : "Add New Brand"}
-      description={isEditMode ? "Edit the brand for your products" : "Create a new brand for your products"}
+      description={
+        isEditMode
+          ? "Edit the brand for your products"
+          : "Create a new brand for your products"
+      }
       onSave={handleSave}
       onCancel={handleCancel}
       saveButtonText={
         loading
-          ? isEditMode ? "Updating..." : "Creating..."
-          : isEditMode ? "Update" : "Add Brand"
+          ? isEditMode
+            ? "Updating..."
+            : "Creating..."
+          : isEditMode
+          ? "Update"
+          : "Add Brand"
       }
       isLoading={loading}
       maxWidth="md"
@@ -218,15 +199,17 @@ export default function BrandPopup({
 
         {/* Name Field */}
         <DefaultInput
-          label="Brand Name *"
+          label="Brand Name"
           name="name"
           value={form.name}
-          onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, name: e.target.value }))
+          }
           placeholder="Enter brand name (e.g., Apple, Samsung)"
           required
         />
 
-        {/* Image and Icon Upload */}
+        {/* Image Upload */}
         <div className="grid gap-4 grid-cols-2">
           <div>
             <PhotoUpload
@@ -239,7 +222,6 @@ export default function BrandPopup({
               }
               onRemoveImage={() => handleRemove("image")}
               maxImages={1}
-
             />
           </div>
         </div>
@@ -247,7 +229,7 @@ export default function BrandPopup({
         {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
           <p className="text-sm text-red-600">
-            Please fill in all required fields: name, image, icon.
+            Please fill in all required fields: name and image.
           </p>
         )}
       </div>
