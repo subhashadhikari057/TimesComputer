@@ -11,12 +11,20 @@ const axios = axiosLib.create({
 
 export default axios;
 
-const fetchData = async (url: string, method: string, data?: any) => {
+const fetchData = async (
+  url: string,
+  method: string,
+  isFormData: boolean,
+  data?: any,
+) => {
   try {
     const response = await axios({
       url,
       method,
       data,
+      headers: isFormData
+        ? { "Content-Type": "multipart/form-data" }
+        : { "Content-Type": "application/json" },
     });
     return response.data;
   } catch (error) {
@@ -24,17 +32,20 @@ const fetchData = async (url: string, method: string, data?: any) => {
   }
 };
 
-export const apiRequest = async (method: string, url: string, data?: any) => {
+export const apiRequest = async (
+  method: string,
+  url: string,
+  data?: any,
+  isFormData: boolean = false
+) => {
   try {
-    return await fetchData(url, method, data);
+    return await fetchData(url, method, isFormData,data);
   } catch (error: any) {
     if (error.response.status === 401) {
-     await axios.post("/auth/refresh/renewtoken");
-    return await fetchData(url, method, data);
+      await axios.post("/auth/refresh/renewtoken");
+      return await fetchData(url, method, data);
     } else {
       throw error;
     }
-    
-  
   }
 };

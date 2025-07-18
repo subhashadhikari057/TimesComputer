@@ -11,9 +11,9 @@ import { categoryService } from "@/services/categoryService";
 interface CategoryFormData {
   id?: number;
   name: string;
-  image?: File; 
+  image?: File;
   imagePreview: string;
-  icon?: File; 
+  icon?: File;
   iconPreview: string;
 }
 
@@ -58,7 +58,6 @@ export default function CategoryPopup({
           iconPreview: initialData.icon,
         });
       } else {
-
         // Create mode - reset to initial state
         setForm(INITIAL_FORM_DATA);
       }
@@ -82,7 +81,7 @@ export default function CategoryPopup({
     const hasName = form.name.trim() !== "";
     const hasImage = form.image !== undefined || form.imagePreview !== "";
     const hasIcon = form.icon !== undefined || form.iconPreview !== "";
-    
+
     return hasName && hasImage && hasIcon;
   };
 
@@ -99,7 +98,7 @@ export default function CategoryPopup({
           setLoading(false);
           return;
         }
-        
+
         await categoryService.updateCategory(form.id!, {
           name: form.name,
           image: form.image,
@@ -111,7 +110,7 @@ export default function CategoryPopup({
           setLoading(false);
           return;
         }
-        
+
         await categoryService.createCategory({
           name: form.name,
           image: form.image,
@@ -126,8 +125,12 @@ export default function CategoryPopup({
         err.response?.data?.message ||
         err.message ||
         `Failed to ${isEditMode ? "update" : "create"} category`;
-      setError(errorMessage);
-      toast.error(`Error ${isEditMode ? "updating" : "creating"} category: ${errorMessage}`);
+      setError(`Test: ${errorMessage}`);
+      toast.error(
+        `Error ${
+          isEditMode ? "updating" : "creating"
+        } category: ${errorMessage}`
+      );
     } finally {
       setLoading(false);
     }
@@ -146,10 +149,12 @@ export default function CategoryPopup({
 
     if (imageType === "icon") {
       allowedTypes = ["image/svg+xml"];
-      errorMessage = "Invalid file type. Please upload SVG files only for icons.";
+      errorMessage =
+        "Invalid file type. Please upload SVG files only for icons.";
     } else {
       allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      errorMessage = "Invalid file type. Please upload PNG, JPG, or WebP files.";
+      errorMessage =
+        "Invalid file type. Please upload PNG, JPG, or WebP files.";
     }
 
     if (!allowedTypes.includes(file.type)) {
@@ -157,7 +162,7 @@ export default function CategoryPopup({
       return;
     }
 
-    // Validate file size (10MB limit) 
+    // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       setError("File size too large. Please upload files smaller than 10MB.");
       return;
@@ -267,10 +272,14 @@ export default function CategoryPopup({
         {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-700 font-medium">Required fields missing:</p>
+            <p className="text-sm text-amber-700 font-medium">
+              Required fields missing:
+            </p>
             <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
               {form.name.trim() === "" && <li>Category name</li>}
-              {!form.image && form.imagePreview === "" && <li>Category image</li>}
+              {!form.image && form.imagePreview === "" && (
+                <li>Category image</li>
+              )}
               {!form.icon && form.iconPreview === "" && <li>Category icon</li>}
             </ul>
           </div>

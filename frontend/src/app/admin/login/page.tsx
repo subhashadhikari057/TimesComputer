@@ -3,7 +3,7 @@ import { Mail, Lock, LoaderCircleIcon, Eye, EyeOff } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { apiRequest } from "@/lib/axiosInstance";
+import  axios  from "@/lib/axiosInstance";
 import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
 
 interface LoginForm {
@@ -57,10 +57,10 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const response = await apiRequest("POST", "/auth/refresh/login", {
+      const response = await axios.post("/auth/refresh/login", {
         email: form.email,
         password: form.password,
-        rememberMe: form.rememberMe,
+        /* rememberMe: form.rememberMe, */
       });
       toast.success("Login successful!");
       // Redirect to admin dashboard

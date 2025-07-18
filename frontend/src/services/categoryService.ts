@@ -52,7 +52,7 @@ export const categoryService = {
       formData.append("image", data.image);
       formData.append("icon", data.icon);
 
-      const response = await apiRequest("POST", "/category", formData);
+      const response = await apiRequest("POST", "/category", formData, true);
       return response.data.data;
     } catch (error) {
       console.error("Error creating category:", error);
