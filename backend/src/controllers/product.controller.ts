@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
 import { ZodError } from 'zod';
-import slugify from 'slugify';
 import {
-    // createProductService,
+    createProductService,
     deleteProductService,
     getAllProductsService,
     getProductByIdService,
@@ -11,7 +10,7 @@ import {
 } from '../services/product.service';
 import { CreateProductSchema, UpdateProductSchema } from '../validations/product.schema';
 import prisma from '../prisma/client';
-import { Prisma } from '@prisma/client';
+import slugify from 'slugify';
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
@@ -41,6 +40,7 @@ export const getProductById = async (req: Request, res: Response) => {
     }
 };
 
+
 export const getProductBySlug = async (req: Request, res: Response) => {
     try {
         const { slug } = req.params;
@@ -59,6 +59,7 @@ export const getProductBySlug = async (req: Request, res: Response) => {
         handleError(res, error);
     }
 };
+
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
@@ -83,9 +84,6 @@ export const createProduct = async (req: Request, res: Response) => {
         handleError(res, error);
     }
 };
-
-
-
 
 export const updateProduct = async (req: Request, res: Response) => {
     try {
@@ -118,7 +116,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
-        if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
+        if (isNaN(id)) return res.status(404).json({ message: 'Invalid product ID.' });
 
         await deleteProductService(id);
         res.status(204).send();
@@ -127,22 +125,23 @@ export const deleteProduct = async (req: Request, res: Response) => {
     }
 };
 
+// --- Shared error handler ---
 const handleError = (res: Response, error: any) => {
     if (error instanceof ZodError) {
         return res.status(400).json({ message: 'Validation error', errors: error.errors });
     }
 
     if (error.code === 'P2002') {
-        return res.status(409).json({ error: `Duplicate field: ${error.meta?.target}` });
+        return res.status(409).json({ message: `Duplicate field: ${error.meta?.target}` });
     }
 
     if (error.code === 'P2025') {
-        return res.status(404).json({ error: 'Record not found.' });
+        return res.status(404).json({ message: 'Record not found.' });
     }
 
     if (error.code === 'P2003') {
-        return res.status(400).json({ error: 'Foreign key constraint failed.' });
+        return res.status(400).json({ message: 'Foreign key constraint failed.' });
     }
 
-    return res.status(500).json({ error: error.message || 'Unknown server error.' });
+    return res.status(500).json({ message: error.message || 'Unknown server error.' });
 };

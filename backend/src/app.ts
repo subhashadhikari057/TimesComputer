@@ -9,26 +9,38 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/auth.route';
 import adminUserRoutes from "./routes/adminUser.route";
-import categoryRoutes from "./routes/category.route";
+import adsRoutes from "./routes/ads.route";
+import blogRoutes from "./routes/blog.route";
 import brandRoutes from "./routes/brand.route";
-import featureTagRoutes from "./routes/featureTag.route";
-import marketingTagRoutes from "./routes/marketingTags.route";
 import colorRoutes from "./routes/color.route";
 import productRoutes from "./routes/product.route";
+import inquiryRoutes from "./routes/inquiry.route";
+import categoryRoutes from "./routes/category.route";
+import featureTagRoutes from "./routes/featureTag.route";
+import marketingTagRoutes from "./routes/marketingTags.route";
+import initController from './routes/init.route'
+
 
 
 dotenv.config();
 
 const app = express();
 
+
+
+
 // ✅ Security Middlewares
 app.use(helmet());
 app.use(cookieParser());
 
 // ✅ Core Middlewares
+const allowedOrigins = [
+    'http://192.168.68.122:3000',
+    'http://localhost:3000',
+]
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: allowedOrigins,
         credentials: true,
     })
 );
@@ -44,14 +56,18 @@ app.get('/api/csrf-token', (req, res) => {
 });
 
 // ✅ Routes
+app.use('/api/init', initController);
 app.use('/api/auth', authRoutes);
-app.use("/admin/users", adminUserRoutes);
-app.use("/api/category", categoryRoutes);
+app.use("/api/admin/users", adminUserRoutes);
+app.use("/api/product", productRoutes);
+app.use("/api/ads", adsRoutes);
+app.use("/api/blog", blogRoutes);
 app.use("/api/brand", brandRoutes);
+app.use("/api/colors", colorRoutes);
+app.use("/api/inquiry", inquiryRoutes);
+app.use("/api/category", categoryRoutes);
 app.use("/api/feature-tag", featureTagRoutes);
 app.use("/api/marketing-tag", marketingTagRoutes);
-app.use("/api/colors", colorRoutes);
-app.use("/api/product", productRoutes);
 
 
 // ✅ Health check

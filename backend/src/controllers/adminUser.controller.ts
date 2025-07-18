@@ -25,7 +25,10 @@ export const getAdmins = async (_req: Request, res: Response) => {
 export const createAdminUser = async (req: Request, res: Response) => {
     const body = CreateAdminSchema.safeParse(req.body);
 
-    if (!body.success) return res.status(400).json({ error: body.error.errors });
+    if (!body.success) return res.status(400).json({ message: body.error.errors });
+    
+    if (body.data.role === 'SUPERADMIN')
+        return res.status(403).json({ message: "Only one super_admin is allowed." });
 
     try {
         const user = await createAdmin(body.data);

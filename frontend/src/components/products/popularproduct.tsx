@@ -4,93 +4,94 @@ import ProductCard from "./productcard";
 import { Product } from "../../../types/product";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
 
 function PopularProductsSection() {
   const products: Product[] = [
     {
       id: 1,
-      image: '/products/Frame 68.png',
+      images: ['/products/Frame 68.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: "best seller",
       category: "Laptops"
     },
     {
       id: 2,
-      image: '/products/Frame 134.png',
+      images: ['/products/Frame 134.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: "new",
       category: undefined
     },
     {
       id: 3,
-      image: '/products/Frame 135.png',
+      images: ['/products/Frame 135.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: undefined,
       category: undefined
     },
     {
       id: 4,
-      image: '/products/Frame 136.png',
+      images: ['/products/Frame 136.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: undefined,
       category: undefined
     },
     {
       id: 5,
-      image: '/products/Frame 136.png',
+      images: ['/products/Frame 136.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: undefined,
       category: undefined
     },
     {
       id: 6,
-      image: '/products/Frame 136.png',
+      images: ['/products/Frame 136.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: undefined,
       category: undefined
     },
     {
       id: 7,
-      image: '/products/Frame 136.png',
+      images: ['/products/Frame 136.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: undefined,
       category: undefined
     },
     {
       id: 8,
-      image: '/products/Frame 136.png',
+      images: ['/products/Frame 136.png'],
       rating: 4.5,
       reviews: 200,
       title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: '1,49,000',
+      price: 149000,
       currency: 'Rs',
       tag: undefined,
       category: undefined
@@ -126,25 +127,28 @@ function PopularProductsSection() {
 
       <div
         className={`
-        grid gap-4
+        grid gap-y-4
+        gap-x-0
         grid-cols-2
         sm:grid-cols-2
         md:grid-cols-4
       `}
       >
         {products.slice(0, visibleCount).map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <div key={product.id} className="w-full">
+          <ProductCard product={product} />
+        </div>
         ))}
       </div>
 
       {products.length > initialCount && (
         <div className="mt-6 text-center">
-          <button
+          <Button
             onClick={handleViewToggle}
             className="text-primary font-semibold hover:underline"
           >
             {isFullyExpanded ? "View Less" : "View More"}
-          </button>
+          </Button>
         </div>
       )}
     </div>

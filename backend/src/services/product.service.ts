@@ -30,6 +30,40 @@ export const getProductBySlugService = (slug: string) => {
   });
 };
 
+export const createProductService = async (data: any) => {
+  const {
+    name, slug, description, price, stock, isPublished,
+    brochure, specs, brandId, categoryId,
+    images, featureTagIds, marketingTagIds, colorIds
+  } = data;
+
+  return prisma.product.create({
+    data: {
+      name,
+      slug,
+      description,
+      price,
+      stock,
+      isPublished,
+      brochure,
+      specs,
+      brand: brandId ? { connect: { id: brandId } } : undefined,
+      category: categoryId ? { connect: { id: categoryId } } : undefined,
+      images,
+      featureTags: featureTagIds?.length
+        ? { createMany: { data: featureTagIds.map((tagId: number) => ({ tagId })) } }
+        : undefined,
+      marketingTags: marketingTagIds?.length
+        ? { createMany: { data: marketingTagIds.map((tagId: number) => ({ tagId })) } }
+        : undefined,
+      colors: colorIds?.length
+        ? { createMany: { data: colorIds.map((colorId: number) => ({ colorId })) } }
+        : undefined,
+    },
+    include: productIncludes,
+  });
+};
+
 export const updateProductService = async (id: number, data: any) => {
   const {
     name, slug, description, price, stock, isPublished,
