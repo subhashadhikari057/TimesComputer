@@ -16,10 +16,32 @@ import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
+import { useEffect, useState } from "react";
+import { getAllProducts, deleteProduct } from "@/api/product";
+import { toast } from "sonner";
 
 // Main Component
 export default function ViewProductsPage() {
   const router = useRouter();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getAllProducts();
+        setProducts(Array.isArray(data) ? data : (data.products || []));
+      } catch (err: any) {
+        setError("Failed to fetch products");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
 
   // Sample data
   const newData = [
@@ -91,7 +113,7 @@ export default function ViewProductsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {product.product}
+              {product.name || product.product}
             </div>
           </div>
         </div>
@@ -105,7 +127,9 @@ export default function ViewProductsPage() {
       searchable: true,
       width: "120px",
       render: (product: any) => (
-        <div className="text-sm text-gray-900">{product.category}</div>
+        <div className="text-sm text-gray-900">
+          {product.category?.name || product.category || 'No Category'}
+        </div>
       ),
     },
     {
@@ -116,7 +140,9 @@ export default function ViewProductsPage() {
       searchable: true,
       width: "100px",
       render: (product: any) => (
-        <div className="text-sm font-medium text-gray-900">{product.brand}</div>
+        <div className="text-sm font-medium text-gray-900">
+          {product.brand?.name || product.brand || 'No Brand'}
+        </div>
       ),
     },
     {
@@ -150,13 +176,12 @@ export default function ViewProductsPage() {
       width: "100px",
       render: (product: any) => (
         <div
-          className={`text-sm font-medium ${
-            product.stock === 0
+          className={`text-sm font-medium ${product.stock === 0
               ? "text-red-600"
               : product.stock < 10
-              ? "text-yellow-600"
-              : "text-gray-900"
-          }`}
+                ? "text-yellow-600"
+                : "text-gray-900"
+            }`}
         >
           {product.stock} units
         </div>
@@ -170,15 +195,16 @@ export default function ViewProductsPage() {
       searchable: true,
       width: "120px",
       render: (product: any) => {
-        const isPublished = product.status === "Active";
+        const isPublished = product.isPublished !== undefined 
+          ? product.isPublished 
+          : product.status === "Active";
 
         return (
           <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-              isPublished
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${isPublished
                 ? "bg-green-100 text-green-800"
                 : "bg-gray-100 text-gray-800"
-            }`}
+              }`}
           >
             {isPublished ? (
               <>
@@ -228,8 +254,8 @@ export default function ViewProductsPage() {
     handleSelectItem,
     handleBulkDelete,
   } = useTableData({
-    data: newData,
-    columns: newColumns, 
+    data: products,
+    columns: newColumns,
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
@@ -237,8 +263,14 @@ export default function ViewProductsPage() {
     router.push(`/admin/product/${row.id}/edit`);
   };
 
-  const handleDelete = (row: any, index: number) => {
-    console.log("Delete:", row, index);
+  const handleDelete = async (row: any, index: number) => {
+    try {
+      await deleteProduct(row.id);
+      setProducts((prev) => prev.filter((p) => p.id !== row.id));
+      toast.success("Product deleted successfully");
+    } catch (err) {
+      toast.error("Failed to delete product");
+    }
   };
 
   const handleExport = () => {
@@ -275,14 +307,14 @@ export default function ViewProductsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-3">
         <StatCard
           title="Total Products"
-          value={newData.length.toString()}
+          value={products.length.toString()}
           change="+12% from last month"
           Icon={Package}
           color="text-blue-600"
         />
         <StatCard
           title="Published Products"
-          value={newData.filter((p) => p.status === "Active").length.toString()}
+          value={products.filter((p) => p.isPublished).length.toString()}
           change="100%"
           Icon={CheckCircle}
           color="text-green-600"
@@ -346,17 +378,23 @@ export default function ViewProductsPage() {
           </div>
         </div>
 
-        <DefaultTable
-          selectedItems={selectedItems}
-          onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
-          columns={newColumns}
-          data={processedData} // Using processedData from the hook
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-        />
+        {loading ? (
+          <div className="text-center py-8">Loading products...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
+          <DefaultTable
+            selectedItems={selectedItems}
+            onSelectAll={handleSelectAll}
+            onSelectItem={handleSelectItem}
+            columns={newColumns}
+            data={processedData} // Using processedData from the hook
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+        )}
       </div>
     </div>
   );

@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SortSelect from "@/components/sortselect";
-import { products } from "@/lib/index";
+import { getAllProducts } from "@/api/product";
 import ProductCard from "@/components/products/productcard";
 import FilterSidebar from "@/components/sidebar/sidebar";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface SearchParams {
   sort?: string;
@@ -27,10 +28,29 @@ export default function AllProductsPage() {
   const page = pageParam ? parseInt(pageParam) : 1;
   const sort = searchParams.get("sort") || undefined;
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<any[]>([]);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<any>({});
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const data = await getAllProducts();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        toast.error("Failed to fetch products.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   // Calculate active filters count
   useEffect(() => {
@@ -56,59 +76,79 @@ export default function AllProductsPage() {
   };
 
   const filteredProducts = products.filter(product => {
-    // Brand filter
-    if (appliedFilters.brand && appliedFilters.brand.length > 0 && 
-        !appliedFilters.brand.includes(product.brand)) {
-      return false;
+    // Extract specs if they exist (for API data)
+    const specs = product.specs || {};
+    
+    // Brand filter - check both direct brand field and brand relation
+    if (appliedFilters.brand && appliedFilters.brand.length > 0) {
+      const productBrand = product.brand?.name || product.brand || specs.Brand;
+      if (!productBrand || !appliedFilters.brand.includes(productBrand)) {
+        return false;
+      }
     }
     
     // Processor filter
-    if (appliedFilters.processor && appliedFilters.processor.length > 0 && 
-        product.processor && !appliedFilters.processor.includes(product.processor)) {
-      return false;
+    if (appliedFilters.processor && appliedFilters.processor.length > 0) {
+      const processor = product.processor || specs.Processor || specs.processor;
+      if (!processor || !appliedFilters.processor.includes(processor)) {
+        return false;
+      }
     }
     
     // Memory filter
-    if (appliedFilters.memory && appliedFilters.memory.length > 0 && 
-        product.memory && !appliedFilters.memory.includes(product.memory)) {
-      return false;
+    if (appliedFilters.memory && appliedFilters.memory.length > 0) {
+      const memory = product.memory || specs.Memory || specs.RAM || specs.memory;
+      if (!memory || !appliedFilters.memory.includes(memory)) {
+        return false;
+      }
     }
     
     // Connectivity filter
-    if (appliedFilters.connectivity && appliedFilters.connectivity.length > 0 && 
-        product.connectivity && !appliedFilters.connectivity.includes(product.connectivity)) {
-      return false;
+    if (appliedFilters.connectivity && appliedFilters.connectivity.length > 0) {
+      const connectivity = product.connectivity || specs.Connectivity || specs.connectivity;
+      if (!connectivity || !appliedFilters.connectivity.includes(connectivity)) {
+        return false;
+      }
     }
     
     // Switch type filter
-    if (appliedFilters.switchType && appliedFilters.switchType.length > 0 && 
-        product.switchType && !appliedFilters.switchType.includes(product.switchType)) {
-      return false;
+    if (appliedFilters.switchType && appliedFilters.switchType.length > 0) {
+      const switchType = product.switchType || specs['Switch Type'] || specs.switchType;
+      if (!switchType || !appliedFilters.switchType.includes(switchType)) {
+        return false;
+      }
     }
     
     // Graphics filter
-    if (appliedFilters.graphics && appliedFilters.graphics.length > 0 && 
-        product.graphics && !appliedFilters.graphics.includes(product.graphics)) {
-      return false;
+    if (appliedFilters.graphics && appliedFilters.graphics.length > 0) {
+      const graphics = product.graphics || specs.Graphics || specs.GPU || specs.graphics;
+      if (!graphics || !appliedFilters.graphics.includes(graphics)) {
+        return false;
+      }
     }
     
     // Screen size filter
-    if (appliedFilters.screenSize && appliedFilters.screenSize.length > 0 && 
-        product.screenSize && !appliedFilters.screenSize.includes(product.screenSize)) {
-      return false;
+    if (appliedFilters.screenSize && appliedFilters.screenSize.length > 0) {
+      const screenSize = product.screenSize || specs['Screen Size'] || specs.Display || specs.screenSize;
+      if (!screenSize || !appliedFilters.screenSize.includes(screenSize)) {
+        return false;
+      }
     }
     
     // Resolution filter
-    if (appliedFilters.resolution && appliedFilters.resolution.length > 0 && 
-        product.resolution && !appliedFilters.resolution.includes(product.resolution)) {
-      return false;
+    if (appliedFilters.resolution && appliedFilters.resolution.length > 0) {
+      const resolution = product.resolution || specs.Resolution || specs.resolution;
+      if (!resolution || !appliedFilters.resolution.includes(resolution)) {
+        return false;
+      }
     }
     
     // Price filter
-    if (appliedFilters.priceRange && 
-        (product.price < appliedFilters.priceRange[0] || 
-         product.price > appliedFilters.priceRange[1])) {
-      return false;
+    if (appliedFilters.priceRange && product.price) {
+      if (product.price < appliedFilters.priceRange[0] || 
+          product.price > appliedFilters.priceRange[1]) {
+        return false;
+      }
     }
     
     return true;
@@ -118,17 +158,25 @@ export default function AllProductsPage() {
   const sortedProducts = [...filteredProducts];
 
   if (sort === 'price-low-high') {
-    sortedProducts.sort((a, b) => a.price - b.price);
+    sortedProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
   } else if (sort === 'price-high-low') {
-    sortedProducts.sort((a, b) => b.price - a.price);
+    sortedProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
   } else if (sort === 'product-name-a-z') {
-    sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
+    sortedProducts.sort((a, b) => {
+      const nameA = a.name || a.title || '';
+      const nameB = b.name || b.title || '';
+      return nameA.localeCompare(nameB);
+    });
   } else if (sort === 'product-name-z-a') {
-    sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
+    sortedProducts.sort((a, b) => {
+      const nameA = a.name || a.title || '';
+      const nameB = b.name || b.title || '';
+      return nameB.localeCompare(nameA);
+    });
   } else if (sort === 'featured') {
     sortedProducts.sort((a, b) => {
-      const aFeatured = a.tag?.toLowerCase() === 'featured' ? 1 : 0;
-      const bFeatured = b.tag?.toLowerCase() === 'featured' ? 1 : 0;
+      const aFeatured = a.tag?.toLowerCase() === 'featured' || a.popular ? 1 : 0;
+      const bFeatured = b.tag?.toLowerCase() === 'featured' || b.popular ? 1 : 0;
       return bFeatured - aFeatured;
     });
   }

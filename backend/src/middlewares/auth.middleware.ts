@@ -1,25 +1,33 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt, { type Secret } from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
+import prisma from "../prisma/client";
 
-interface jwtPayloads {
-    email: string;
-    role: string;
-}
+const ACCESS_SECRET: Secret = process.env.ACCESS_SECRET as string;
 
 // ✅ Middleware: Authenticated user & attach user to req
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies?.access_token;
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const decoded = jwt.verify(token, process.env.ACCESS_SECRET as string) as jwtPayloads;
-        (req as any).user = { email: decoded.email, role: decoded.role };
+        const decoded = jwt.verify(token, ACCESS_SECRET) as { id: string };
+
+        // fetch full user by ID
+        const user = await prisma.adminUser.findFirst({ where: { id: decoded.id } });
+
+        if (!user || !user.isActive) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        (req as any).user = user; // attach full user object, including id
+
         next();
     } catch (err) {
         return res.status(403).json({ message: "Invalid or expired token" });
     }
 };
+
 
 // ✅ Middleware: Only ADMIN or SUPERADMIN
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {

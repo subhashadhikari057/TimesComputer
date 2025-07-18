@@ -66,6 +66,7 @@ model Brand {
   id        Int       @id @default(autoincrement())
   name      String    @unique
   image     String
+  products  Product[]
   createdAt DateTime  @default(now())
   products  Product[]
 }

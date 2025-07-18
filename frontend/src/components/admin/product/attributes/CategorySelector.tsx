@@ -3,8 +3,15 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { categoryService, Category } from "@/services/categoryService";
+import { getAllCategories, createCategory } from "@/api/category";
 import Dropdown from "@/components/form/form-elements/DefaultDropdown";
+
+interface Category {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  iconUrl?: string;
+}
 
 interface CategorySelectorProps {
   selectedCategoryId: number | null;
@@ -26,8 +33,8 @@ export default function CategorySelector({
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const categoriesData = await categoryService.getAllCategories();
-      setCategories(categoriesData);
+      const response = await getAllCategories();
+      setCategories(response.data || []);
     } catch (err) {
       console.error("Error loading categories:", err);
     } finally {

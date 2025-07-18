@@ -4,6 +4,8 @@ import { useState } from "react";
 import BrandSelector from "./BrandSelector";
 import CategorySelector from "./CategorySelector";
 import ColorSelector from "./ColorSelector";
+import FeatureTagSelector from "./FeatureTagSelector";
+import MarketingTagSelector from "./MarketingTagSelector";
 
 interface AttributeSelectorProps {
   selectedBrandId: number | null;
@@ -12,6 +14,10 @@ interface AttributeSelectorProps {
   onCategoryChange: (categoryId: number | null) => void;
   selectedColorIds: number[];
   onColorsChange: (colorIds: number[]) => void;
+  selectedFeatureTagIds: number[];
+  onFeatureTagsChange: (tagIds: number[]) => void;
+  selectedMarketingTagIds: number[];
+  onMarketingTagsChange: (tagIds: number[]) => void;
 }
 
 export default function AttributeSelector({
@@ -21,6 +27,10 @@ export default function AttributeSelector({
   onCategoryChange,
   selectedColorIds,
   onColorsChange,
+  selectedFeatureTagIds,
+  onFeatureTagsChange,
+  selectedMarketingTagIds,
+  onMarketingTagsChange,
 }: AttributeSelectorProps) {
   return (
     <div className="space-y-6">
@@ -37,6 +47,16 @@ export default function AttributeSelector({
       <ColorSelector
         selectedColorIds={selectedColorIds}
         onColorsChange={onColorsChange}
+      />
+
+      <FeatureTagSelector
+        selectedFeatureTagIds={selectedFeatureTagIds}
+        onFeatureTagsChange={onFeatureTagsChange}
+      />
+
+      <MarketingTagSelector
+        selectedMarketingTagIds={selectedMarketingTagIds}
+        onMarketingTagsChange={onMarketingTagsChange}
       />
     </div>
   );

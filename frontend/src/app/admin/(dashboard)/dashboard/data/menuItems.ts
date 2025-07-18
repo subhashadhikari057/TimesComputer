@@ -44,7 +44,8 @@ export const menuItems: MenuItem[] = [
       { label: "Category", href: "/admin/attributes/category" },
       { label: "Brands", href: "/admin/attributes/brand" },
       { label: "Colors", href: "/admin/attributes/color" },
-      { label: "Tags", href: "/admin/attributes/tag" },
+      { label: "Feature Tags", href: "/admin/attributes/tag" },
+      { label: "Marketing Tags", href: "/admin/attributes/marketing-tag" },
     ],
   },
   {

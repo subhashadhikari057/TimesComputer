@@ -23,6 +23,7 @@ import marketingTagRoutes from "./routes/marketingTags.route";
 
 import searchRoutes from "./routes/search.route";
 import initController from './routes/init.route'
+import credentials from './middlewares/credentials';
 
 dotenv.config();
 
@@ -38,6 +39,8 @@ const allowedOrigins = [
     'http://192.168.68.122:3000',
     'http://localhost:3000',
 ]
+
+app.use(credentials);
 app.use(
     cors({
         origin: allowedOrigins,
@@ -53,11 +56,16 @@ app.use(morgan("dev"));
 // app.use(csrf({ cookie: true }));
 
 // ✅ CSRF Token route — Frontend fetches this first
-app.get('/api/csrf-token', (req, res) => {
-    res.json({ csrfToken: req.csrfToken() });
-});
+// app.get('/api/csrf-token', (req, res) => {
+//     res.json({ csrfToken: req.csrfToken() });
+// });
 
 // ✅ Routes
+
+app.use((req, res, next) => {
+    console.log(req.cookies);
+    next();
+});
 app.use('/api/init', initController);
 app.use('/api/auth', authRoutes);
 app.use("/api/admin/users", adminUserRoutes);

@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import { toast } from "sonner";
+import { createAdminUser, updateAdminUser } from "@/api/adminUser";
 
 interface UserFormData {
   id?: number;
   name: string;
   email: string;
+  password?: string;
 }
 
 interface UserPopupProps {
@@ -20,6 +22,7 @@ interface UserPopupProps {
 const INITIAL_FORM_DATA: UserFormData = {
   name: "",
   email: "",
+  password: "",
 };
 
 export default function UserPopup({
@@ -32,12 +35,11 @@ export default function UserPopup({
   const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
 
-  const isEditMode = initialData && initialData.id;
+  const isEditMode = !!initialData?.id;
 
-  // Reset form when popup opens/closes or initialData changes
   useEffect(() => {
     if (isOpen) {
-      const updatedForm = { ...INITIAL_FORM_DATA, ...initialData };
+      const updatedForm = { ...INITIAL_FORM_DATA, ...initialData, password: "" };
       setForm(updatedForm);
       setShowValidation(false);
       setError(null);
@@ -45,7 +47,7 @@ export default function UserPopup({
   }, [isOpen]);
 
   const resetForm = () => {
-    setForm({ ...INITIAL_FORM_DATA, ...initialData });
+    setForm({ ...INITIAL_FORM_DATA, ...initialData, password: "" });
     setShowValidation(false);
     setError(null);
   };
@@ -70,7 +72,6 @@ export default function UserPopup({
 
   const handleSave = async () => {
     setShowValidation(true);
-
     if (!isFormValid()) return;
 
     try {
@@ -82,13 +83,16 @@ export default function UserPopup({
         email: form.email.trim().toLowerCase(),
       };
 
-      // if (isEditMode) {
-      //   await userService.updateUser(initialData.id!, saveData);
-      //   toast.success("Admin user updated successfully!");
-      // } else {
-      //   await userService.createUser(saveData);
-      //   toast.success("Admin user created successfully!");
-      // }
+      if (isEditMode) {
+        await updateAdminUser(initialData.id!, saveData);
+        toast.success("Admin user updated successfully!");
+      } else {
+        await createAdminUser({
+          ...saveData,
+          password: form.password || "",
+        });
+        toast.success("Admin user created successfully!");
+      }
 
       handleCancel();
     } catch (err: any) {
@@ -110,23 +114,13 @@ export default function UserPopup({
 
   const handleInputChange = (field: keyof UserFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    
-    // Clear error when user starts typing
-    if (error) {
-      setError(null);
-    }
+    if (error) setError(null);
   };
 
   const getValidationMessage = () => {
-    if (form.name.trim() === "") {
-      return "Name is required.";
-    }
-    if (form.email.trim() === "") {
-      return "Email is required.";
-    }
-    if (!isValidEmail(form.email.trim())) {
-      return "Please enter a valid email address.";
-    }
+    if (form.name.trim() === "") return "Name is required.";
+    if (form.email.trim() === "") return "Email is required.";
+    if (!isValidEmail(form.email.trim())) return "Please enter a valid email address.";
     return "";
   };
 
@@ -148,8 +142,8 @@ export default function UserPopup({
             ? "Updating..."
             : "Creating..."
           : isEditMode
-          ? "Update"
-          : "Add User"
+            ? "Update"
+            : "Add User"
       }
       isLoading={loading}
       maxWidth="md"
@@ -161,7 +155,6 @@ export default function UserPopup({
           </div>
         )}
 
-        {/* Name Field */}
         <DefaultInput
           label="Full Name"
           name="name"
@@ -171,7 +164,6 @@ export default function UserPopup({
           required
         />
 
-        {/* Email Field */}
         <DefaultInput
           label="Email Address"
           name="email"
@@ -182,11 +174,20 @@ export default function UserPopup({
           required
         />
 
-        {/* Validation Message */}
+        {!isEditMode && (
+          <DefaultInput
+            label="Password"
+            name="password"
+            type="password"
+            value={form.password || ""}
+            onChange={(e) => handleInputChange("password", e.target.value)}
+            placeholder="Enter a secure password"
+            required
+          />
+        )}
+
         {!isFormValid() && showValidation && !loading && (
-          <p className="text-sm text-red-600">
-            {getValidationMessage()}
-          </p>
+          <p className="text-sm text-red-600">{getValidationMessage()}</p>
         )}
       </div>
     </AddDetailsPopup>

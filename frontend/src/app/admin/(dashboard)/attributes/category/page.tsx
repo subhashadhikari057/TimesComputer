@@ -7,111 +7,49 @@ import {
   Package,
   Search,
   Download,
-  Eye,
   Calendar,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import CategoryPopup from "./categoryPopup";
+import { getAllCategories } from "@/api/category"; // ✅ API import
 
-// Category interface
 interface Category {
   id: number;
   name: string;
-  productCount: number;
   createdAt: string;
   updatedAt: string;
   image: string;
   icon: string;
 }
 
-// Main Component
 export default function CategoryManagementPage() {
+  const [categoryData, setCategoryData] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<{
-    id: number;
-    name: string;
-    image: string;
-    icon: string;
-  } | undefined>(undefined);
+  const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
 
-  // Sample data matching the product page structure
-  const categoryData: Category[] = [
-    {
-      id: 1,
-      name: "Laptops",
-      productCount: 45,
-    
-      createdAt: "2025-07-01",
-      updatedAt: "2025-07-15",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
- 
-    },
-    {
-      id: 2,
-      name: "Smartphones",
-      productCount: 32,
-     
-      createdAt: "2025-06-24",
-      updatedAt: "2025-07-10",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-   
-    },
-    {
-      id: 3,
-      name: "Tablets",
-      productCount: 12,
-   
-      createdAt: "2025-07-15",
-      updatedAt: "2025-07-15",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-    
-    },
-    {
-      id: 4,
-      name: "Accessories",
-      productCount: 67,
-    
-      createdAt: "2025-07-10",
-      updatedAt: "2025-07-12",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-      
-    },
-    {
-      id: 5,
-      name: "Gaming",
-      productCount: 28,
-   
-      createdAt: "2025-06-30",
-      updatedAt: "2025-07-08",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-    
-    },
-    {
-      id: 6,
-      name: "Audio",
-      productCount: 19,
-      
-      createdAt: "2025-06-25",
-      updatedAt: "2025-07-05",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-  
-    },
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getAllCategories();
+        setCategoryData(res.data);
+      } catch (err) {
+        toast.error("Failed to fetch categories.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Define columns for the table 
+    fetchCategories();
+  }, []);
+
   const categoryColumns: Column[] = [
     {
       id: "name",
@@ -147,21 +85,19 @@ export default function CategoryManagementPage() {
       render: (category: Category) => (
         <div className="flex items-center space-x-1">
           <Package className="w-4 h-4 text-gray-400" />
-          <span
-            className={`text-sm font-medium ${
-              category.productCount === 0
+          {/* <span
+            className={`text-sm font-medium ${category.productCount === 0
                 ? "text-red-600"
                 : category.productCount < 10
-                ? "text-yellow-600"
-                : "text-gray-900"
-            }`}
+                  ? "text-yellow-600"
+                  : "text-gray-900"
+              }`}
           >
             {category.productCount} items
-          </span>
+          </span> */}
         </div>
       ),
     },
-    
     {
       id: "createdAt",
       label: "Created At",
@@ -192,7 +128,6 @@ export default function CategoryManagementPage() {
     },
   ];
 
-  // Use custom hook for table data management
   const {
     searchTerm,
     filters,
@@ -213,21 +148,13 @@ export default function CategoryManagementPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  // Event handlers
-  const handleEdit = (row: any, index: number) => {
-    
-    const categoryData = {
-      id: row.id,
-      name: row.name,
-      image: row.image, 
-      icon: row.icon, 
-    };
-    setEditingCategory(categoryData);
+  const handleEdit = (row: any) => {
+    setEditingCategory(row);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any, index: number) => {
-    console.log("Delete category:", row, index);
+  const handleDelete = (row: any) => {
+    console.log("Delete category:", row);
     toast.success("Category deleted successfully!");
   };
 
@@ -249,17 +176,17 @@ export default function CategoryManagementPage() {
     setEditingCategory(undefined);
   };
 
-  // Calculate stats
   const totalCategories = categoryData.length;
-  const activeCategories = "5"
-  const totalProducts = categoryData.reduce(
-    (sum, cat) => sum + cat.productCount,
-    0
-  );
+  const activeCategories = "5"; // Optional: Replace with actual logic
+  // const totalProducts = categoryData.reduce(
+  //   (sum, cat) => sum + cat.productCount,
+  //   0
+  // );
+
+  if (loading) return <div className="p-6">Loading categories...</div>;
 
   return (
     <div className="p-6 space-y-6">
-      {/* Page Header - Same structure as product page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Categories</h1>
@@ -278,17 +205,13 @@ export default function CategoryManagementPage() {
         </div>
       </div>
 
-      {/* Add Category Popup */}
       <CategoryPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
-
-      {/* Edit Category Popup */}
       <CategoryPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
         initialData={editingCategory}
       />
 
-      {/* Statistics - Same structure as product page */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Categories"
@@ -300,13 +223,11 @@ export default function CategoryManagementPage() {
         <StatCard
           title="Active Categories"
           value={activeCategories.toString()}
-          change={`${Math.round(
-            (totalCategories) * 100
-          )}% active`}
+          change={`${Math.round(totalCategories * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
-        <StatCard
+        {/* <StatCard
           title="Total Products"
           value={totalProducts.toString()}
           change={`Avg ${Math.round(
@@ -314,14 +235,12 @@ export default function CategoryManagementPage() {
           )} per category`}
           Icon={Package}
           color="text-blue-600"
-        />
+        /> */}
       </div>
 
-      {/* Table Container - Same structure as product page */}
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
-            {/* Search Input - Same as product page */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -333,9 +252,7 @@ export default function CategoryManagementPage() {
               />
             </div>
 
-            {/* Action Buttons - Same structure as product page */}
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 md:justify-self-end">
-              {/* Bulk Delete Button - Show only when items are selected */}
               {selectedItems.length > 0 && (
                 <button
                   onClick={handleBulkDelete}
@@ -368,7 +285,6 @@ export default function CategoryManagementPage() {
           </div>
         </div>
 
-        {/* Table  */}
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}

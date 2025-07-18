@@ -2,9 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { brandService, Brand } from "@/services/brandService";
+import { getAllBrands, createBrand } from "@/api/brand";
 import Dropdown from "@/components/form/form-elements/DefaultDropdown";
 import { useRouter } from "next/navigation";
+
+interface Brand {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  iconUrl?: string;
+}
 
 interface BrandSelectorProps {
   selectedBrandId: number | null;
@@ -45,8 +52,8 @@ export default function BrandSelector({
     try {
       setLoading(true);
 
-      const brandsData = await brandService.getAllBrands();
-      setBrands(brandsData);
+      const response = await getAllBrands();
+      setBrands(response.data || []);
     } catch (err) {
       console.error("Error loading brands:", err);
     } finally {
