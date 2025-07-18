@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Search, Eye, Image } from "lucide-react";
+import dynamic from "next/dynamic";
 import {
   getAllBlogs,
   createBlog,
@@ -11,22 +12,32 @@ import {
 } from "@/api/blog";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
-import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import Popup from "@/components/common/popup";
+
+// Dynamically import Markdown Editor to avoid SSR issues
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
+  ssr: false,
+  loading: () => <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">Loading editor...</div>
+});
 
 interface Blog {
   id: number;
   title: string;
   content: string;
-  imageUrl?: string;
+  author: string;
+  slug: string;
+  images: string[];
+  metadata: any;
   createdAt: string;
-  updatedAt: string;
+  updateedAt: string;
 }
 
 interface BlogForm {
   title: string;
   content: string;
-  image: File | null;
+  author: string;
+  slug: string;
+  images: File[];
 }
 
 export default function BlogsPage() {
@@ -35,10 +46,10 @@ export default function BlogsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
-  const [form, setForm] = useState<BlogForm>({ title: "", content: "", image: null });
-  const [formErrors, setFormErrors] = useState<{ title?: string; content?: string }>({});
+  const [form, setForm] = useState<BlogForm>({ title: "", content: "", author: "", slug: "", images: [] });
+  const [formErrors, setFormErrors] = useState<{ title?: string; content?: string; author?: string; slug?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
   // Fetch all blogs
   const fetchBlogs = async () => {
@@ -64,37 +75,58 @@ export default function BlogsPage() {
   );
 
   // Handle form input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
     if (formErrors[name as keyof typeof formErrors]) {
       setFormErrors({ ...formErrors, [name]: undefined });
     }
+    
+    // Auto-generate slug from title
+    if (name === "title") {
+      setForm(prev => ({
+        ...prev,
+        title: value,
+        slug: value.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-')
+      }));
+    }
   };
 
   // Handle image change
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setForm({ ...form, image: file });
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setForm({ ...form, images: files });
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Create previews
+      const previews: string[] = [];
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          previews.push(reader.result as string);
+          if (previews.length === files.length) {
+            setImagePreviews(previews);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
   // Validate form
   const validateForm = () => {
-    const errors: { title?: string; content?: string } = {};
+    const errors: { title?: string; content?: string; author?: string; slug?: string } = {};
     if (!form.title.trim()) {
       errors.title = "Blog title is required";
     }
     if (!form.content.trim()) {
       errors.content = "Blog content is required";
+    }
+    if (!form.author.trim()) {
+      errors.author = "Author is required";
+    }
+    if (!form.slug.trim()) {
+      errors.slug = "Slug is required";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -112,9 +144,14 @@ export default function BlogsPage() {
       const formData = new FormData();
       formData.append('title', form.title);
       formData.append('content', form.content);
-      if (form.image) {
-        formData.append('image', form.image);
-      }
+      formData.append('author', form.author || 'admin');
+      formData.append('slug', form.slug || form.title.toLowerCase().replace(/\s+/g, '-'));
+      formData.append('metadata', JSON.stringify({}));
+      
+      // Add images
+      form.images.forEach((image) => {
+        formData.append('images', image);
+      });
 
       if (editingBlog) {
         await updateBlog(editingBlog.id, formData);
@@ -125,8 +162,8 @@ export default function BlogsPage() {
       }
       
       setShowPopup(false);
-      setForm({ title: "", content: "", image: null });
-      setImagePreview(null);
+      setForm({ title: "", content: "", author: "", slug: "", images: [] });
+      setImagePreviews([]);
       setEditingBlog(null);
       fetchBlogs();
     } catch (error: any) {
@@ -139,8 +176,14 @@ export default function BlogsPage() {
   // Handle edit
   const handleEdit = (blog: Blog) => {
     setEditingBlog(blog);
-    setForm({ title: blog.title, content: blog.content, image: null });
-    setImagePreview(blog.imageUrl || null);
+    setForm({ 
+      title: blog.title, 
+      content: blog.content, 
+      author: blog.author,
+      slug: blog.slug,
+      images: [] 
+    });
+    setImagePreviews(blog.images || []);
     setShowPopup(true);
   };
 
@@ -160,15 +203,17 @@ export default function BlogsPage() {
   // Reset form when popup closes
   const handleClosePopup = () => {
     setShowPopup(false);
-    setForm({ title: "", content: "", image: null });
-    setImagePreview(null);
+    setForm({ title: "", content: "", author: "", slug: "", images: [] });
+    setImagePreviews([]);
     setEditingBlog(null);
     setFormErrors({});
   };
 
-  // Truncate content for display
+  // Truncate content for display (removes HTML tags)
   const truncateContent = (content: string, maxLength: number = 100) => {
-    return content.length > maxLength ? content.substring(0, maxLength) + "..." : content;
+    // Remove HTML tags for display
+    const textContent = content.replace(/<[^>]*>/g, '');
+    return textContent.length > maxLength ? textContent.substring(0, maxLength) + "..." : textContent;
   };
 
   return (
@@ -211,6 +256,9 @@ export default function BlogsPage() {
                 Title
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Author
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Content
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -224,13 +272,13 @@ export default function BlogsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center">
+                <td colSpan={6} className="px-6 py-4 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
                 </td>
               </tr>
             ) : filteredBlogs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                   No blogs found
                 </td>
               </tr>
@@ -238,9 +286,9 @@ export default function BlogsPage() {
               filteredBlogs.map((blog) => (
                 <tr key={blog.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {blog.imageUrl ? (
+                    {blog.images && blog.images.length > 0 ? (
                       <img
-                        src={blog.imageUrl}
+                        src={blog.images[0]}
                         alt={blog.title}
                         className="w-12 h-12 object-cover rounded-lg"
                       />
@@ -252,6 +300,9 @@ export default function BlogsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{blog.title}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{blog.author}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-500 max-w-xs">
@@ -302,35 +353,75 @@ export default function BlogsPage() {
             required
           />
 
-          <DefaultTextarea
-            label="Blog Content"
-            name="content"
-            value={form.content}
+          <DefaultInput
+            label="Author"
+            name="author"
+            value={form.author}
             onChange={handleInputChange}
-            placeholder="Enter blog content"
-            error={formErrors.content}
-            rows={6}
+            placeholder="Enter author name"
+            error={formErrors.author}
             required
           />
+
+          <DefaultInput
+            label="Slug"
+            name="slug"
+            value={form.slug}
+            onChange={handleInputChange}
+            placeholder="blog-url-slug (auto-generated)"
+            error={formErrors.slug}
+            required
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Blog Content *
+            </label>
+            <div data-color-mode="light">
+              <MDEditor
+                value={form.content}
+                onChange={(content: string | undefined) => {
+                  setForm(prev => ({ ...prev, content: content || '' }));
+                  if (formErrors.content) {
+                    setFormErrors(prev => ({ ...prev, content: undefined }));
+                  }
+                }}
+                preview="edit"
+                hideToolbar={false}
+                visibleDragbar={false}
+                textareaProps={{
+                  placeholder: 'Write your blog content here... (Supports Markdown and HTML)',
+                }}
+                height={400}
+              />
+            </div>
+            {formErrors.content && (
+              <p className="mt-1 text-sm text-red-600">{formErrors.content}</p>
+            )}
+          </div>
 
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Blog Image
+              Blog Images
             </label>
             <input
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            {imagePreview && (
-              <div className="mt-2">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-32 h-32 object-cover rounded-lg border"
-                />
+            {imagePreviews.length > 0 && (
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {imagePreviews.map((preview, index) => (
+                  <img
+                    key={index}
+                    src={preview}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-24 object-cover rounded-lg border"
+                  />
+                ))}
               </div>
             )}
           </div>
