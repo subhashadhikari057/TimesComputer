@@ -95,7 +95,7 @@ const FILTER_CONFIG: Record<
 
 const DEFAULT_PRICE_RANGE = [25000, 500000];
 
-export default function FilterSidebar({ onApplyFilters, category, brandName }: { 
+export default function FilterSidebar({ onApplyFilters, category, brandName }: {
   onApplyFilters?: (filters: any) => void;
   category?: string;
   brandName?: string;
@@ -104,7 +104,7 @@ export default function FilterSidebar({ onApplyFilters, category, brandName }: {
   const getFiltersForBrand = (brandName: string) => {
     const brandProducts = products.filter(p => p.brand.toLowerCase() === brandName.toLowerCase());
     const filters: any = {};
-    
+
     // Get unique values for each filter type from brand's products
     const brands = [...new Set(brandProducts.map(p => p.brand))].filter(Boolean);
     const processors = [...new Set(brandProducts.map(p => p.processor))].filter(Boolean);
@@ -114,7 +114,7 @@ export default function FilterSidebar({ onApplyFilters, category, brandName }: {
     const graphics = [...new Set(brandProducts.map(p => p.graphics))].filter(Boolean);
     const screenSize = [...new Set(brandProducts.map(p => p.screenSize))].filter(Boolean);
     const resolution = [...new Set(brandProducts.map(p => p.resolution))].filter(Boolean);
-    
+
     if (brands.length > 0) filters.brand = brands;
     if (processors.length > 0) filters.processor = processors;
     if (memory.length > 0) filters.memory = memory;
@@ -123,14 +123,14 @@ export default function FilterSidebar({ onApplyFilters, category, brandName }: {
     if (graphics.length > 0) filters.graphics = graphics;
     if (screenSize.length > 0) filters.screenSize = screenSize;
     if (resolution.length > 0) filters.resolution = resolution;
-    
+
     return filters;
   };
-  
-  const filtersForCategory = brandName 
+
+  const filtersForCategory = brandName
     ? getFiltersForBrand(brandName)
     : (category ? FILTER_CONFIG[category.toLowerCase()] || {} : {});
-    
+
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedProcessors, setSelectedProcessors] = useState<string[]>([]);
   const [selectedMemory, setSelectedMemory] = useState<string[]>([]);
@@ -168,6 +168,7 @@ export default function FilterSidebar({ onApplyFilters, category, brandName }: {
     <div className="w-full h-fit max-h-[600px] p-4 space-y-4 overflow-y-auto shadow-lg border-border rounded-lg bg-white sticky top-4">
       <h2 className="text-lg font-semibold mb-4">Filters</h2>
 
+      <Accordion type="multiple" className="space-y-2">
         {/* Price Range Slider */}
         <PriceFilterSlider
           min={DEFAULT_PRICE_RANGE[0]}
@@ -177,7 +178,7 @@ export default function FilterSidebar({ onApplyFilters, category, brandName }: {
           onPriceChange={(min, max) => setPriceRange([min, max])}
           onApply={handleApply}
         />
-        
+
         {/* Brand Filter */}
         {filtersForCategory.brand && (
           <AccordionItem value="brand">
