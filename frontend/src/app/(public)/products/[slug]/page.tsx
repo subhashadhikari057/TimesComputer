@@ -7,64 +7,60 @@ import Image from "next/image";
 import { PiWhatsappLogoThin } from "react-icons/pi";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-// import axios from "@/lib/axiosInstance";
+import { getProductBySlug } from "@/api/product";
 import { Product } from "../../../../../types/product";
 import Reccomendedproducts from "@/components/products/reccomendedproducts";
 
 export default function ProductDetails() {
   const [productData, setProductData] = useState<Product>({});
+  const [loading, setLoading] = useState(true);
   const { slug } = useParams<{ slug: string }>();
 
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const res = await axios.get(`/product/slug/${slug}`);
-  //       const data = await res.data;
-  //       setProductData(data);
-  //       toast.success("Fetched.");
-  //     } catch (error) {
-  //       toast.error("failed to fetch");
-  //       console.log(error);
-  //     }
-  //   })();
-  // }, [slug]);
-
   useEffect(() => {
-    (async () => {
+    const fetchProduct = async () => {
+      if (!slug) return;
+      
       try {
-        // Comment out actual API for now
-        // const res = await axios.get(`/product/slug/${slug}`);
-        // const data = await res.data;
-
-        // Dummy data fallback
-        const data = {
-          name: "Example Product",
-          slug: "example-product",
-          price: 2500,
-          images: ["/products/Frame_68.png"],
-          category: "Laptop",
-          specs: {
-            Brand: "ExampleBrand",
-            Processor: "Intel i7",
-            RAM: "16GB",
-            Storage: "512GB SSD",
-            Display: "15.6 inch FHD"
-          },
-          description:
-            "This is a sample description for the example product. It provides key details about the product's features and benefits."
-        };
-
+        setLoading(true);
+        const data = await getProductBySlug(slug);
         setProductData(data);
-        toast.success("Loaded dummy product.");
+        toast.success("Product loaded successfully.");
       } catch (error) {
         toast.error("Failed to fetch product.");
-        console.log(error);
+        console.error("Error fetching product:", error);
+      } finally {
+        setLoading(false);
       }
-    })();
+    };
+
+    fetchProduct();
   }, [slug]);
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("specifications");
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto mt-2 p-6 bg-white">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!productData || Object.keys(productData).length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto mt-2 p-6 bg-white">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
+            <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto mt-2 p-6 bg-white">
