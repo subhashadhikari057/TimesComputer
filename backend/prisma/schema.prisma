@@ -138,6 +138,7 @@ model ProductColor {
 model AdBanner {
   id        Int      @id @default(autoincrement())
   images    String[]
+  link      String?
   createdAt DateTime @default(now())
 }
 
