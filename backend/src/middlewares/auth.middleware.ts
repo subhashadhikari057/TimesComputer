@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt, { type Secret } from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 
-const ACCESS_SECRET: Secret = process.env.JWT_SECRET as string;
+const ACCESS_SECRET: Secret = process.env.ACCESS_SECRET as string;
 
 // ✅ Middleware: Authenticated user & attach user to req
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
