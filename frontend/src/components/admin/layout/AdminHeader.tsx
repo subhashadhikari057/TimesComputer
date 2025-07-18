@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "@/lib/axiosInstance";
+import axios, { apiRequest } from "@/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -52,7 +52,7 @@ export default function Header({
 
   const handleLogOut = async () => {
     try {
-      await axios.post("/auth/logout", {});
+      const response = await apiRequest("POST", "/auth/refresh/logout");
       toast.success("Logout successful!");
       router.push("/admin/login");
     } catch (error) {
@@ -217,7 +217,7 @@ export default function Header({
 function IconButton({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <button className="p-1 rounded-lg" aria-label={label}>
-      <div className="w-10 h-10 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100">
+      <div className=" cursor-pointer w-10 h-10 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100">
         {icon}
       </div>
     </button>

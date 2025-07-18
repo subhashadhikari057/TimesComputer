@@ -17,7 +17,7 @@ export const colorService = {
   // Get all colors
   getAllColors: async (): Promise<Color[]> => {
     try {
-      const response = await axios.get("/color/get");
+      const response = await axios.get("/colors");
       return response.data.data;
     } catch (error) {
       console.error("Error fetching colors:", error);
@@ -28,7 +28,7 @@ export const colorService = {
   // Create a new color
   createColor: async (data: CreateColorData): Promise<Color> => {
     try {
-      const response = await axios.post("/color/add", data, {
+      const response = await axios.post("/colors", data, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -40,4 +40,30 @@ export const colorService = {
       throw error;
     }
   },
+
+  // Update an existing color
+  updateColor: async (id: number, data: CreateColorData): Promise<Color> => {
+    try {
+      const response = await axios.put(`/colors/update/${id}`, data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      return response.data.data;
+    } catch (error) {
+      console.error("Error updating color:", error);
+      throw error;
+    }
+  },
+
+  // Delete a color
+  deleteColor: async (id: number): Promise<void> => {   
+    try {
+      await axios.delete(`/colors/delete/${id}`);
+    } catch (error) {
+      console.error("Error deleting color:", error);
+      throw error;
+    }
+  }
 };

@@ -168,7 +168,6 @@ export default function FilterSidebar({ onApplyFilters, category, brandName }: {
     <div className="w-full h-fit max-h-[600px] p-4 space-y-4 overflow-y-auto shadow-lg border-border rounded-lg bg-white sticky top-4">
       <h2 className="text-lg font-semibold mb-4">Filters</h2>
 
-      <Accordion type="multiple" className="space-y-2">
         {/* Price Range Slider */}
         <PriceFilterSlider
           min={DEFAULT_PRICE_RANGE[0]}

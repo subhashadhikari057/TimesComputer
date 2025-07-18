@@ -1,14 +1,15 @@
 "use client";
-import { Mail, Lock, LoaderCircleIcon } from "lucide-react";
+import { Mail, Lock, LoaderCircleIcon, Eye, EyeOff } from "lucide-react";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import axios from "@/lib/axiosInstance";
-
+import { apiRequest } from "@/lib/axiosInstance";
+import DefaultCheckbox from "@/components/form/form-elements/DefaultCheckbox";
 
 interface LoginForm {
   email: string;
   password: string;
+  rememberMe: boolean;
 }
 
 interface LoginFormError {
@@ -23,16 +24,22 @@ export default function AdminLogin() {
   const [form, setForm] = useState<LoginForm>({
     email: "",
     password: "",
+    rememberMe: false,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setErr({});
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
+  }
+
+  function togglePasswordVisibility() {
+    setShowPassword(!showPassword);
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -48,21 +55,17 @@ export default function AdminLogin() {
     }
 
     setIsLoading(true);
-    // // Simulate login API call
-    // setTimeout(() => {
-    //   setIsLoading(false);
-    //   toast.success("Login successful!");
-    //   // Redirect to admin dashboard
-    //   router.push("/admin/dashboard");
-    // }, 2000);
 
     try {
-       await axios.post("/auth/login", form);
+      const response = await apiRequest("POST", "/auth/refresh/login", {
+        email: form.email,
+        password: form.password,
+        rememberMe: form.rememberMe,
+      });
       toast.success("Login successful!");
       // Redirect to admin dashboard
       router.push("/admin/dashboard");
     } catch (error) {
-      setIsLoading(false);
       toast.error("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -70,8 +73,8 @@ export default function AdminLogin() {
   }
 
   return (
-    <div className="h-screen w-screen inset-0 z-50 absolute">
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
+    <div className="h-screen w-screen inset-0 z-50 absolute bg-[url('/background/login_bg.png')] bg-cover bg-center ">
+      <div className=" min-h-screen flex items-center justify-center ">
         <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md m-10">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -118,19 +121,35 @@ export default function AdminLogin() {
                   size={20}
                 />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   id="password"
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-3 pl-12 pr-12 border border-gray-300 rounded-lg text-gray-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none cursor-pointer"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
               {err.password && (
                 <p className="mt-1 text-sm text-red-600">{err.password}</p>
               )}
             </div>
+
+            <DefaultCheckbox
+              label="Remember me"
+              name="rememberMe"
+              checked={form.rememberMe}
+              onChange={handleChange}
+              className="mt-4"
+            />
+
             {err.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-600">{err.general}</p>
@@ -140,7 +159,7 @@ export default function AdminLogin() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-blue-500 focus:ring-offset-2 transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-blue-500  transition duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isLoading ? (
                   <>

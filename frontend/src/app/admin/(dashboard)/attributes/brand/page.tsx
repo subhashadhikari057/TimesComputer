@@ -2,199 +2,169 @@
 
 import {
   Plus,
-  DollarSign,
+  Award,
   CheckCircle,
   Package,
   Search,
   Download,
-  Eye,
   Calendar,
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
+import { toast } from "sonner";
+import BrandPopup from "./brandPopup";
+
+// Brand interface
+interface Brand {
+  id: number;
+  name: string;
+  productCount: number;
+  createdAt: string;
+  updatedAt: string;
+  image: string;
+  icon?: string;
+}
 
 // Main Component
-export default function ViewProductsPage() {
-  const router = useRouter();
+export default function BrandManagementPage() {
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
-  // Sample data
-  const newData = [
+  // Sample data matching the product page structure
+  const brandData: Brand[] = [
     {
       id: 1,
-      product: "EcoSmart LED Bulb",
-      category: "Lighting",
-      brand: "EcoSmart",
-      price: "12.99",
-      stock: 120,
-      status: "Active",
+      name: "Apple",
+      productCount: 45,
+    
       createdAt: "2025-07-01",
+      updatedAt: "2025-07-15",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
     },
     {
       id: 2,
-      product: "Smart WiFi Plug",
-      category: "Electronics",
-      brand: "TP-Link",
-      price: "19.99",
-      stock: 85,
-      status: "Inactive",
+      name: "Samsung",
+      productCount: 32,
+    
       createdAt: "2025-06-24",
+      updatedAt: "2025-07-10",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
     },
     {
       id: 3,
-      product: "Wireless Mouse",
-      category: "Accessories",
-      brand: "Logitech",
-      price: "29.95",
-      stock: 200,
-      status: "Active",
+      name: "Google",
+      productCount: 12,
+   
       createdAt: "2025-07-15",
+      updatedAt: "2025-07-15",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
     },
     {
       id: 4,
-      product: "Bluetooth Speaker",
-      category: "Electronics",
-      brand: "JBL",
-      price: "89.99",
-      stock: 45,
-      status: "Active",
+      name: "Microsoft",
+      productCount: 67,
+  
       createdAt: "2025-07-10",
+      updatedAt: "2025-07-12",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
     },
     {
       id: 5,
-      product: "Desk Lamp",
-      category: "Lighting",
-      brand: "IKEA",
-      price: "24.99",
-      stock: 0,
-      status: "Inactive",
+      name: "Dell",
+      productCount: 28,
+    
       createdAt: "2025-06-30",
+      updatedAt: "2025-07-08",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 6,
+      name: "HP",
+      productCount: 19,
+    
+      createdAt: "2025-06-25",
+      updatedAt: "2025-07-05",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
+    },
+    {
+      id: 7,
+      name: "Sony",
+      productCount: 0,
+      
+      createdAt: "2025-06-22",
+      updatedAt: "2025-07-01",
+      image: "/api/placeholder/150/150",
+      icon: "/api/placeholder/50/50",
     },
   ];
 
-  // Define columns for the table
-  const newColumns: Column[] = [
+  // Define columns for the table (similar to product page)
+  const brandColumns: Column[] = [
     {
-      id: "product",
-      label: "Product",
+      id: "name",
+      label: "Brand",
       sortable: false,
       filterable: true,
       searchable: true,
       width: "300px",
-      render: (product: any) => (
+      render: (brand: Brand) => (
         <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-            <Package className="h-6 w-6 text-blue-600" />
+          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
+            {brand.image ? (
+              <img
+                src={brand.image}
+                alt={brand.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <Award className="h-6 w-6 text-blue-600" />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {product.product}
+              {brand.name}
             </div>
           </div>
         </div>
       ),
     },
     {
-      id: "category",
-      label: "Category",
-      sortable: false,
-      filterable: true,
-      searchable: true,
+      id: "productCount",
+      label: "Products",
+      sortable: true,
+      filterable: false,
+      searchable: false,
       width: "120px",
-      render: (product: any) => (
-        <div className="text-sm text-gray-900">{product.category}</div>
-      ),
-    },
-    {
-      id: "brand",
-      label: "Brand",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "100px",
-      render: (product: any) => (
-        <div className="text-sm font-medium text-gray-900">{product.brand}</div>
-      ),
-    },
-    {
-      id: "price",
-      label: "Price",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "100px",
-      render: (product: any) => {
-        const price =
-          typeof product.price === "string"
-            ? parseFloat(product.price.replace("$", ""))
-            : product.price;
-
-        return (
-          <div className="flex items-center space-x-1">
-            <span className="text-sm font-semibold text-gray-900">
-              ${price.toFixed(2)}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      id: "stock",
-      label: "Stock",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "100px",
-      render: (product: any) => (
-        <div
-          className={`text-sm font-medium ${
-            product.stock === 0
-              ? "text-red-600"
-              : product.stock < 10
-              ? "text-yellow-600"
-              : "text-gray-900"
-          }`}
-        >
-          {product.stock} units
+      render: (brand: Brand) => (
+        <div className="flex items-center space-x-1">
+          <Package className="w-4 h-4 text-gray-400" />
+          <span
+            className={`text-sm font-medium ${
+              brand.productCount === 0
+                ? "text-red-600"
+                : brand.productCount < 10
+                ? "text-yellow-600"
+                : "text-gray-900"
+            }`}
+          >
+            {brand.productCount} items
+          </span>
         </div>
       ),
     },
-    {
-      id: "status",
-      label: "Status",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (product: any) => {
-        const isPublished = product.status === "Active";
-
-        return (
-          <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-              isPublished
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {isPublished ? (
-              <>
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Published
-              </>
-            ) : (
-              <>
-                <Eye className="w-3 h-3 mr-1" />
-                Draft
-              </>
-            )}
-          </span>
-        );
-      },
-    },
+    
     {
       id: "createdAt",
       label: "Created At",
@@ -202,17 +172,16 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: false,
       width: "120px",
-      render: (product: any) => (
+      render: (brand: Brand) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
-          {new Date(product.createdAt).toLocaleDateString()}
+          {new Date(brand.createdAt).toLocaleDateString()}
         </div>
       ),
     },
   ];
 
-  // Use custom hook for table data management
-  // This hook handles search, filters, sorting, and selection state
+  // Use custom hook for table data management (same as product page)
   const {
     searchTerm,
     filters,
@@ -228,90 +197,121 @@ export default function ViewProductsPage() {
     handleSelectItem,
     handleBulkDelete,
   } = useTableData({
-    data: newData,
-    columns: newColumns, 
+    data: brandData,
+    columns: brandColumns,
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
+  // Event handlers
   const handleEdit = (row: any, index: number) => {
-    router.push(`/admin/product/${row.id}/edit`);
+    setEditingBrand(row);
+    setShowEditPopup(true);
   };
 
   const handleDelete = (row: any, index: number) => {
-    console.log("Delete:", row, index);
+    console.log("Delete brand:", row, index);
+    toast.success("Brand deleted successfully!");
   };
 
   const handleExport = () => {
-    console.log("Export products");
-    // TODO: Implement export functionality
+    console.log("Export brands");
+    toast.success("Brands exported successfully!");
   };
 
-  const handleAddProduct = () => {
-    router.push("/admin/product/create");
+  const handleAddBrand = () => {
+    setShowAddPopup(true);
   };
+
+  const handleCloseAddPopup = () => {
+    setShowAddPopup(false);
+  };
+
+  const handleCloseEditPopup = () => {
+    setShowEditPopup(false);
+    setEditingBrand(null);
+  };
+
+  // Calculate stats
+  const totalBrands = brandData.length;
+  const activeBrands = "5";
+  const totalProducts = brandData.reduce(
+    (sum, brand) => sum + brand.productCount,
+    0
+  );
 
   return (
     <div className="p-6 space-y-6">
-      {/* Page Header */}
+      {/* Page Header - Same structure as product page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Products</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Brands</h1>
           <p className="text-gray-600">
-            Manage your product inventory and catalog
+            Manage your product brands and organize your catalog
           </p>
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={handleAddProduct}
+            onClick={handleAddBrand}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Add Product
+            Add Brand
           </button>
         </div>
       </div>
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 md:gap-6 gap-3">
+      {/* Add Brand Popup */}
+      <BrandPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
+
+      {/* Edit Brand Popup */}
+      <BrandPopup
+        isOpen={showEditPopup}
+        onClose={handleCloseEditPopup}
+        initialData={editingBrand || undefined}
+      />
+
+      {/* Statistics - Same structure as product page */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Total Products"
-          value={newData.length.toString()}
+          title="Total Brands"
+          value={totalBrands.toString()}
           change="+12% from last month"
-          Icon={Package}
+          Icon={Award}
           color="text-blue-600"
         />
         <StatCard
-          title="Published Products"
-          value={newData.filter((p) => p.status === "Active").length.toString()}
-          change="100%"
+          title="Active Brands"
+          value={activeBrands.toString()}
+          change={`${Math.round((  totalBrands) * 100)}% active`}
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
-          title="Total Value"
-          value="$177.91"
-          change="Current stock value"
-          Icon={DollarSign}
+          title="Total Products"
+          value={totalProducts.toString()}
+          change={`Avg ${Math.round(totalProducts / totalBrands)} per brand`}
+          Icon={Package}
           color="text-purple-600"
         />
       </div>
 
+      {/* Table Container - Same structure as product page */}
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0">
-            {/* Search Input */}
+            {/* Search Input - Same as product page */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search brands..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
               />
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons - Same structure as product page */}
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-2 md:space-y-0 md:space-x-2 md:justify-self-end">
               {/* Bulk Delete Button - Show only when items are selected */}
               {selectedItems.length > 0 && (
@@ -346,12 +346,13 @@ export default function ViewProductsPage() {
           </div>
         </div>
 
+        {/* Table - Same as product page */}
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}
           onSelectItem={handleSelectItem}
-          columns={newColumns}
-          data={processedData} // Using processedData from the hook
+          columns={brandColumns}
+          data={processedData}
           onEdit={handleEdit}
           onDelete={handleDelete}
           sortConfig={sortConfig}

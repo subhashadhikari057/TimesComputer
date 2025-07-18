@@ -29,7 +29,7 @@ const DefaultButton: React.FC<DefaultButtonProps> = ({
   fullWidth = false,
 }) => {
   const baseClasses =
-    "inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
+    "inline-flex items-center justify-center font-medium rounded-md focus:outline-none focus:ring-1  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
   // Always responsive size classes
   const sizeClasses = {
@@ -42,7 +42,7 @@ const DefaultButton: React.FC<DefaultButtonProps> = ({
     primary:
       "text-white bg-blue-600 border border-transparent hover:bg-blue-700 focus:ring-blue-500 active:bg-blue-800",
     secondary:
-      "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus:ring-blue-500 active:bg-gray-100",
+      "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus:ring-blue-500 active:bg-gray-100 focus:outline-none focus:ring-1",
     danger:
       "text-white bg-red-600 border border-transparent hover:bg-red-700 focus:ring-red-500 active:bg-red-800",
     success:

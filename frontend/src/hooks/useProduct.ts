@@ -149,36 +149,3 @@ export function useProduct(id?: string): UseProductResult {
   };
 }
 
-// Example usage in EditProductPage:
-/*
-export default function EditProductPage({ productId }: { productId: string }) {
-  const router = useRouter();
-  const { product, loading, error, updateProduct } = useProduct(productId);
-
-  const handleSubmit = async (data: any) => {
-    try {
-      await updateProduct(productId, data);
-      toast.success("Product updated successfully!");
-      router.push("/admin/products");
-    } catch (error) {
-      toast.error("Failed to update product");
-      throw error;
-    }
-  };
-
-  if (error) {
-    return <ErrorComponent message={error} />;
-  }
-
-  return (
-    <ProductForm
-      mode="edit"
-      productId={productId}
-      initialData={product || undefined}
-      isLoading={loading}
-      onSubmit={handleSubmit}
-      onCancel={() => router.push("/admin/products")}
-    />
-  );
-}
-*/

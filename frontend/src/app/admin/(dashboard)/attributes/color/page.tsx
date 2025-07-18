@@ -2,138 +2,152 @@
 
 import {
   Plus,
-  Tag,
+  Palette,
   CheckCircle,
   Package,
   Search,
   Download,
-  Eye,
   Calendar,
   Trash2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
-import CategoryPopup from "./categoryPopup";
+import ColorPopup from "./colorPopup";
 
-// Category interface
-interface Category {
+// Color interface
+interface Color {
   id: number;
   name: string;
+  hexCode: string;
   productCount: number;
   createdAt: string;
   updatedAt: string;
-  image: string;
-  icon: string;
 }
 
 // Main Component
-export default function CategoryManagementPage() {
+export default function ColorManagementPage() {
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<{
+  const [editingColor, setEditingColor] = useState<{
     id: number;
     name: string;
-    image: string;
-    icon: string;
-  } | undefined>(undefined);
+    color: string;
+  } | null>(null);
 
   // Sample data matching the product page structure
-  const categoryData: Category[] = [
+  const colorData: Color[] = [
     {
       id: 1,
-      name: "Laptops",
+      name: "Midnight Black",
+      hexCode: "#000000",
       productCount: 45,
-    
       createdAt: "2025-07-01",
       updatedAt: "2025-07-15",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
- 
     },
     {
       id: 2,
-      name: "Smartphones",
+      name: "Snow White",
+      hexCode: "#FFFFFF",
       productCount: 32,
-     
       createdAt: "2025-06-24",
       updatedAt: "2025-07-10",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-   
     },
     {
       id: 3,
-      name: "Tablets",
+      name: "Ocean Blue",
+      hexCode: "#0066CC",
       productCount: 12,
-   
       createdAt: "2025-07-15",
       updatedAt: "2025-07-15",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-    
     },
     {
       id: 4,
-      name: "Accessories",
+      name: "Forest Green",
+      hexCode: "#228B22",
       productCount: 67,
-    
       createdAt: "2025-07-10",
       updatedAt: "2025-07-12",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-      
     },
     {
       id: 5,
-      name: "Gaming",
-      productCount: 28,
-   
+      name: "Sunset Orange",
+      hexCode: "#FF6347",
+      productCount: 23,
       createdAt: "2025-06-30",
       updatedAt: "2025-07-08",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-    
     },
     {
       id: 6,
-      name: "Audio",
-      productCount: 19,
-      
+      name: "Purple Rain",
+      hexCode: "#8A2BE2",
+      productCount: 8,
       createdAt: "2025-06-25",
       updatedAt: "2025-07-05",
-      image: "/api/placeholder/150/150",
-      icon: "/api/placeholder/icon/50/50",
-  
+    },
+    {
+      id: 7,
+      name: "Rose Gold",
+      hexCode: "#E8B4A0",
+      productCount: 0,
+      createdAt: "2025-06-22",
+      updatedAt: "2025-07-01",
+    },
+    {
+      id: 8,
+      name: "Silver",
+      hexCode: "#C0C0C0",
+      productCount: 28,
+      createdAt: "2025-06-20",
+      updatedAt: "2025-07-03",
     },
   ];
 
-  // Define columns for the table 
-  const categoryColumns: Column[] = [
+  // Define columns for the table (similar to product page)
+  const colorColumns: Column[] = [
     {
       id: "name",
-      label: "Category",
+      label: "Color",
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "300px",
-      render: (category: Category) => (
+      width: "200px",
+      render: (color: Color) => (
         <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center overflow-hidden">
-            <img
-              src={category.image}
-              alt={category.name}
-              className="h-full w-full object-cover"
+          <div className="h-12 w-12 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden">
+            <div
+              className="w-full h-full"
+              style={{ backgroundColor: color.hexCode }}
             />
+            {/* Add a subtle border for very light colors */}
+            {color.hexCode === "#FFFFFF" && (
+              <div className="absolute inset-0 border border-gray-300 rounded-lg" />
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {category.name}
+              {color.name}
             </div>
           </div>
+        </div>
+      ),
+    },
+    {
+      id: "hexCode",
+      label: "Hex Code",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      width: "120px",
+      render: (color: Color) => (
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-mono text-gray-900">
+            {color.hexCode.toUpperCase()}
+          </span>
         </div>
       ),
     },
@@ -144,24 +158,23 @@ export default function CategoryManagementPage() {
       filterable: false,
       searchable: false,
       width: "120px",
-      render: (category: Category) => (
+      render: (color: Color) => (
         <div className="flex items-center space-x-1">
           <Package className="w-4 h-4 text-gray-400" />
           <span
             className={`text-sm font-medium ${
-              category.productCount === 0
+              color.productCount === 0
                 ? "text-red-600"
-                : category.productCount < 10
+                : color.productCount < 10
                 ? "text-yellow-600"
                 : "text-gray-900"
             }`}
           >
-            {category.productCount} items
+            {color.productCount} items
           </span>
         </div>
       ),
     },
-    
     {
       id: "createdAt",
       label: "Created At",
@@ -169,30 +182,16 @@ export default function CategoryManagementPage() {
       filterable: false,
       searchable: false,
       width: "120px",
-      render: (category: Category) => (
+      render: (color: Color) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
-          {new Date(category.createdAt).toLocaleDateString()}
-        </div>
-      ),
-    },
-    {
-      id: "updatedAt",
-      label: "Updated At",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (category: Category) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(category.updatedAt).toLocaleDateString()}
+          {new Date(color.createdAt).toLocaleDateString()}
         </div>
       ),
     },
   ];
 
-  // Use custom hook for table data management
+  // Use custom hook for table data management (same as product page)
   const {
     searchTerm,
     filters,
@@ -208,35 +207,34 @@ export default function CategoryManagementPage() {
     handleSelectItem,
     handleBulkDelete,
   } = useTableData({
-    data: categoryData,
-    columns: categoryColumns,
+    data: colorData,
+    columns: colorColumns,
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
   // Event handlers
   const handleEdit = (row: any, index: number) => {
-    
-    const categoryData = {
+    // Convert Color to the format expected by ColorPopup
+    const colorData = {
       id: row.id,
       name: row.name,
-      image: row.image, 
-      icon: row.icon, 
+      color: row.hexCode, // Map hexCode to color for ColorPopup
     };
-    setEditingCategory(categoryData);
+    setEditingColor(colorData);
     setShowEditPopup(true);
   };
 
   const handleDelete = (row: any, index: number) => {
-    console.log("Delete category:", row, index);
-    toast.success("Category deleted successfully!");
+    console.log("Delete color:", row, index);
+    toast.success("Color deleted successfully!");
   };
 
   const handleExport = () => {
-    console.log("Export categories");
-    toast.success("Categories exported successfully!");
+    console.log("Export colors");
+    toast.success("Colors exported successfully!");
   };
 
-  const handleAddCategory = () => {
+  const handleAddColor = () => {
     setShowAddPopup(true);
   };
 
@@ -246,14 +244,14 @@ export default function CategoryManagementPage() {
 
   const handleCloseEditPopup = () => {
     setShowEditPopup(false);
-    setEditingCategory(undefined);
+    setEditingColor(null);
   };
 
   // Calculate stats
-  const totalCategories = categoryData.length;
-  const activeCategories = "5"
-  const totalProducts = categoryData.reduce(
-    (sum, cat) => sum + cat.productCount,
+  const totalColors = colorData.length;
+  const colorsWithProducts = colorData.filter((c) => c.productCount > 0).length;
+  const totalProducts = colorData.reduce(
+    (sum, color) => sum + color.productCount,
     0
   );
 
@@ -262,56 +260,54 @@ export default function CategoryManagementPage() {
       {/* Page Header - Same structure as product page */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Categories</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Colors</h1>
           <p className="text-gray-600">
-            Manage your product categories and organize your catalog
+            Manage your product colors and organize your catalog
           </p>
         </div>
         <div className="mt-4 sm:mt-0">
           <button
-            onClick={handleAddCategory}
+            onClick={handleAddColor}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <Plus className="h-4 w-4 mr-1" />
-            Add Category
+            Add Color
           </button>
         </div>
       </div>
 
-      {/* Add Category Popup */}
-      <CategoryPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
+      {/* Add Color Popup */}
+      <ColorPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
 
-      {/* Edit Category Popup */}
-      <CategoryPopup
+      {/* Edit Color Popup */}
+      <ColorPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
-        initialData={editingCategory}
+        initialData={editingColor || undefined}
       />
 
       {/* Statistics - Same structure as product page */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Total Categories"
-          value={totalCategories.toString()}
+          title="Total Colors"
+          value={totalColors.toString()}
           change="+12% from last month"
-          Icon={Tag}
+          Icon={Palette}
           color="text-purple-600"
         />
         <StatCard
-          title="Active Categories"
-          value={activeCategories.toString()}
+          title="Colors in Use"
+          value={colorsWithProducts.toString()}
           change={`${Math.round(
-            (totalCategories) * 100
-          )}% active`}
+            (colorsWithProducts / totalColors) * 100
+          )}% in use`}
           Icon={CheckCircle}
           color="text-green-600"
         />
         <StatCard
           title="Total Products"
           value={totalProducts.toString()}
-          change={`Avg ${Math.round(
-            totalProducts / totalCategories
-          )} per category`}
+          change={`Avg ${Math.round(totalProducts / totalColors)} per color`}
           Icon={Package}
           color="text-blue-600"
         />
@@ -326,7 +322,7 @@ export default function CategoryManagementPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search categories..."
+                placeholder="Search colors..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
@@ -368,12 +364,12 @@ export default function CategoryManagementPage() {
           </div>
         </div>
 
-        {/* Table  */}
+        {/* Table - Same as product page */}
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}
           onSelectItem={handleSelectItem}
-          columns={categoryColumns}
+          columns={colorColumns}
           data={processedData}
           onEdit={handleEdit}
           onDelete={handleDelete}
