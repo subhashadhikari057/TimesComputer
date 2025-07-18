@@ -1,31 +1,47 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import SortSelect from "@/components/sortselect";
-import { products } from "@/lib/index";
-import ProductCard from "@/components/products/productcard";
-import FilterSidebar from "@/components/sidebar/sidebar";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import SortSelect from '@/components/sortselect';
+import { products } from '@/lib/index';
+import ProductCard from '@/components/products/productcard';
+import FilterSidebar from '@/components/sidebar/sidebar';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import { Button } from '@/components/ui/button';
+
+interface BrandParams {
+  brandName: string;
+}
 
 interface SearchParams {
   sort?: string;
   page?: string;
 }
 
-interface AllProductsPageProps {
+interface BrandPageProps {
+  params: Promise<BrandParams>; // Promise in newer Next.js versions
   searchParams?: SearchParams;
+  // Optional, unused in static filtering version
 }
 
-const PRODUCTS_PER_PAGE = 12;
 
-export default function AllProductsPage() {
+
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+export default function BrandPage({ params }: BrandPageProps) {
+  const PRODUCTS_PER_PAGE = 12;
   const router = useRouter();
   const searchParams = useSearchParams();
-  const pageParam = searchParams.get("page");
+  const pageParam = searchParams.get('page');
   const page = pageParam ? parseInt(pageParam) : 1;
-  const sort = searchParams.get("sort") || undefined;
+  const sort = searchParams.get('sort') || undefined;
+
+  // Get brand from params and normalize
+  const resolvedParams = React.use(params) as BrandParams;
+  const brand = resolvedParams.brandName.toLowerCase();
+  const brandName = capitalize(brand);
 
   const [loading, setLoading] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -55,8 +71,13 @@ export default function AllProductsPage() {
     }
   };
 
-  const filteredProducts = products.filter(product => {
-    // Brand filter
+  const filteredProducts = products.filter((product: any) => {
+    // Brand filter - always filter by the brand from URL
+    if (product.brand.toLowerCase() !== brand.toLowerCase()) {
+      return false;
+    }
+    
+    // Additional brand filter from sidebar (if any)
     if (appliedFilters.brand && appliedFilters.brand.length > 0 && 
         !appliedFilters.brand.includes(product.brand)) {
       return false;
@@ -114,7 +135,7 @@ export default function AllProductsPage() {
     return true;
   });
 
-  // Sort products if needed
+  // Sort products
   const sortedProducts = [...filteredProducts];
 
   if (sort === 'price-low-high') {
@@ -143,6 +164,7 @@ export default function AllProductsPage() {
     router.push(`?page=${newPage}${sort ? `&sort=${sort}` : ''}`);
   };
 
+
   const toggleMobileFilter = useCallback(() => {
     setIsMobileFilterOpen(prev => !prev);
   }, []);
@@ -154,7 +176,7 @@ export default function AllProductsPage() {
   const filterSidebar = (
     <FilterSidebar
       onApplyFilters={handleApplyFilters}
-      category={"all"}
+      brandName={brand}
     />
   );
 
@@ -168,13 +190,26 @@ export default function AllProductsPage() {
         {/* Mobile/Tablet Filter Header */}
         <div className="lg:hidden flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">
-            {filteredProducts.length > 0 ? `All Products (${filteredProducts.length})` : "No Products Found"}
+            {filteredProducts.length > 0 ? `${brandName} Products (${filteredProducts.length})` : 'No Products Found'}
           </h1>
           <button
             onClick={toggleMobileFilter}
             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg"
           >
-            {/* SVG icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
+            </svg>
             Filters
             {activeFiltersCount > 0 && (
               <span className="ml-1 px-2 py-0.5 bg-white text-black rounded-full text-sm">
@@ -186,14 +221,16 @@ export default function AllProductsPage() {
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Desktop Sidebar */}
-          <aside className="hidden lg:block w-full lg:w-1/4">{filterSidebar}</aside>
+          <aside className="hidden lg:block w-full lg:w-1/4">
+            {filterSidebar}
+          </aside>
 
           {/* Main content */}
           <main className="w-full lg:w-3/4">
             {/* Desktop Header */}
             <div className="hidden lg:flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold pl-5">
-                {filteredProducts.length > 0 ? `All Products (${filteredProducts.length})` : "No Products Found"}
+                {filteredProducts.length > 0 ? `${brandName} Products (${filteredProducts.length})` : 'No Products Found'}
               </h1>
               <SortSelect sort={sort} />
             </div>
@@ -218,22 +255,28 @@ export default function AllProductsPage() {
               <>
                 {/* Mobile/Tablet view - 2 columns grid */}
                 <div className="grid grid-cols-2 gap-4 lg:hidden">
-                  {paginatedProducts.map((product) => (
+                  {paginatedProducts.map(product => (
                     <div key={product.id} className="aspect-square">
-                      <ProductCard product={product} compact={true} />
+                      <ProductCard
+                        product={product}
+                        compact={true}
+                      />
                     </div>
                   ))}
                 </div>
 
                 {/* Desktop view */}
                 <div className="hidden lg:grid grid-cols-3 gap-6">
-                  {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                  {paginatedProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                    />
                   ))}
                 </div>
               </>
             )}
-
+   
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center gap-4 mt-8">
@@ -256,6 +299,7 @@ export default function AllProductsPage() {
                 </Button>
               </div>
             )}
+            
           </main>
         </div>
       </div>
@@ -289,7 +333,9 @@ export default function AllProductsPage() {
             </svg>
           </button>
         </div>
-        <div className="p-4 overflow-y-auto h-[calc(100vh-64px)]">{filterSidebar}</div>
+        <div className="p-4 overflow-y-auto h-[calc(100vh-64px)]">
+          {filterSidebar}
+        </div>
       </aside>
     </>
   );

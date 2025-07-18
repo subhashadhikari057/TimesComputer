@@ -10,6 +10,7 @@ import {
 } from '../services/product.service';
 import { CreateProductSchema, UpdateProductSchema } from '../validations/product.schema';
 import prisma from '../prisma/client';
+import slugify from 'slugify';
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
@@ -62,8 +63,22 @@ export const getProductBySlug = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const data = CreateProductSchema.parse(req.body);
-        const product = await createProductService(data);
+        const slug = slugify(req.body.name, { lower: true, strict: true });
+        const parsedData = CreateProductSchema.parse({
+            ...req.body,
+            price: parseFloat(req.body.price),
+            stock: parseInt(req.body.stock),
+            isPublished: req.body.isPublished === 'true',
+            brandId: req.body.brandId ? parseInt(req.body.brandId) : null,
+            categoryId: req.body.categoryId ? parseInt(req.body.categoryId) : null,
+            featureTagIds: req.body.featureTagIds ? JSON.parse(req.body.featureTagIds) : [],
+            marketingTagIds: req.body.marketingTagIds ? JSON.parse(req.body.marketingTagIds) : [],
+            colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : [],
+            specs: req.body.specs ? JSON.parse(req.body.specs) : null,
+            images: (req.files as Express.Multer.File[]).map(f => f.path),
+        });
+
+        const product = await createProductService({ ...parsedData, slug });
         res.status(201).json(product);
     } catch (error) {
         handleError(res, error);
@@ -75,8 +90,23 @@ export const updateProduct = async (req: Request, res: Response) => {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
 
-        const data = UpdateProductSchema.parse(req.body);
-        const product = await updateProductService(id, data);
+        const parsedData = UpdateProductSchema.parse({
+            ...req.body,
+            price: req.body.price ? parseFloat(req.body.price) : undefined,
+            stock: req.body.stock ? parseInt(req.body.stock) : undefined,
+            isPublished: req.body.isPublished === 'true',
+            brandId: req.body.brandId ? parseInt(req.body.brandId) : undefined,
+            categoryId: req.body.categoryId ? parseInt(req.body.categoryId) : undefined,
+            featureTagIds: req.body.featureTagIds ? JSON.parse(req.body.featureTagIds) : undefined,
+            marketingTagIds: req.body.marketingTagIds ? JSON.parse(req.body.marketingTagIds) : undefined,
+            colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : undefined,
+            specs: req.body.specs ? JSON.parse(req.body.specs) : undefined,
+            images: req.files && Array.isArray(req.files)
+                ? (req.files as Express.Multer.File[]).map(f => f.path)
+                : undefined,
+        });
+
+        const product = await updateProductService(id, parsedData);
         res.status(200).json(product);
     } catch (error) {
         handleError(res, error);
@@ -86,7 +116,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
-        if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
+        if (isNaN(id)) return res.status(404).json({ message: 'Invalid product ID.' });
 
         await deleteProductService(id);
         res.status(204).send();
@@ -102,16 +132,16 @@ const handleError = (res: Response, error: any) => {
     }
 
     if (error.code === 'P2002') {
-        return res.status(409).json({ error: `Duplicate field: ${error.meta?.target}` });
+        return res.status(409).json({ message: `Duplicate field: ${error.meta?.target}` });
     }
 
     if (error.code === 'P2025') {
-        return res.status(404).json({ error: 'Record not found.' });
+        return res.status(404).json({ message: 'Record not found.' });
     }
 
     if (error.code === 'P2003') {
-        return res.status(400).json({ error: 'Foreign key constraint failed.' });
+        return res.status(400).json({ message: 'Foreign key constraint failed.' });
     }
 
-    return res.status(500).json({ error: error.message || 'Unknown server error.' });
+    return res.status(500).json({ message: error.message || 'Unknown server error.' });
 };

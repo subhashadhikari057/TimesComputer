@@ -1,16 +1,11 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import prisma from "../prisma/client";
+// import prisma from "../prisma/client";
+import { Response } from "express";
 
-type UserPayload = {
-    id: string;
-    role: "ADMIN" | "SUPERADMIN";
-};
 
-const ACCESS_SECRET: jwt.Secret = process.env.JWT_SECRET || "access_secret";
-const REFRESH_SECRET: jwt.Secret = process.env.JWT_REFRESH_SECRET || "refresh_secret";
-const ACCESS_EXPIRES = process.env.JWT_EXPIRES_IN || "15m";
-const REFRESH_EXPIRES = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
+const ACCESS_SECRET: jwt.Secret = process.env.ACCESS_SECRET as string;
+const REFRESH_SECRET: jwt.Secret = process.env.REFRESH_SECRET as string;
 
 export const hashPassword = async (plain: string): Promise<string> => {
     return await bcrypt.hash(plain, 10);
@@ -23,29 +18,37 @@ export const comparePassword = async (
     return await bcrypt.compare(plain, hashed);
 };
 
-export const generateAccessToken = (user: UserPayload): string => {
-    return jwt.sign(
-        { userId: user.id, role: user.role },
+export const attachAccessToken = (user: User, res: Response): Response => {
+    const token = jwt.sign(
+        { email: user?.email, role: user?.role },
         ACCESS_SECRET,
-        { expiresIn: ACCESS_EXPIRES }
+        { expiresIn: '1h' }
     );
+    return res.cookie("access_token", token, {
+        path: '/api',
+        httpOnly: true,
+        secure: process.env.SECURE === "true",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60, // 1 hour
+    });
 };
 
-export const generateRefreshToken = (user: UserPayload): string => {
-    return jwt.sign(
-        { userId: user.id, role: user.role },
+export const attachRefreshToken = (user: User, res: Response): Response => {
+    const token = jwt.sign(
+        { email: user?.email, role: user?.role },
         REFRESH_SECRET,
-        { expiresIn: REFRESH_EXPIRES }
+        { expiresIn: '7d' }
     );
+    return res.cookie("refresh_token", token, {
+        path: '/api/auth/refresh',
+        httpOnly: true,
+        secure: process.env.SECURE === "true",
+        sameSite: "strict",
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    });
 };
+
 
 export const verifyRefreshToken = (token: string): jwt.JwtPayload => {
     return jwt.verify(token, REFRESH_SECRET) as jwt.JwtPayload;
-};
-
-
-export const getAdminById = async (id: string) => {
-    return prisma.adminUser.findUnique({
-        where: { id }
-    });
 };

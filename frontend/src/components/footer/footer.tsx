@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
@@ -45,11 +45,11 @@ const Footer: FC = () => {
               <div className="h-[2px] w-1/2 bg-primary mt-1"></div>
             </h3>
             <ul className="space-y-1 mt-2 text-xs">
-              <li><Link href="#">Mac</Link></li>
-              <li><Link href="#">Gaming Laptops</Link></li>
-              <li><Link href="#">Business Laptops</Link></li>
-              <li><Link href="#">Student Laptops</Link></li>
-              <li><Link href="#">Everyday Laptops</Link></li>
+              <li><Link href="#" className="hover:underline hover:text-primary">Mac</Link></li>
+              <li><Link href="#" className="hover:underline hover:text-primary">Gaming Laptops</Link></li>
+              <li><Link href="#" className="hover:underline hover:text-primary">Business Laptops</Link></li>
+              <li><Link href="#" className="hover:underline hover:text-primary">Student Laptops</Link></li>
+              <li><Link href="#" className="hover:underline hover:text-primary">Everyday Laptops</Link></li>
             </ul>
           </div>
 
@@ -62,10 +62,10 @@ const Footer: FC = () => {
                 <div className="h-[2px] w-1/2 bg-primary mt-1"></div>
               </h3>
               <ul className="space-y-1 mt-2 text-xs">
-                <li><Link href="/" className="hover:underline">Home</Link></li>
-                <li><Link href="#" className="hover:underline">About</Link></li>
-                <li><Link href="#" className="hover:underline">Blog</Link></li>
-                <li><Link href="#" className="hover:underline">More</Link></li>
+                <li><Link href="/" className="hover:underline hover:text-primary">Home</Link></li>
+                <li><Link href="#" className="hover:underline hover:text-primary">About</Link></li>
+                <li><Link href="#" className="hover:underline hover:text-primary">Blog</Link></li>
+                <li><Link href="#" className="hover:underline hover:text-primary">More</Link></li>
               </ul>
             </div>
 
@@ -99,8 +99,8 @@ const Footer: FC = () => {
         <div className="mt-2 sm:mt-6 pt-3 sm:pt-4 border-t border-muted-border flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2">
           <p>&copy; {year} Times Computer Automation. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link href="#" className="hover:underline">Privacy Policy</Link>
-            <Link href="#" className="hover:underline">Terms of Service</Link>
+            <Link href="#" className="hover:underline hover:text-primary">Privacy Policy</Link>
+            <Link href="#" className="hover:underline hover:text-primary">Terms of Service</Link>
           </div>
         </div>
       </div>

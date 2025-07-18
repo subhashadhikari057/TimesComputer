@@ -7,14 +7,14 @@ import Link from "next/link";
 
 const TopCategories = () => {
   const categories = [
-    { id: 1, title: "Gaming laptop", image: "/products/Frame 68.png" },
-    { id: 2, title: "Business laptop", image: "/products/Frame 134.png" },
-    { id: 3, title: "Student laptop", image: "/products/Frame 135.png" },
-    { id: 4, title: "Everyday laptop", image: "/products/Frame 136.png" },
-    { id: 5, title: "Mac", image: "/topcat/mac.avif" },
-    { id: 6, title: "Keyboard", image: "/topcat/keyboard.jpeg" },
-    { id: 7, title: "Mouse", image: "/topcat/mouse.png" },
-    { id: 8, title: "Monitor", image: "/topcat/monitor.jpeg" },
+    { id: 1, title: "gaming laptop", displayTitle: "Gaming Laptop", image: "/products/Frame 68.png" },
+    { id: 2, title: "business laptop", displayTitle: "Business Laptop", image: "/products/Frame 134.png" },
+    { id: 3, title: "student laptop", displayTitle: "Student Laptop", image: "/products/Frame 135.png" },
+    { id: 4, title: "everyday laptop", displayTitle: "Everyday Laptop", image: "/products/Frame 136.png" },
+    { id: 5, title: "mac", displayTitle: "Mac", image: "/topcat/mac.avif" },
+    { id: 6, title: "keyboard", displayTitle: "Keyboard", image: "/topcat/keyboard.jpeg" },
+    { id: 7, title: "mouse", displayTitle: "Mouse", image: "/topcat/mouse.png" },
+    { id: 8, title: "monitor", displayTitle: "Monitor", image: "/topcat/monitor.jpeg" },
   ];
 
   const [showAll, setShowAll] = useState(false);
@@ -36,11 +36,11 @@ const TopCategories = () => {
         {visibleCategories.map((category) => (
           <Link
           key={category.id}
-          href={`/category/${slugify(category.title)}`}
+          href={`/category/${encodeURIComponent(category.title)}`}
           >
           <CategoryCard
             image={category.image}
-            title={category.title}
+            title={category.displayTitle}
             onClick={() => { }}
             className="min-h-[60px] md:min-h-[80px]"
           />
