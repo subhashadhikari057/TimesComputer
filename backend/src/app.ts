@@ -18,6 +18,7 @@ import inquiryRoutes from "./routes/inquiry.route";
 import categoryRoutes from "./routes/category.route";
 import featureTagRoutes from "./routes/featureTag.route";
 import marketingTagRoutes from "./routes/marketingTags.route";
+
 import searchRoutes from "./routes/search.route";
 import initController from './routes/init.route'
 
@@ -65,7 +66,6 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/feature-tag", featureTagRoutes);
 app.use("/api/marketing-tag", marketingTagRoutes);
 app.use("/api/search", searchRoutes);
-
 
 // ✅ Health check
 app.get('/api/health', (_req, res) => {
