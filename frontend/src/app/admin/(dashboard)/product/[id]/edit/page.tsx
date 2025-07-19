@@ -25,6 +25,8 @@ interface FormData {
   brandId: number | null;
   categoryId: number | null;
   colorIds: number[];
+  featureTagIds: number[];
+  marketingTagIds: number[];
   specs: { key: string; value: string }[];
   images: { file: File; preview: string }[];
 }
@@ -39,6 +41,8 @@ const INITIAL_FORM_DATA: FormData = {
   brandId: null,
   categoryId: null,
   colorIds: [],
+  featureTagIds: [],
+  marketingTagIds: [],
   specs: [{ key: "", value: "" }],
   images: [],
 };
@@ -60,7 +64,9 @@ const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
     brandId: data.brandId || null,
     categoryId: data.categoryId || null,
     colorIds: data.colorIds || [],
-    specs: data.specs ? Object.entries(data.specs).map(([key, value]) => ({ key, value })) : [{ key: "", value: "" }],
+    featureTagIds: data.featureTagIds || [],
+    marketingTagIds: data.marketingTagIds || [],
+    specs: data.specs ? Object.entries(data.specs).map(([key, value]) => ({ key, value: String(value) })) : [{ key: "", value: "" }],
     images: (data.images || []).map((url: string) => ({ file: new File([], url), preview: url })),
   };
 };
@@ -140,6 +146,7 @@ export default function EditProduct() {
         }
         return acc;
       }, {} as Record<string, string>);
+      
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("description", form.description);
@@ -147,11 +154,17 @@ export default function EditProduct() {
       formData.append("stock", String(form.stock));
       formData.append("isPublished", String(form.isPublished));
       formData.append("brochure", form.brochure);
+      
       if (form.brandId) formData.append("brandId", String(form.brandId));
       if (form.categoryId) formData.append("categoryId", String(form.categoryId));
+      
       form.colorIds.forEach((id) => formData.append("colorIds", String(id)));
+      form.featureTagIds.forEach((id) => formData.append("featureTagIds", String(id)));
+      form.marketingTagIds.forEach((id) => formData.append("marketingTagIds", String(id)));
+      
       form.images.forEach((img) => formData.append("images", img.file));
       formData.append("specs", JSON.stringify(specsObject));
+      
       await updateProduct(Number(id), formData);
       toast.success("Product updated successfully!");
       router.push("/admin/product/all-products");
@@ -330,10 +343,10 @@ export default function EditProduct() {
                 </div>
               </ComponentCard>
 
-              {/* Brand & Category */}
+              {/* Brand, Category, Colors, and Tags */}
               <ComponentCard
                 title="Product Attributes"
-                desc="Update brand, category, and colors"
+                desc="Update brand, category, colors, and tags"
               >
                 <AttributeSelector
                   selectedBrandId={form.brandId}
@@ -342,6 +355,10 @@ export default function EditProduct() {
                   onCategoryChange={(categoryId) => setForm(prev => ({ ...prev, categoryId }))}
                   selectedColorIds={form.colorIds}
                   onColorsChange={(colorIds) => setForm(prev => ({ ...prev, colorIds }))}
+                  selectedFeatureTagIds={form.featureTagIds}
+                  onFeatureTagsChange={(featureTagIds) => setForm(prev => ({ ...prev, featureTagIds }))}
+                  selectedMarketingTagIds={form.marketingTagIds}
+                  onMarketingTagsChange={(marketingTagIds) => setForm(prev => ({ ...prev, marketingTagIds }))}
                 />
               </ComponentCard>
 
