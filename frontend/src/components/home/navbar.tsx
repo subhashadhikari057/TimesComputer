@@ -6,57 +6,45 @@ import Dropdown from "../form/form-elements/dropdown";
 import { Input } from "../ui/input";
 import { Twitter, Facebook, Search } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
 import { laptopCategories, navLinks } from "@/lib/dummyData";
+import { Product } from "../../../types/product";
+import { dummyProducts } from "@/lib/dummyproduct";
 
 export default function Navbar() {
-  const searchParams = useSearchParams()
-  const pathname = usePathname()
-  const router = useRouter()
-  
-  // Get the current category from the URL
-  const getCurrentCategory = () => {
-    // On homepage, return undefined to show placeholder
-    if (pathname === '/') {
-      return undefined;
-    }
-    // On products page, return all-products
-    if (pathname === '/products') {
-      return 'all-products';
-    }
-    // On category pages, return the category
-    if (pathname.startsWith('/category/')) {
-      const categoryFromUrl = decodeURIComponent(pathname.split('/').pop() || '');
-      // Find matching category in our options
-      const matchingCategory = laptopCategories.find(cat => cat.value === categoryFromUrl);
-      return matchingCategory ? matchingCategory.value : undefined;
-    }
-    // On brand pages, return undefined to show placeholder
-    if (pathname.startsWith('/brand/')) {
-      return undefined;
-    }
-    // Default to undefined to show placeholder
-    return undefined;
-  };
-  
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredResults, setFilteredResults] = useState<typeof dummyProducts>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+  const getCurrentCategory = () => {
+    if (pathname === "/") return undefined;
+    if (pathname === "/products") return "products";
+    if (pathname.startsWith("/category/")) {
+      const categoryFromUrl = decodeURIComponent(pathname.split("/").pop() || "");
+      const matchingCategory = laptopCategories.find((cat) => cat.value === categoryFromUrl);
+      return matchingCategory ? matchingCategory.value : undefined;
+    }
+    return undefined;
+  };
+
   const currentCategory = getCurrentCategory();
 
   const handleCategoryChange = (value: string | undefined) => {
     if (value === undefined) {
-      // When cleared, navigate to home page
       router.push("/");
       return;
     }
-    
-    if (value === "all-products") {
-      // For "All Products", go to products page
+
+    if (value === "products" || value === "all-products") {
       router.push("/products");
     } else {
-      // For specific categories, go to category page
       router.push(`/category/${value}`);
     }
   };
@@ -64,6 +52,23 @@ export default function Navbar() {
   useEffect(() => {
     document.body.style.overflow = isSidebarOpen ? "hidden" : "auto";
   }, [isSidebarOpen]);
+
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredResults([]);
+    } else {
+      const filtered = dummyProducts.filter((dummyproduct: Product) =>
+        (dummyproduct.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredResults(filtered);
+    }
+  }, [searchQuery]);
+
+  const handleResultClick = (slug: string) => {
+    router.push(`/products/${slug}`);
+    setSearchQuery("");
+    setFilteredResults([]);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
@@ -113,12 +118,7 @@ export default function Navbar() {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         </div>
@@ -133,7 +133,7 @@ export default function Navbar() {
 
       {/* Category + Search + Icons */}
       <section className="bg-primary h-14">
-        <div className="w-full max-w-screen-xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-4">
+        <div className="w-full max-w-screen-xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-4 relative">
           {/* Dropdown */}
           <div className="w-[160px] md:w-[180px] flex-shrink-0">
             <Dropdown
@@ -142,15 +142,33 @@ export default function Navbar() {
               value={currentCategory}
               onChange={handleCategoryChange}
               allowDeselect={true}
+              enableIcon={true}
             />
           </div>
 
-          {/* Centered Search */}
-          <div className="hidden md:flex justify-center flex-1">
-            <Input
-              className="w-full max-w-[450px] h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
-              placeholder="Search"
-            />
+          {/* Desktop Search */}
+          <div className="hidden md:flex justify-center flex-1 relative">
+            <div className="relative w-full max-w-[450px]">
+              <Input
+                className="w-full h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {filteredResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-50 p-2 max-h-60 overflow-y-auto">
+                  {filteredResults.map((item: Product) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleResultClick(item.slug || '')}
+                      className="block w-full text-left px-4 py-2 hover:bg-primary-light hover:text-white rounded-md text-sm"
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Icons */}
@@ -164,14 +182,14 @@ export default function Navbar() {
               <Search className="w-6 h-6" />
             </button>
 
-            {/* Show all icons on desktop */}
+            {/* Desktop Icons */}
             <div className="hidden md:flex items-center gap-6">
               <Twitter className="w-6 h-6" />
               <Facebook className="w-6 h-6" />
               <FaWhatsapp className="w-6 h-6" />
             </div>
 
-            {/* Only Twitter on mobile */}
+            {/* Mobile Icons */}
             <div className="md:hidden">
               <FaWhatsapp className="w-6 h-6" />
             </div>
@@ -180,11 +198,28 @@ export default function Navbar() {
           {/* Mobile Search Input */}
           {showMobileSearch && (
             <div className="md:hidden w-full">
-              <Input
-                className="w-full h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
-                placeholder="Search"
-                autoFocus
-              />
+              <div className="relative">
+                <Input
+                  className="w-full h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
+                  placeholder="Search"
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {filteredResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-50 p-2 max-h-60 overflow-y-auto">
+                    {filteredResults.map((item: Product) => (
+                      <button
+                        key={item.id}
+                        onClick={() => handleResultClick(item.slug || '')}
+                        className="block w-full text-left px-4 py-2 hover:bg-primary-light hover:text-white rounded-md text-sm"
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

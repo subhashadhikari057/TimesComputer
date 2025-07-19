@@ -1,4 +1,4 @@
-  "use client";
+"use client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
@@ -11,8 +11,33 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 
+import { useRouter,usePathname } from "next/navigation";
+import { laptopCategories } from "@/lib/dummyData";
+
 const Footer: FC = () => {
   const year = new Date().getFullYear();
+  const router = useRouter();
+
+  const getCurrentCategory = () => {
+    const pathname = usePathname();
+    if (pathname === '/') {
+      return undefined;
+    }
+    if (pathname === '/products') {
+      return 'products';
+    }
+    if (pathname.startsWith('/category/')) {
+      const categoryFromUrl = decodeURIComponent(pathname.split('/').pop() || '');
+      const matchingCategory = laptopCategories.find(cat => cat.value === categoryFromUrl);
+      return matchingCategory ? matchingCategory.value : undefined;
+    }
+    if (pathname.startsWith('/brand/')) {
+      return undefined;
+    }
+    return undefined;
+  };
+
+  const currentCategory = getCurrentCategory();
 
   return (
     <footer className="bg-muted-background w-full py-6 text-muted-foreground2 font-medium text-sm">
@@ -27,7 +52,7 @@ const Footer: FC = () => {
               alt="Logo"
               className="mb-2"
             />
-            <p className="text-xs leading-relaxed">
+            <p className="text-sm leading-relaxed">
               Built on a simple idea — buying a laptop shouldn&apos;t be complicated.
             </p>
 
@@ -44,12 +69,17 @@ const Footer: FC = () => {
               Top Category
               <div className="h-[2px] w-1/2 bg-primary mt-1"></div>
             </h3>
-            <ul className="space-y-1 mt-2 text-xs">
-              <li><Link href="#" className="hover:underline hover:text-primary">Mac</Link></li>
-              <li><Link href="#" className="hover:underline hover:text-primary">Gaming Laptops</Link></li>
-              <li><Link href="#" className="hover:underline hover:text-primary">Business Laptops</Link></li>
-              <li><Link href="#" className="hover:underline hover:text-primary">Student Laptops</Link></li>
-              <li><Link href="#" className="hover:underline hover:text-primary">Everyday Laptops</Link></li>
+            <ul className="space-y-1 mt-2 text-sm">
+              {laptopCategories.map((category) => (
+                <li key={category.value}>
+                  <Link
+                    href={category.value === 'products' ? '/products' : `/category/${category.value}`}
+                    className="hover:underline hover:text-primary"
+                  >
+                    {category.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -61,11 +91,11 @@ const Footer: FC = () => {
                 Quick Links
                 <div className="h-[2px] w-1/2 bg-primary mt-1"></div>
               </h3>
-              <ul className="space-y-1 mt-2 text-xs">
+              <ul className="space-y-1 mt-2 text-sm">
                 <li><Link href="/" className="hover:underline hover:text-primary">Home</Link></li>
-                <li><Link href="#" className="hover:underline hover:text-primary">About</Link></li>
-                <li><Link href="#" className="hover:underline hover:text-primary">Blog</Link></li>
-                <li><Link href="#" className="hover:underline hover:text-primary">More</Link></li>
+                <li><Link href="/products" className="hover:underline hover:text-primary">Products</Link></li>
+                <li><Link href="/blogs" className="hover:underline hover:text-primary">Blog</Link></li>
+                <li><Link href="/about" className="hover:underline hover:text-primary">About</Link></li>
               </ul>
             </div>
 
@@ -75,7 +105,7 @@ const Footer: FC = () => {
                 Contact
                 <div className="h-[2px] w-1/2 bg-primary mt-1"></div>
               </h3>
-              <ul className="space-y-2 mt-2 text-xs">
+              <ul className="space-y-2 mt-2 text-sm">
                 <li className="flex items-center gap-2"><FaPhone /> 9808119904</li>
                 <li className="flex items-center gap-2"><FaEnvelope /> admin@gmail.com</li>
                 <li className="flex items-center gap-2"><FaMapMarkerAlt /> Kathmandu, Nepal</li>
@@ -96,7 +126,7 @@ const Footer: FC = () => {
         </div>
 
         {/* Bottom Footer - Tight spacing on mobile */}
-        <div className="mt-2 sm:mt-6 pt-3 sm:pt-4 border-t border-muted-border flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2">
+        <div className="mt-2 sm:mt-6 pt-3 sm:pt-4 border-t border-muted-border flex flex-col sm:flex-row items-center justify-between text-sm text-muted-foreground gap-2">
           <p>&copy; {year} Times Computer Automation. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="#" className="hover:underline hover:text-primary">Privacy Policy</Link>

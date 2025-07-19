@@ -2,21 +2,23 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 const brands = [
-  { name: 'Dell', logo: 'DELL', bgColor: 'bg-blue-500', textColor: 'text-white' },
-  { name: 'Apple', logo: '🍎', bgColor: 'bg-gray-400', textColor: 'text-white' },
-  { name: 'Lenovo', logo: 'lenovo', bgColor: 'bg-white', textColor: 'text-red-500' },
-  { name: 'ASUS', logo: 'ASUS', bgColor: 'bg-black', textColor: 'text-white' },
-  { name: 'HP', logo: 'hp', bgColor: 'bg-blue-600', textColor: 'text-white' },
-  { name: 'Acer', logo: 'acer', bgColor: 'bg-green-500', textColor: 'text-white' },
+  { name: 'Dell', imgSrc: '/brands/Frame 162.png', bgColor: 'bg-blue-500', textColor: 'text-white' },
+  { name: 'Apple', imgSrc: '/brands/Frame 163.png', bgColor: 'bg-gray-400', textColor: 'text-white' },
+  { name: 'Lenovo', imgSrc: '/brands/Frame 164.png', bgColor: 'bg-white', textColor: 'text-red-500' },
+  { name: 'ASUS', imgSrc: '/brands/Frame 165.png', bgColor: 'bg-black', textColor: 'text-white' },
+  { name: 'HP', imgSrc: '/brands/Frame 166.png', bgColor: 'bg-blue-600', textColor: 'text-white' },
+  { name: 'Acer', imgSrc: '/brands/Frame 167.png', bgColor: 'bg-green-500', textColor: 'text-white' },
   {
     name: 'Microsoft',
-    logo: '⊞',
+    imgSrc: '/brands/Frame 168.png',
     bgColor: 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-blue-500',
     textColor: 'text-white',
   },
 ];
+
 
 type BrandCarouselProps = {
   title?: string;
@@ -87,7 +89,7 @@ export default function BrandCarousel({
   const handleMouseLeave = () => setIsPaused(false);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 font-sans">
+    <div className="max-w-6xl mx-auto px-2 py-6 font-sans">
       <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
         {title}
       </h2>
@@ -102,18 +104,25 @@ export default function BrandCarousel({
           }}
         >
           {[...brands, ...brands].map((brand, index) => (
-            <Link
-              key={`${brand.name}-${index}`}
-              href={`/brand/${brand.name.toLowerCase()}`}
-              ref={index === 0 ? cardRef : null}
-              className={`flex-shrink-0 w-36 h-20 sm:w-48 sm:h-24 rounded-xl ${brand.bgColor} ${brand.textColor} flex items-center justify-center cursor-pointer hover:scale-105 transition-transform duration-300 shadow-md`}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              aria-label={`Shop by brand ${brand.name}`}
-            >
-              <span className="text-lg sm:text-xl font-bold">{brand.logo}</span>
-            </Link>
-          ))}
+  <Link
+    key={`${brand.name}-${index}`}
+    href={`/brand/${brand.name.toLowerCase()}`}
+    ref={index === 0 ? cardRef : null}
+    className="relative flex-shrink-0 w-36 h-20 sm:w-48 sm:h-24 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
+    onMouseEnter={handleMouseEnter}
+    onMouseLeave={handleMouseLeave}
+    aria-label={`Shop by brand ${brand.name}`}
+  >
+    <Image
+      src={brand.imgSrc}
+      alt={brand.name}
+      fill
+      style={{ objectFit: 'cover' }}
+      priority
+      sizes="(max-width: 640px) 12rem, 16rem" // for responsiveness
+    />
+  </Link>
+))}
         </div>
       </div>
     </div>
