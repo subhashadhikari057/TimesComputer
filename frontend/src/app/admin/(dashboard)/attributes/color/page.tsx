@@ -286,7 +286,7 @@ export default function ColorManagementPage() {
           </div>
         </div>
 
-        {loading ? <div className="p-6">Loading colors...</div> : 
+        {loading ? <div className="p-6 text-center">Loading colors...</div> : 
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}

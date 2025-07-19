@@ -5,6 +5,7 @@ import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import { toast } from "sonner";
 import { createColor, updateColor } from "@/api/color";
+import { capitalizeFirstWord } from "@/components/common/helper_function";
 
 interface ColorFormData {
   id?: number;
@@ -26,6 +27,15 @@ interface ColorPopupProps {
 const INITIAL_FORM_DATA: ColorFormData = {
   name: "",
   hexCode: "#000000",
+};
+
+// Helper function to capitalize first letter of each word
+const capitalizeWords = (str: string) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 export default function ColorPopup({
@@ -101,6 +111,12 @@ export default function ColorPopup({
     setForm(prev => ({ ...prev, hexCode: validatedHex }));
   };
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const capitalizedValue = capitalizeFirstWord(value);
+        setForm((prev) => ({ ...prev, name: capitalizedValue }));
+      };
+
   const handleSave = async () => {
     setShowValidation(true);
 
@@ -128,12 +144,16 @@ export default function ColorPopup({
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message ||
-        `Failed to ${isEditMode ? "update" : "create"} color`;
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+
+       // Handle specific duplicate errors
+    if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
+      toast.error("Color name already exists. Please choose a different name.");
+    } else {
+      toast.error(`Failed to ${isEditMode ? "update" : "create"} color`);
+    }
 
       setError(errorMessage);
-      toast.error(errorMessage);
-      console.error(`Error ${isEditMode ? "updating" : "creating"} color:`, err);
     } finally {
       setLoading(false);
     }
@@ -156,18 +176,13 @@ export default function ColorPopup({
       maxWidth="md"
     >
       <div className="space-y-6">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
 
         {/* Name Field */}
         <DefaultInput
           label="Color Name"
           name="name"
           value={form.name}
-          onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+          onChange={handleNameChange}
           placeholder="Enter color name (e.g., Ocean Blue, Forest Green)"
           required
         />

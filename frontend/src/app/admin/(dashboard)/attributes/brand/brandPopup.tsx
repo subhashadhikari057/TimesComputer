@@ -7,6 +7,7 @@ import PhotoUpload from "@/components/admin/product/photoUpload";
 
 import { toast } from "sonner";
 import { createBrand, updateBrand } from "@/api/brand";
+import { capitalizeFirstWord } from "@/components/common/helper_function";
 
 interface BrandFormData {
   id?: number;
@@ -87,7 +88,7 @@ export default function BrandPopup({
       setError(null);
 
       const formData = new FormData();
-      formData.append("name", form.name);
+       formData.append("name", form.name);
       if (form.image) formData.append("image", form.image);
 
       if (isEditMode) {
@@ -104,20 +105,30 @@ export default function BrandPopup({
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        `Failed to ${isEditMode ? "update" : "create"} brand`;
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message;
+
+      // Handle specific duplicate errors
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("duplicate")
+      ) {
+        toast.error(
+          "Brand name already exists. Please choose a different name."
+        );
+      } else {
+        toast.error(`Failed to ${isEditMode ? "update" : "create"} brand`);
+      }
 
       setError(errorMessage);
-      toast.error(errorMessage);
-      console.error(
-        `Error ${isEditMode ? "updating" : "creating"} brand:`,
-        err
-      );
     } finally {
       setLoading(false);
     }
+  };
+
+   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const capitalizedValue = capitalizeFirstWord(value);
+    setForm((prev) => ({ ...prev, name: capitalizedValue }));
   };
 
   const handleImageUpload = (files: File[], imageType: "image") => {
@@ -191,26 +202,19 @@ export default function BrandPopup({
       maxWidth="md"
     >
       <div className="space-y-6">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
 
         {/* Name Field */}
         <DefaultInput
           label="Brand Name"
           name="name"
           value={form.name}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, name: e.target.value }))
-          }
+          onChange={handleNameChange}
           placeholder="Enter brand name (e.g., Apple, Samsung)"
           required
         />
 
         {/* Image Upload */}
-        <div className="grid gap-4 grid-cols-2">
+        <div className="grid gap-4 grid-cols-1">
           <div>
             <PhotoUpload
               label="Brand Image"
@@ -225,13 +229,20 @@ export default function BrandPopup({
             />
           </div>
         </div>
-
-        {/* Validation Message */}
+                   {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
-          <p className="text-sm text-red-600">
-            Please fill in all required fields: name and image.
-          </p>
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-700 font-medium">
+              Required fields missing:
+            </p>
+            <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
+              {form.name.trim() === "" && <li>Brand name</li>}
+              {!form.image && form.imagePreview === "" && <li>Brand image</li>}
+            </ul>
+          </div>
         )}
+
+       
       </div>
     </AddDetailsPopup>
   );

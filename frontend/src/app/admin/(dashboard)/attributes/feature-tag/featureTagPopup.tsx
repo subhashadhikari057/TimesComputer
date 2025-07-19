@@ -5,6 +5,7 @@ import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import { toast } from "sonner";
 import { createFeatureTag, updateFeatureTag } from "@/api/featureTag";
+import { capitalizeFirstWord } from "@/components/common/helper_function";
 
 
 interface FeatureTagFormData {
@@ -24,7 +25,15 @@ interface FeatureTagPopupProps {
 
 const INITIAL_FORM_DATA: FeatureTagFormData = {
   name: "",
- 
+};
+
+// Helper function to capitalize first letter of each word
+const capitalizeWords = (str: string) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 export default function FeatureTagPopup({
@@ -71,6 +80,12 @@ export default function FeatureTagPopup({
       form.name.trim() !== "");
   };
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const capitalizedValue = capitalizeFirstWord(value);
+        setForm((prev) => ({ ...prev, name: capitalizedValue }));
+      };
+
   const handleSave = async () => {
     setShowValidation(true);
     if (!isFormValid()) return;
@@ -79,14 +94,11 @@ export default function FeatureTagPopup({
       setLoading(true);
       setError(null);
 
-      const formData = new FormData();
-      formData.append("name", form.name);
-
       if (isEditMode) {
-        await updateFeatureTag(form.id!, form);
+        await updateFeatureTag(form.id!, {name: form.name});
         toast.success("FeatureTag updated successfully!");
       } else {
-        await createFeatureTag(form);
+        await createFeatureTag({name: form.name});
         toast.success("FeatureTag created successfully!");
       }
       if (onSuccess) {
@@ -96,13 +108,20 @@ export default function FeatureTagPopup({
       handleCancel();
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        `Failed to ${isEditMode ? "update" : "create"} Feature Tag`;
+        err.response?.data?.message || err.response?.data?.error || err.message;
+
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("duplicate")
+      ) {
+        toast.error(
+          "Tag Name already exists. Please choose a different name."
+        );
+      } else {
+        toast.error(`Failed to ${isEditMode ? "update" : "create"} tag`);
+      }
+
       setError(errorMessage);
-      toast.error(
-        `Error ${isEditMode ? "updating" : "creating"} featureTag: ${errorMessage}`
-      );
     } finally {
       setLoading(false);
     }
@@ -128,7 +147,7 @@ export default function FeatureTagPopup({
             : "Creating..."
           : isEditMode
             ? "Update Feature Tag"
-            : "Add FeatureTag"
+            : "Add Feature Tag"
       }
       isLoading={loading}
       maxWidth="md"
@@ -144,9 +163,7 @@ export default function FeatureTagPopup({
           label="Feature Tag"
           name="name"
           value={form.name}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, name: e.target.value }))
-          }
+          onChange={handleNameChange}
           placeholder="Enter Feature Tag name (e.g., Electronics, Clothing)"
           required
         />
@@ -159,7 +176,7 @@ export default function FeatureTagPopup({
               Required fields missing:
             </p>
             <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
-              {form.name.trim() === "" && <li>FeatureTag name</li>}
+              {form.name.trim() === "" && <li>Feature Tag name</li>}
             </ul>
           </div>
         )}

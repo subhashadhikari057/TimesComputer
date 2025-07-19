@@ -237,14 +237,14 @@ export default function FeatureTagPage() {
                   Export
                 </button>
 
-                <div className="flex-1">
+                {/* <div className="flex-1">
                   <FilterComponent
                     filters={filters}
                     filterConfigs={filterConfigs}
                     onFilterChange={handleFilterChange}
                     onResetFilters={handleResetFilters}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

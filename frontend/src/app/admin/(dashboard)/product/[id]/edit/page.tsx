@@ -52,6 +52,7 @@ const INITIAL_FORM_DATA: FormData = {
 const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
   // Use real API call
   const data = await getProductById(Number(id));
+
   // Map API response to FormData shape if needed
   return {
     id: data.id,
@@ -63,11 +64,36 @@ const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
     brochure: data.brochure || "",
     brandId: data.brandId || null,
     categoryId: data.categoryId || null,
-    colorIds: data.colorIds || [],
-    featureTagIds: data.featureTagIds || [],
-    marketingTagIds: data.marketingTagIds || [],
-    specs: data.specs ? Object.entries(data.specs).map(([key, value]) => ({ key, value: String(value) })) : [{ key: "", value: "" }],
-    images: (data.images || []).map((url: string) => ({ file: new File([], url), preview: url })),
+    colorIds:
+      data.colors?.map((colorRelation: any) => colorRelation.color.id) || [],
+    featureTagIds:
+      data.featureTags?.map((tagRelation: any) => tagRelation.tag.id) || [],
+    marketingTagIds:
+      data.marketingTags?.map((tagRelation: any) => tagRelation.tag.id) || [],
+    specs: data.specs
+      ? Object.entries(data.specs).map(([key, value]) => ({
+          key,
+          value: String(value),
+        }))
+      : [{ key: "", value: "" }],
+    images: (data.images || []).map((imagePath: string) => {
+      const fileName = imagePath.split("/").pop() || "image.jpg";
+      const file = new File([""], fileName, { type: "image/jpeg" });
+
+      // Convert relative path to absolute URL
+      // Remove /api from the base URL for static files
+      const apiUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+      const baseUrl = apiUrl.replace("/api", ""); // Remove /api for static files
+      const imageUrl = imagePath.startsWith("http")
+        ? imagePath // Already absolute URL
+        : `${baseUrl}/${imagePath}`; // Convert relative to absolute
+
+      return {
+        file: file,
+        preview: imageUrl,
+      };
+    }),
   };
 };
 
@@ -86,7 +112,6 @@ export default function EditProduct() {
         const data = await fetchProduct(id);
         setForm(data);
       } catch (err) {
-        console.error("Error fetching product:", err);
         setError("Failed to load product data");
         toast.error("Failed to load product data");
       } finally {
@@ -105,7 +130,12 @@ export default function EditProduct() {
     const { name, value, type, checked } = e.target as HTMLInputElement;
     setForm((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : (type === "number" ? Number(value) : value),
+      [name]:
+        type === "checkbox"
+          ? checked
+          : type === "number"
+          ? Number(value)
+          : value,
     }));
   };
 
@@ -118,7 +148,7 @@ export default function EditProduct() {
         const preview = e.target?.result as string;
         setForm((prev) => ({
           ...prev,
-          images: [...prev.images, { file, preview }]
+          images: [...prev.images, { file, preview }],
         }));
       };
       reader.readAsDataURL(file);
@@ -128,7 +158,7 @@ export default function EditProduct() {
   const removeImage = (index: number) => {
     setForm((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter((_, i) => i !== index),
     }));
   };
 
@@ -146,7 +176,7 @@ export default function EditProduct() {
         }
         return acc;
       }, {} as Record<string, string>);
-      
+
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("description", form.description);
@@ -154,17 +184,18 @@ export default function EditProduct() {
       formData.append("stock", String(form.stock));
       formData.append("isPublished", String(form.isPublished));
       formData.append("brochure", form.brochure);
-      
+
       if (form.brandId) formData.append("brandId", String(form.brandId));
-      if (form.categoryId) formData.append("categoryId", String(form.categoryId));
-      
-      form.colorIds.forEach((id) => formData.append("colorIds", String(id)));
-      form.featureTagIds.forEach((id) => formData.append("featureTagIds", String(id)));
-      form.marketingTagIds.forEach((id) => formData.append("marketingTagIds", String(id)));
-      
+      if (form.categoryId)
+        formData.append("categoryId", String(form.categoryId));
+
+      formData.append("colorIds", JSON.stringify(form.colorIds));
+      formData.append("featureTagIds", JSON.stringify(form.featureTagIds));
+      formData.append("marketingTagIds", JSON.stringify(form.marketingTagIds));
+
       form.images.forEach((img) => formData.append("images", img.file));
       formData.append("specs", JSON.stringify(specsObject));
-      
+
       await updateProduct(Number(id), formData);
       toast.success("Product updated successfully!");
       router.push("/admin/product/all-products");
@@ -283,9 +314,9 @@ export default function EditProduct() {
               >
                 <PhotoUpload
                   label="Product Images"
-                  images={form.images.map(img => img.file)}
+                  images={form.images.map((img) => img.file)}
                   required={false}
-                  imagePreviews={form.images.map(img => img.preview)}
+                  imagePreviews={form.images.map((img) => img.preview)}
                   onImageUpload={handleImageUpload}
                   onRemoveImage={removeImage}
                   maxImages={10}
@@ -298,7 +329,9 @@ export default function EditProduct() {
               {/* Specifications */}
               <Specifications
                 specifications={form.specs}
-                onSpecificationsChange={(specs) => setForm(prev => ({ ...prev, specs }))}
+                onSpecificationsChange={(specs) =>
+                  setForm((prev) => ({ ...prev, specs }))
+                }
               />
             </div>
 
@@ -351,14 +384,24 @@ export default function EditProduct() {
                 <AttributeSelector
                   selectedBrandId={form.brandId}
                   selectedCategoryId={form.categoryId}
-                  onBrandChange={(brandId) => setForm(prev => ({ ...prev, brandId }))}
-                  onCategoryChange={(categoryId) => setForm(prev => ({ ...prev, categoryId }))}
+                  onBrandChange={(brandId) =>
+                    setForm((prev) => ({ ...prev, brandId }))
+                  }
+                  onCategoryChange={(categoryId) =>
+                    setForm((prev) => ({ ...prev, categoryId }))
+                  }
                   selectedColorIds={form.colorIds}
-                  onColorsChange={(colorIds) => setForm(prev => ({ ...prev, colorIds }))}
+                  onColorsChange={(colorIds) =>
+                    setForm((prev) => ({ ...prev, colorIds }))
+                  }
                   selectedFeatureTagIds={form.featureTagIds}
-                  onFeatureTagsChange={(featureTagIds) => setForm(prev => ({ ...prev, featureTagIds }))}
+                  onFeatureTagsChange={(featureTagIds) =>
+                    setForm((prev) => ({ ...prev, featureTagIds }))
+                  }
                   selectedMarketingTagIds={form.marketingTagIds}
-                  onMarketingTagsChange={(marketingTagIds) => setForm(prev => ({ ...prev, marketingTagIds }))}
+                  onMarketingTagsChange={(marketingTagIds) =>
+                    setForm((prev) => ({ ...prev, marketingTagIds }))
+                  }
                 />
               </ComponentCard>
 
@@ -419,14 +462,9 @@ export default function EditProduct() {
       </div>
 
       {/* Floating Action Card */}
-      <div className="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50 sm:w-full sm:max-w-md md:max-w-lg lg:max-w-xl">
+      <div className="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50 sm:w-full sm:max-w-sm ">
         <div className="bg-white rounded-lg shadow-2xl border border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center justify-between space-x-4">
-            {/* Last saved info - hidden on mobile */}
-            <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500 flex-shrink-0">
-              <span>Last saved: Never</span>
-            </div>
-
+          <div className="flex items-center justify-center space-x-4">
             {/* Action buttons */}
             <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
               <DefaultButton

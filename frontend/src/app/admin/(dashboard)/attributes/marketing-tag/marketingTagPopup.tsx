@@ -5,6 +5,7 @@ import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import { toast } from "sonner";
 import { createMarketingTag, updateMarketingTag } from "@/api/marketingTag";
+import { capitalizeFirstWord } from "@/components/common/helper_function";
 
 
 interface MarketingTagFormData {
@@ -24,7 +25,15 @@ interface MarketingTagPopupProps {
 
 const INITIAL_FORM_DATA: MarketingTagFormData = {
   name: "",
- 
+};
+
+// Helper function to capitalize first letter of each word
+const capitalizeWords = (str: string) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 export default function MarketingTagPopup({
@@ -71,6 +80,12 @@ export default function MarketingTagPopup({
       form.name.trim() !== "");
   };
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const capitalizedValue = capitalizeFirstWord(value);
+        setForm((prev) => ({ ...prev, name: capitalizedValue }));
+      };
+
   const handleSave = async () => {
     setShowValidation(true);
     if (!isFormValid()) return;
@@ -79,15 +94,12 @@ export default function MarketingTagPopup({
       setLoading(true);
       setError(null);
 
-      const formData = new FormData();
-      formData.append("name", form.name);
-
       if (isEditMode) {
-        await updateMarketingTag(form.id!, form);
-        toast.success("MarketingTag updated successfully!");
+        await updateMarketingTag(form.id!, {name: form.name});
+        toast.success("Marketing Tag updated successfully!");
       } else {
-        await createMarketingTag(form);
-        toast.success("MarketingTag created successfully!");
+        await createMarketingTag({name: form.name});
+        toast.success("Marketing Tag created successfully!");
       }
       if (onSuccess) {
         onSuccess();
@@ -96,13 +108,20 @@ export default function MarketingTagPopup({
       handleCancel();
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        `Failed to ${isEditMode ? "update" : "create"} Marketing Tag`;
+        err.response?.data?.message || err.response?.data?.error || err.message;
+
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("duplicate")
+      ) {
+        toast.error(
+          "Tag Name already exists. Please choose a different name."
+        );
+      } else {
+        toast.error(`Failed to ${isEditMode ? "update" : "create"} tag`);
+      }
+
       setError(errorMessage);
-      toast.error(
-        `Error ${isEditMode ? "updating" : "creating"} marketingTag: ${errorMessage}`
-      );
     } finally {
       setLoading(false);
     }
@@ -134,19 +153,12 @@ export default function MarketingTagPopup({
       maxWidth="md"
     >
       <div className="space-y-6">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
 
         <DefaultInput
           label="Marketing Tag"
           name="name"
           value={form.name}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, name: e.target.value }))
-          }
+          onChange={handleNameChange}
           placeholder="Enter Marketing Tag name (e.g., Electronics, Clothing)"
           required
         />
@@ -159,7 +171,7 @@ export default function MarketingTagPopup({
               Required fields missing:
             </p>
             <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
-              {form.name.trim() === "" && <li>MarketingTag name</li>}
+              {form.name.trim() === "" && <li>Marketing Tag name</li>}
             </ul>
           </div>
         )}
