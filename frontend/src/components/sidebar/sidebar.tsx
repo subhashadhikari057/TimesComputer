@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Filters } from '../../../types/filtewr';
 import { PriceFilterSlider } from '../ui/pricefilterslider';
 import { products } from '@/lib/index';
 import {
@@ -95,11 +96,30 @@ const FILTER_CONFIG: Record<
 
 const DEFAULT_PRICE_RANGE = [25000, 500000];
 
-export default function FilterSidebar({ onApplyFilters, category, brandName }: {
-  onApplyFilters?: (filters: any) => void;
+interface FilterSidebarProps {
+  onApplyFilters?: (filters: Filters) => void;
+  appliedFilters?: Filters;
   category?: string;
   brandName?: string;
-}) {
+}
+
+const FILTER_KEYS = [
+  { key: 'brand', label: 'Brand' },
+  { key: 'processor', label: 'Processor' },
+  { key: 'memory', label: 'Memory' },
+  { key: 'connectivity', label: 'Connectivity' },
+  { key: 'switchType', label: 'Switch Type' },
+  { key: 'graphics', label: 'Graphics' },
+  { key: 'screenSize', label: 'Screen Size' },
+  { key: 'resolution', label: 'Resolution' },
+];
+
+export default function FilterSidebar({ 
+  onApplyFilters, 
+  appliedFilters = {}, 
+  category, 
+  brandName 
+}: FilterSidebarProps) {
   // Dynamic filter logic: if brandName is provided, get filters from products of that brand
   const getFiltersForBrand = (brandName: string) => {
     const brandProducts = products.filter(p => p.brand.toLowerCase() === brandName.toLowerCase());
@@ -160,8 +180,7 @@ export default function FilterSidebar({ onApplyFilters, category, brandName }: {
       screenSize: selectedScreenSize,
       resolution: selectedResolution,
       priceRange: priceRange,
-      category: category,
-    });
+      category: category ? [category] : [],    });
   };
 
   return (

@@ -1,4 +1,4 @@
-export type Product = {
+export interface Product {
     category?: string,
     tag?: string ,
     id?: number,
@@ -22,3 +22,15 @@ export type Product = {
     colors?:string[],
     popular?:boolean
 };
+
+// types/product.ts
+export interface Product {
+    category?: string;
+    tags?: string[];
+    description?: string;
+    rating?: number;
+    image?: string;
+    // Add other product properties as needed
+  }
+
+  

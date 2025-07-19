@@ -12,13 +12,12 @@ import { FaWhatsapp } from "react-icons/fa";
 import { laptopCategories, navLinks } from "@/lib/dummyData";
 import { Product } from "../../../types/product";
 import { dummyProducts } from "@/lib/dummyproduct";
+import SearchBar from "./searchbar";
 
 export default function Navbar() {
-  const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [filteredResults, setFilteredResults] = useState<typeof dummyProducts>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -53,23 +52,6 @@ export default function Navbar() {
     document.body.style.overflow = isSidebarOpen ? "hidden" : "auto";
   }, [isSidebarOpen]);
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredResults([]);
-    } else {
-      const filtered = dummyProducts.filter((dummyproduct: Product) =>
-        (dummyproduct.name || '').toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredResults(filtered);
-    }
-  }, [searchQuery]);
-
-  const handleResultClick = (slug: string) => {
-    router.push(`/products/${slug}`);
-    setSearchQuery("");
-    setFilteredResults([]);
-  };
-
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
       {/* Top Nav */}
@@ -85,7 +67,7 @@ export default function Navbar() {
           />
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-16 text-[16px] font-semibold">
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-16 text-[16px] font-bold">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -99,8 +81,8 @@ export default function Navbar() {
 
           {/* Right Contact Info - Desktop only */}
           <div className="hidden md:flex flex-col text-right text-primary text-sm leading-tight">
-            <span className="font-semibold">Have Questions?</span>
-            <a href="tel:9808113344" className="text-lg font-semibold hover:underline">
+            <span className="font-bold">Have Questions?</span>
+            <a href="tel:9808113344" className="text-lg font-bold hover:underline">
               9808113344
             </a>
           </div>
@@ -138,7 +120,7 @@ export default function Navbar() {
           <div className="w-[160px] md:w-[180px] flex-shrink-0">
             <Dropdown
               options={laptopCategories}
-              placeholder="Select Categories"
+              placeholder="Categories"
               value={currentCategory}
               onChange={handleCategoryChange}
               allowDeselect={true}
@@ -147,28 +129,8 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Search */}
-          <div className="hidden md:flex justify-center flex-1 relative">
-            <div className="relative w-full max-w-[450px]">
-              <Input
-                className="w-full h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {filteredResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-50 p-2 max-h-60 overflow-y-auto">
-                  {filteredResults.map((item: Product) => (
-                    <button
-                      key={item.id}
-                      onClick={() => handleResultClick(item.slug || '')}
-                      className="block w-full text-left px-4 py-2 hover:bg-primary-light hover:text-white rounded-md text-sm"
-                    >
-                      {item.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="hidden md:flex justify-center flex-1">
+            <SearchBar />
           </div>
 
           {/* Icons */}
@@ -197,31 +159,10 @@ export default function Navbar() {
 
           {/* Mobile Search Input */}
           {showMobileSearch && (
-            <div className="md:hidden w-full">
-              <div className="relative">
-                <Input
-                  className="w-full h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
-                  placeholder="Search"
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {filteredResults.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white bg-opacity-90 backdrop-blur-md rounded-md shadow-lg z-50 p-2 max-h-60 overflow-y-auto">
-                    {filteredResults.map((item: Product) => (
-                      <button
-                        key={item.id}
-                        onClick={() => handleResultClick(item.slug || '')}
-                        className="block w-full text-left px-4 py-2 hover:bg-primary-light hover:text-white rounded-md text-sm"
-                      >
-                        {item.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+  <div className="md:hidden w-full">
+    <SearchBar isMobile />
+  </div>
+)}
         </div>
       </section>
     </header>
