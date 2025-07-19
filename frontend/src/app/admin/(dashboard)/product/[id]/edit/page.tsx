@@ -81,7 +81,6 @@ const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
       const file = new File([""], fileName, { type: "image/jpeg" });
 
       // Convert relative path to absolute URL
-      // Remove /api from the base URL for static files
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
       const baseUrl = apiUrl.replace("/api", ""); // Remove /api for static files
