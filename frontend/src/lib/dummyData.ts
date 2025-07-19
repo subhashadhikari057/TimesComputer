@@ -2,6 +2,15 @@
 import { Product } from '../../types/product';
 import { Banner } from '../../types/banner';
 
+import {
+  Laptop,
+  GameController,
+  Briefcase,
+  Student,
+  Monitor,
+  AppleLogo,
+} from "phosphor-react";
+
 // Navigation Links
 export const navLinks = [
   { title: "Home", href: "/" },
@@ -12,12 +21,12 @@ export const navLinks = [
 
 // Laptop Categories for Dropdown
 export const laptopCategories = [
-  { label: "All Products", value: "all-products" },
-  { label: "Gaming Laptops", value: "gaming laptop" },
-  { label: "Business Laptops", value: "business laptop" },
-  { label: "Student Laptops", value: "student laptop" },
-  { label: "Everyday Laptops", value: "everyday laptop" },
-  { label: "Macbooks", value: "mac" },
+  { label: "All Products", value: "products", icon: "Laptop" },
+  { label: "Gaming Laptops", value: "gaming laptop", icon: "GameController" },
+  { label: "Business Laptops", value: "business laptop", icon: "Briefcase" },
+  { label: "Student Laptops", value: "student laptop", icon: "Student" },
+  { label: "Everyday Laptops", value: "everyday laptop", icon: "Monitor" },
+  { label: "Macbooks", value: "mac", icon: "AppleLogo" },
 ];
 
 // Top Categories for Category Section
@@ -268,6 +277,8 @@ export const featuredProducts: Product[] = [
     tag: "Student"
   },
 ];
+
+ 
 
 // Popular Products (subset of featured products)
 export const popularProducts: Product[] = featuredProducts.filter(product => product.popular);
