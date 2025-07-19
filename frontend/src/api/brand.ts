@@ -13,10 +13,7 @@ export async function getBrandById(id: number) {
 }
 
 // POST /brand → create a new brand (with image/icon via FormData)
-export async function createBrand(formData: {
-    name: string,
-    image: File
-}) {
+export async function createBrand(formData: FormData) {
     const response = await axios.post("/brand", formData, {
         headers: {
             "Content-Type": "multipart/form-data",
@@ -26,10 +23,7 @@ export async function createBrand(formData: {
 }
 
 // PATCH /brand/:id → update an existing brand (with image/icon via FormData)
-export async function updateBrand(id: number, formData: {
-    name: string,
-    image: File
-}) {
+export async function updateBrand(id: number, formData: FormData) {
     const response = await axios.patch(`/brand/${id}`, formData, {
         headers: {
             "Content-Type": "multipart/form-data",

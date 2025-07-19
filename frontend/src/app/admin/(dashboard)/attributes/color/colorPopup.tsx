@@ -5,69 +5,94 @@ import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import { toast } from "sonner";
 import { createColor, updateColor } from "@/api/color";
+import { capitalizeFirstWord } from "@/components/common/helper_function";
 
 interface ColorFormData {
   id?: number;
   name: string;
-  color: string;
-}
-
-// Interface for data coming from the table
-interface ColorData {
-  id?: number;
-  name: string;
-  color?: string;
-  [key: string]: any; // Allow other properties
+  hexCode: string;
 }
 
 interface ColorPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<ColorData>;
+  onSuccess?: () => void;
+  initialData?: {
+    id: number;
+    name: string;
+    hexCode: string;
+  }
 }
 
 const INITIAL_FORM_DATA: ColorFormData = {
   name: "",
-  color: "#000000",
+  hexCode: "#000000",
+};
+
+// Helper function to capitalize first letter of each word
+const capitalizeWords = (str: string) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 export default function ColorPopup({
   isOpen,
   onClose,
-  initialData = {},
+  onSuccess,
+  initialData,
 }: ColorPopupProps) {
   const [form, setForm] = useState<ColorFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
 
-  const isEditMode = initialData && initialData.id;
+  const isEditMode = Boolean(initialData?.id);
 
-  // Reset form when popup opens/closes or initialData changes
+  // Validate and format hex code
+  const validateHexCode = (value: string): string => {
+    // Remove any non-hex characters except #
+    let cleaned = value.replace(/[^#0-9A-Fa-f]/g, '');
+    
+    // Ensure it starts with #
+    if (!cleaned.startsWith('#')) {
+      cleaned = '#' + cleaned.replace(/#/g, '');
+    }
+    
+    // Limit to 7 characters (#RRGGBB)
+    if (cleaned.length > 7) {
+      cleaned = cleaned.substring(0, 7);
+    }
+    
+    return cleaned;
+  };
+
+  // Check if hex code is valid
+  const isValidHexCode = (hex: string): boolean => {
+    const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+    return hexPattern.test(hex);
+  };
+
   useEffect(() => {
     if (isOpen) {
-      const updatedForm: ColorFormData = {
-        ...INITIAL_FORM_DATA,
-        id: initialData.id,
-        name: initialData.name || "",
-        color: initialData.color || "#000000",
-      };
-
-      setForm(updatedForm);
+      if (initialData) {
+        setForm({
+          id: initialData.id,
+          name: initialData.name,
+          hexCode: initialData.hexCode,
+        });
+      } else {
+        setForm(INITIAL_FORM_DATA);
+      }
       setShowValidation(false);
       setError(null);
     }
   }, [isOpen]);
 
   const resetForm = () => {
-    const resetData: ColorFormData = {
-      ...INITIAL_FORM_DATA,
-      id: initialData.id,
-      name: initialData.name || "",
-      color: initialData.color || "#000000",
-    };
-
-    setForm(resetData);
+    setForm(INITIAL_FORM_DATA);
     setShowValidation(false);
     setError(null);
   };
@@ -78,8 +103,19 @@ export default function ColorPopup({
   };
 
   const isFormValid = () => {
-    return form.name.trim() !== "" && form.color !== "";
+    return form.name.trim() !== "" && isValidHexCode(form.hexCode);
   };
+
+  const handleHexCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const validatedHex = validateHexCode(e.target.value);
+    setForm(prev => ({ ...prev, hexCode: validatedHex }));
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const capitalizedValue = capitalizeFirstWord(value);
+        setForm((prev) => ({ ...prev, name: capitalizedValue }));
+      };
 
   const handleSave = async () => {
     setShowValidation(true);
@@ -90,27 +126,34 @@ export default function ColorPopup({
       setLoading(true);
       setError(null);
 
-      const saveData = {
-        name: form.name,
-        hexCode: form.color,
-      };
-
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("hexCode", form.hexCode);
+      
       if (isEditMode) {
-        await updateColor(initialData.id!, saveData);
+        await updateColor(form.id!, formData);
         toast.success("Color updated successfully!");
       } else {
-        await createColor(saveData);
+        await createColor(formData);
         toast.success("Color created successfully!");
+      }
+      
+      if (onSuccess) {
+        onSuccess();
       }
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message ||
-        `Failed to ${isEditMode ? "update" : "create"} color`;
+      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+
+       // Handle specific duplicate errors
+    if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
+      toast.error("Color name already exists. Please choose a different name.");
+    } else {
+      toast.error(`Failed to ${isEditMode ? "update" : "create"} color`);
+    }
 
       setError(errorMessage);
-      toast.error(errorMessage);
-      console.error(`Error ${isEditMode ? "updating" : "creating"} color:`, err);
     } finally {
       setLoading(false);
     }
@@ -133,18 +176,13 @@ export default function ColorPopup({
       maxWidth="md"
     >
       <div className="space-y-6">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
 
         {/* Name Field */}
         <DefaultInput
-          label="Color Name *"
+          label="Color Name"
           name="name"
           value={form.name}
-          onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+          onChange={handleNameChange}
           placeholder="Enter color name (e.g., Ocean Blue, Forest Green)"
           required
         />
@@ -157,25 +195,41 @@ export default function ColorPopup({
           <div className="flex items-center space-x-3">
             <input
               type="color"
-              value={form.color}
-              onChange={(e) => setForm(prev => ({ ...prev, color: e.target.value }))}
+              value={isValidHexCode(form.hexCode) ? form.hexCode : "#000000"}
+              onChange={(e) => setForm(prev => ({ ...prev, hexCode: e.target.value }))}
               className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
             />
             <input
               type="text"
-              value={form.color}
-              onChange={(e) => setForm(prev => ({ ...prev, color: e.target.value }))}
+              value={form.hexCode}
+              onChange={handleHexCodeChange}
               placeholder="#000000"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              maxLength={7}
+              className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:border-blue-500 ${
+                form.hexCode && !isValidHexCode(form.hexCode) 
+                  ? 'border-red-300 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-blue-500'
+              }`}
             />
           </div>
+          {form.hexCode && !isValidHexCode(form.hexCode) && (
+            <p className="text-sm text-red-600 mt-1">
+              Please enter a valid hex code (e.g., #FF5733)
+            </p>
+          )}
         </div>
 
         {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
-          <p className="text-sm text-red-600">
-            Please fill in all required fields: name, color.
-          </p>
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm text-amber-700 font-medium">
+              Required fields missing:
+            </p>
+            <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
+              {form.name.trim() === "" && <li>Color name</li>}
+              {!isValidHexCode(form.hexCode) && <li>Valid hex code</li>}
+            </ul>
+          </div>
         )}
       </div>
     </AddDetailsPopup>

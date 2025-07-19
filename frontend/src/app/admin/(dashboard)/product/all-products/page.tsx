@@ -43,69 +43,16 @@ export default function ViewProductsPage() {
     fetchProducts();
   }, []);
 
-  // Sample data
-  const newData = [
-    {
-      id: 1,
-      product: "EcoSmart LED Bulb",
-      category: "Lighting",
-      brand: "EcoSmart",
-      price: "12.99",
-      stock: 120,
-      status: "Active",
-      createdAt: "2025-07-01",
-    },
-    {
-      id: 2,
-      product: "Smart WiFi Plug",
-      category: "Electronics",
-      brand: "TP-Link",
-      price: "19.99",
-      stock: 85,
-      status: "Inactive",
-      createdAt: "2025-06-24",
-    },
-    {
-      id: 3,
-      product: "Wireless Mouse",
-      category: "Accessories",
-      brand: "Logitech",
-      price: "29.95",
-      stock: 200,
-      status: "Active",
-      createdAt: "2025-07-15",
-    },
-    {
-      id: 4,
-      product: "Bluetooth Speaker",
-      category: "Electronics",
-      brand: "JBL",
-      price: "89.99",
-      stock: 45,
-      status: "Active",
-      createdAt: "2025-07-10",
-    },
-    {
-      id: 5,
-      product: "Desk Lamp",
-      category: "Lighting",
-      brand: "IKEA",
-      price: "24.99",
-      stock: 0,
-      status: "Inactive",
-      createdAt: "2025-06-30",
-    },
-  ];
 
   // Define columns for the table
   const newColumns: Column[] = [
     {
-      id: "product",
+      id: "name",
       label: "Product",
       sortable: false,
-      filterable: true,
+      filterable: false,
       searchable: true,
-      width: "300px",
+      width: "240px",
       render: (product: any) => (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
@@ -113,7 +60,7 @@ export default function ViewProductsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {product.name || product.product}
+              {product.name}
             </div>
           </div>
         </div>
@@ -122,7 +69,7 @@ export default function ViewProductsPage() {
     {
       id: "category",
       label: "Category",
-      sortable: false,
+      sortable: true,
       filterable: true,
       searchable: true,
       width: "120px",
@@ -138,7 +85,7 @@ export default function ViewProductsPage() {
       sortable: true,
       filterable: true,
       searchable: true,
-      width: "100px",
+      width: "120px",
       render: (product: any) => (
         <div className="text-sm font-medium text-gray-900">
           {product.brand?.name || product.brand || 'No Brand'}
@@ -151,7 +98,7 @@ export default function ViewProductsPage() {
       sortable: true,
       filterable: false,
       searchable: false,
-      width: "100px",
+      width: "120px",
       render: (product: any) => {
         const price =
           typeof product.price === "string"
@@ -173,7 +120,7 @@ export default function ViewProductsPage() {
       sortable: true,
       filterable: false,
       searchable: false,
-      width: "100px",
+      width: "120px",
       render: (product: any) => (
         <div
           className={`text-sm font-medium ${product.stock === 0
@@ -188,25 +135,21 @@ export default function ViewProductsPage() {
       ),
     },
     {
-      id: "status",
+      id: "isPublished",
       label: "Status",
       sortable: true,
       filterable: true,
       searchable: true,
       width: "120px",
       render: (product: any) => {
-        const isPublished = product.isPublished !== undefined 
-          ? product.isPublished 
-          : product.status === "Active";
-
         return (
           <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${isPublished
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${product.isPublished
                 ? "bg-green-100 text-green-800"
                 : "bg-gray-100 text-gray-800"
               }`}
           >
-            {isPublished ? (
+            {product.isPublished ? (
               <>
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Published
@@ -259,11 +202,11 @@ export default function ViewProductsPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any, index: number) => {
+  const handleEdit = (row: any) => {
     router.push(`/admin/product/${row.id}/edit`);
   };
 
-  const handleDelete = async (row: any, index: number) => {
+  const handleDelete = async (row: any) => {
     try {
       await deleteProduct(row.id);
       setProducts((prev) => prev.filter((p) => p.id !== row.id));
@@ -388,7 +331,7 @@ export default function ViewProductsPage() {
             onSelectAll={handleSelectAll}
             onSelectItem={handleSelectItem}
             columns={newColumns}
-            data={processedData} // Using processedData from the hook
+            data={processedData} 
             onEdit={handleEdit}
             onDelete={handleDelete}
             sortConfig={sortConfig}

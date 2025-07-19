@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 // import csrf from 'csurf'; // ✅ NEW: CSRF middleware
 
@@ -46,6 +47,11 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/uploads', (req, res, next) => {
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, '..', 'uploads')));
 
 // // ✅ CSRF Protection (must come AFTER cookie + json parser)
 // app.use(csrf({ cookie: true }));

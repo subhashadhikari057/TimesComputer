@@ -4,13 +4,10 @@ import {
   Plus,
   Users,
   UserCheck,
-  UserX,
   Search,
   Download,
-  Calendar,
   Trash2,
   Mail,
-  Shield,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -27,33 +24,34 @@ interface User {
   id: number;
   name: string;
   email: string;
+  password: string;
 }
 
 // Main Component
 export default function UsersPage() {
-  const router = useRouter();
+  const [userData, setUserData] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Popup state management
   const [isAddUserPopupOpen, setIsAddUserPopupOpen] = useState(false);
   const [isEditUserPopupOpen, setIsEditUserPopupOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
+
+  async function fetchUsers() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAllAdmins();
+      setUserData(Array.isArray(data) ? data : data.users || []);
+    } catch (err) {
+      setError("Failed to fetch users");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchUsers() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getAllAdmins();
-        setUsers(Array.isArray(data) ? data : (data.users || []));
-      } catch (err) {
-        setError("Failed to fetch users");
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchUsers();
   }, []);
 
@@ -68,7 +66,6 @@ export default function UsersPage() {
       width: "300px",
       render: (user: User) => (
         <div className="flex items-center space-x-4">
-
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
               {user.name}
@@ -86,7 +83,6 @@ export default function UsersPage() {
       width: "300px",
       render: (user: User) => (
         <div className="flex items-center space-x-4">
-
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
               {user.email}
@@ -97,7 +93,7 @@ export default function UsersPage() {
     },
   ];
 
-  // Use custom hook for table data management 
+  // Use custom hook for table data management
   const {
     searchTerm,
     filters,
@@ -113,21 +109,21 @@ export default function UsersPage() {
     handleSelectItem,
     handleBulkDelete,
   } = useTableData({
-    data: users,
+    data: userData,
     columns: userColumns,
     defaultSort: { key: "registeredAt", direction: "desc" },
   });
 
   // Event handlers
   const handleEdit = (row: any, index: number) => {
-    setSelectedUser(row);
+    setEditingUser(row);
     setIsEditUserPopupOpen(true);
   };
 
   const handleDelete = async (row: any, index: number) => {
     try {
       await deleteAdminUser(row.id);
-      setUsers((prev) => prev.filter((u) => u.id !== row.id));
+      setUserData((prev) => prev.filter((u) => u.id !== row.id));
       toast.success("User deleted successfully");
     } catch (err) {
       toast.error("Failed to delete user");
@@ -151,13 +147,13 @@ export default function UsersPage() {
 
   const handleCloseEditUserPopup = () => {
     setIsEditUserPopupOpen(false);
-    setSelectedUser(null);
+    setEditingUser(undefined);
   };
 
   // Calculate stats
-  const totalUsers = users.length;
-  const activeUsers = "5"
-  const verifiedUsers = "5"
+  const totalUsers = userData.length;
+  const activeUsers = "5";
+  const verifiedUsers = "5";
 
   return (
     <div className="p-6 space-y-6">
@@ -192,14 +188,14 @@ export default function UsersPage() {
         <StatCard
           title="Active Users"
           value={activeUsers.toString()}
-          change={`${Math.round((  totalUsers) * 100)}% active`}
+          change={`${Math.round(totalUsers * 100)}% active`}
           Icon={UserCheck}
           color="text-green-600"
         />
         <StatCard
           title="Verified Users"
           value={verifiedUsers.toString()}
-          change={`${Math.round(( totalUsers) * 100)}% verified`}
+          change={`${Math.round(totalUsers * 100)}% verified`}
           Icon={Mail}
           color="text-blue-600"
         />
@@ -243,14 +239,14 @@ export default function UsersPage() {
                   Export
                 </button>
 
-                <div className="flex-1">
+                {/* <div className="flex-1">
                   <FilterComponent
                     filters={filters}
                     filterConfigs={filterConfigs}
                     onFilterChange={handleFilterChange}
                     onResetFilters={handleResetFilters}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -280,16 +276,14 @@ export default function UsersPage() {
       <UserPopup
         isOpen={isAddUserPopupOpen}
         onClose={handleCloseAddUserPopup}
+        onSuccess={fetchUsers}
       />
 
       <UserPopup
         isOpen={isEditUserPopupOpen}
         onClose={handleCloseEditUserPopup}
-        initialData={selectedUser ? {
-          id: selectedUser.id,
-          name: selectedUser.name,
-          email: selectedUser.email,
-        } : {}}
+        onSuccess={fetchUsers}
+        initialData={editingUser}
       />
     </div>
   );

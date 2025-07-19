@@ -343,13 +343,9 @@ export default function CreateProduct() {
       </div>
 
       {/* Floating Action Card */}
-      <div className="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50 sm:w-full sm:max-w-md md:max-w-lg lg:max-w-xl">
+      <div className="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50 sm:w-full sm:max-w-sm">
         <div className="bg-white rounded-lg shadow-2xl border border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
-          <div className="flex items-center justify-between space-x-4">
-            {/* Last saved info - hidden on mobile */}
-            <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500 flex-shrink-0">
-              <span>Last saved: Never</span>
-            </div>
+          <div className="flex items-center justify-center space-x-4">
 
             {/* Action buttons */}
             <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">

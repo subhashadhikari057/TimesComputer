@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getAllCategories, createCategory } from "@/api/category";
+import { getAllCategories } from "@/api/category";
 import Dropdown from "@/components/form/form-elements/DefaultDropdown";
 
 interface Category {
@@ -61,7 +61,7 @@ export default function CategorySelector({
           type="button"
           onClick={() => router.push("/admin/attributes/category")}
           disabled={loading}
-          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 hover:border-green-300 focus:outline-none focus:ring-1 focus:ring-green-500  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-500 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={14} className="mr-1" />
           Add Category

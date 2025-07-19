@@ -7,6 +7,7 @@ import PhotoUpload from "@/components/admin/product/photoUpload";
 import IconUpload from "@/components/admin/product/iconUpload";
 import { toast } from "sonner";
 import { createCategory, updateCategory } from "@/api/category";
+import { capitalizeFirstWord } from "@/components/common/helper_function";
 
 
 interface CategoryFormData {
@@ -21,6 +22,7 @@ interface CategoryFormData {
 interface CategoryPopupProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   initialData?: {
     id: number;
     name: string;
@@ -35,9 +37,19 @@ const INITIAL_FORM_DATA: CategoryFormData = {
   iconPreview: "",
 };
 
+// Helper function to capitalize first letter of each word
+const capitalizeWords = (str: string) => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export default function CategoryPopup({
   isOpen,
   onClose,
+  onSuccess,
   initialData,
 }: CategoryPopupProps) {
   const [form, setForm] = useState<CategoryFormData>(INITIAL_FORM_DATA);
@@ -97,10 +109,6 @@ export default function CategoryPopup({
       if (form.icon) formData.append("icon", form.icon);
 
       if (isEditMode) {
-        if (!form.image || !form.icon) {
-          setLoading(false);
-          return;
-        }
         await updateCategory(form.id!, formData);
         toast.success("Category updated successfully!");
       } else {
@@ -108,20 +116,32 @@ export default function CategoryPopup({
         toast.success("Category created successfully!");
       }
 
+      if (onSuccess) {
+        onSuccess();
+      }
+
       handleCancel();
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        `Failed to ${isEditMode ? "update" : "create"} category`;
+        err.response?.data?.message || err.response?.data?.error || err.message;
+
+         // Handle specific duplicate errors
+    if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
+      toast.error("Category name already exists. Please choose a different name.");
+    } else {
+      toast.error(`Failed to ${isEditMode ? "update" : "create"} category`);
+    }
       setError(errorMessage);
-      toast.error(
-        `Error ${isEditMode ? "updating" : "creating"} category: ${errorMessage}`
-      );
     } finally {
       setLoading(false);
     }
   };
+
+   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      const capitalizedValue = capitalizeFirstWord(value);
+      setForm((prev) => ({ ...prev, name: capitalizedValue }));
+    };
 
   const handleImageUpload = (files: File[], imageType: "image" | "icon") => {
     const file = files[0];
@@ -196,19 +216,12 @@ export default function CategoryPopup({
       maxWidth="md"
     >
       <div className="space-y-6">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
-          </div>
-        )}
 
         <DefaultInput
           label="Category Name"
           name="name"
           value={form.name}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, name: e.target.value }))
-          }
+          onChange={handleNameChange}
           placeholder="Enter category name (e.g., Electronics, Clothing)"
           required
         />

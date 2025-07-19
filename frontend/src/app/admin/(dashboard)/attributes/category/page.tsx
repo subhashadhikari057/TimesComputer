@@ -17,15 +17,16 @@ import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import CategoryPopup from "./categoryPopup";
-import { getAllCategories } from "@/api/category"; // ✅ API import
+import { deleteCategory, getAllCategories } from "@/api/category"; // ✅ API import
 
 interface Category {
   id: number;
   name: string;
-  createdAt: string;
-  updatedAt: string;
   image: string;
   icon: string;
+  createdAt: string;
+  updatedAt: string;
+  
 }
 
 export default function CategoryManagementPage() {
@@ -35,8 +36,7 @@ export default function CategoryManagementPage() {
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
+  const fetchCategories = async () => {
       try {
         const res = await getAllCategories();
         setCategoryData(res.data);
@@ -47,6 +47,7 @@ export default function CategoryManagementPage() {
       }
     };
 
+  useEffect(() => {
     fetchCategories();
   }, []);
 
@@ -112,20 +113,6 @@ export default function CategoryManagementPage() {
         </div>
       ),
     },
-    {
-      id: "updatedAt",
-      label: "Updated At",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (category: Category) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(category.updatedAt).toLocaleDateString()}
-        </div>
-      ),
-    },
   ];
 
   const {
@@ -153,9 +140,15 @@ export default function CategoryManagementPage() {
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any) => {
-    console.log("Delete category:", row);
-    toast.success("Category deleted successfully!");
+  const handleDelete = async (row: any) => {
+     try {
+              await deleteCategory(row.id);
+              toast.success("Category deleted successfully");
+              await fetchCategories();
+
+            } catch (error: any) {
+              toast.error(error.response?.data?.error || "Failed to delete category");
+            }
   };
 
   const handleExport = () => {
@@ -183,7 +176,7 @@ export default function CategoryManagementPage() {
   //   0
   // );
 
-  if (loading) return <div className="p-6">Loading categories...</div>;
+  
 
   return (
     <div className="p-6 space-y-6">
@@ -205,10 +198,15 @@ export default function CategoryManagementPage() {
         </div>
       </div>
 
-      <CategoryPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
+      <CategoryPopup 
+      isOpen={showAddPopup}
+       onClose={handleCloseAddPopup} 
+       onSuccess={fetchCategories}
+       />
       <CategoryPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
+        onSuccess={fetchCategories}
         initialData={editingCategory}
       />
 
@@ -272,20 +270,20 @@ export default function CategoryManagementPage() {
                   Export
                 </button>
 
-                <div className="flex-1">
+                {/* <div className="flex-1">
                   <FilterComponent
                     filters={filters}
                     filterConfigs={filterConfigs}
                     onFilterChange={handleFilterChange}
                     onResetFilters={handleResetFilters}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
         </div>
 
-        <DefaultTable
+        {loading ? <div className="p-6">Loading brands...</div> : <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}
           onSelectItem={handleSelectItem}
@@ -295,7 +293,9 @@ export default function CategoryManagementPage() {
           onDelete={handleDelete}
           sortConfig={sortConfig}
           onSort={handleSort}
-        />
+        />}
+
+        
       </div>
     </div>
   );

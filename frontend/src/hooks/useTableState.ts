@@ -77,13 +77,57 @@ export function useTableData<T extends Record<string, any>>({
     [columns]
   );
 
+  // Helper function to extract display value from nested objects
+  const getDisplayValue = (item: any, field: string) => {
+    const value = item[field];
+    
+    if (value === null || value === undefined) {
+      return 'No ' + field.charAt(0).toUpperCase() + field.slice(1);
+    }
+    
+    // Handle nested objects (like category.name, brand.name)
+    if (typeof value === 'object' && value !== null) {
+      return value.name || value.label || value.title || String(value);
+    }
+    
+    return String(value);
+  };
+
+  // Helper function to extract filter value from nested objects
+  const getFilterValue = (item: any, field: string) => {
+    const value = item[field];
+    
+    if (value === null || value === undefined) {
+      return null;
+    }
+    
+    // For nested objects, use the name property for comparison
+    if (typeof value === 'object' && value !== null) {
+      return value.name || value.label || value.title || value.id || String(value);
+    }
+    
+    return value;
+  };
+
   // Generate filter options from data
   const generateFilterOptions = (field: keyof T) => {
-    const uniqueValues = [...new Set(data.map(item => item[field]))];
-    return uniqueValues.map(value => ({
-      value: value,
-      label: String(value)
-    }));
+    const uniqueValues = new Set();
+    const options: Array<{ value: any; label: string }> = [];
+    
+    data.forEach(item => {
+      const displayValue = getDisplayValue(item, field as string);
+      const filterValue = getFilterValue(item, field as string);
+      
+      if (filterValue !== null && !uniqueValues.has(filterValue)) {
+        uniqueValues.add(filterValue);
+        options.push({
+          value: filterValue,
+          label: displayValue
+        });
+      }
+    });
+    
+    return options.sort((a, b) => a.label.localeCompare(b.label));
   };
 
   // Generate filter configurations
@@ -158,7 +202,10 @@ export function useTableData<T extends Record<string, any>>({
     // Apply filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== '') {
-        result = result.filter(item => item[key] === value);
+        result = result.filter(item => {
+          const itemFilterValue = getFilterValue(item, key);
+          return itemFilterValue === value;
+        });
       }
     });
 
@@ -168,8 +215,8 @@ export function useTableData<T extends Record<string, any>>({
       
       result = result.filter((item) => {
         return searchableFields.some(field => {
-          const fieldValue = item[field];
-          return fieldValue && String(fieldValue).toLowerCase().includes(lowercaseSearchTerm);
+          const displayValue = getDisplayValue(item, field);
+          return displayValue && displayValue.toLowerCase().includes(lowercaseSearchTerm);
         });
       });
     }
@@ -197,8 +244,10 @@ export function useTableData<T extends Record<string, any>>({
             comparison = aValue.toLowerCase().localeCompare(bValue.toLowerCase());
           }
         } else {
-          // Fallback to string comparison
-          comparison = String(aValue).toLowerCase().localeCompare(String(bValue).toLowerCase());
+          // For objects, use the display value for comparison
+          const aDisplay = getDisplayValue(a, sortConfig.key);
+          const bDisplay = getDisplayValue(b, sortConfig.key);
+          comparison = aDisplay.toLowerCase().localeCompare(bDisplay.toLowerCase());
         }
 
         return sortConfig.direction === 'desc' ? -comparison : comparison;
@@ -237,4 +286,3 @@ export function useTableData<T extends Record<string, any>>({
     generateFilterOptions,
   };
 }
-
