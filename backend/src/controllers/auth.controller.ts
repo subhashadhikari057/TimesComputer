@@ -78,7 +78,7 @@ export const login = async (req: Request, res: Response) => {
     attachAccessToken(user, res);
     attachRefreshToken(user, res);
 
-    return res.status(200).json({ user: { name: user.name, role: user.role } });
+    return res.status(200).json({ user: { name: user.name, email: user.email, role: user.role } });
 };
 
 

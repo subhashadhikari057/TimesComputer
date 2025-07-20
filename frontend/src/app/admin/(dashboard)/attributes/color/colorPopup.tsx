@@ -21,7 +21,7 @@ interface ColorPopupProps {
     id: number;
     name: string;
     hexCode: string;
-  }
+  };
 }
 
 const INITIAL_FORM_DATA: ColorFormData = {
@@ -33,9 +33,9 @@ const INITIAL_FORM_DATA: ColorFormData = {
 const capitalizeWords = (str: string) => {
   return str
     .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 export default function ColorPopup({
@@ -54,18 +54,18 @@ export default function ColorPopup({
   // Validate and format hex code
   const validateHexCode = (value: string): string => {
     // Remove any non-hex characters except #
-    let cleaned = value.replace(/[^#0-9A-Fa-f]/g, '');
-    
+    let cleaned = value.replace(/[^#0-9A-Fa-f]/g, "");
+
     // Ensure it starts with #
-    if (!cleaned.startsWith('#')) {
-      cleaned = '#' + cleaned.replace(/#/g, '');
+    if (!cleaned.startsWith("#")) {
+      cleaned = "#" + cleaned.replace(/#/g, "");
     }
-    
+
     // Limit to 7 characters (#RRGGBB)
     if (cleaned.length > 7) {
       cleaned = cleaned.substring(0, 7);
     }
-    
+
     return cleaned;
   };
 
@@ -108,14 +108,14 @@ export default function ColorPopup({
 
   const handleHexCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const validatedHex = validateHexCode(e.target.value);
-    setForm(prev => ({ ...prev, hexCode: validatedHex }));
+    setForm((prev) => ({ ...prev, hexCode: validatedHex }));
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        const capitalizedValue = capitalizeFirstWord(value);
-        setForm((prev) => ({ ...prev, name: capitalizedValue }));
-      };
+    const value = e.target.value;
+    const capitalizedValue = capitalizeFirstWord(value);
+    setForm((prev) => ({ ...prev, name: capitalizedValue }));
+  };
 
   const handleSave = async () => {
     setShowValidation(true);
@@ -129,7 +129,7 @@ export default function ColorPopup({
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("hexCode", form.hexCode);
-      
+
       if (isEditMode) {
         await updateColor(form.id!, formData);
         toast.success("Color updated successfully!");
@@ -137,21 +137,27 @@ export default function ColorPopup({
         await createColor(formData);
         toast.success("Color created successfully!");
       }
-      
+
       if (onSuccess) {
         onSuccess();
       }
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message;
+      const errorMessage =
+        err.response?.data?.message || err.response?.data?.error || err.message;
 
-       // Handle specific duplicate errors
-    if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
-      toast.error("Color name already exists. Please choose a different name.");
-    } else {
-      toast.error(`Failed to ${isEditMode ? "update" : "create"} color`);
-    }
+      // Handle specific duplicate errors
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("duplicate")
+      ) {
+        toast.error(
+          "Color name already exists. Please choose a different name."
+        );
+      } else {
+        toast.error(`Failed to ${isEditMode ? "update" : "create"} color`);
+      }
 
       setError(errorMessage);
     } finally {
@@ -164,19 +170,26 @@ export default function ColorPopup({
       isOpen={isOpen}
       onClose={handleCancel}
       title={isEditMode ? "Edit Color" : "Add New Color"}
-      description={isEditMode ? "Edit the color option for your products" : "Create a new color option for your products"}
+      description={
+        isEditMode
+          ? "Edit the color option for your products"
+          : "Create a new color option for your products"
+      }
       onSave={handleSave}
       onCancel={handleCancel}
       saveButtonText={
         loading
-          ? isEditMode ? "Updating..." : "Creating..."
-          : isEditMode ? "Update" : "Add Color"
+          ? isEditMode
+            ? "Updating..."
+            : "Creating..."
+          : isEditMode
+          ? "Update"
+          : "Add Color"
       }
       isLoading={loading}
       maxWidth="md"
     >
       <div className="space-y-6">
-
         {/* Name Field */}
         <DefaultInput
           label="Color Name"
@@ -196,7 +209,9 @@ export default function ColorPopup({
             <input
               type="color"
               value={isValidHexCode(form.hexCode) ? form.hexCode : "#000000"}
-              onChange={(e) => setForm(prev => ({ ...prev, hexCode: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, hexCode: e.target.value }))
+              }
               className="h-10 w-20 rounded border border-gray-300 cursor-pointer"
             />
             <input
@@ -206,9 +221,9 @@ export default function ColorPopup({
               placeholder="#000000"
               maxLength={7}
               className={`flex-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:border-blue-500 ${
-                form.hexCode && !isValidHexCode(form.hexCode) 
-                  ? 'border-red-300 focus:ring-red-500' 
-                  : 'border-gray-300 focus:ring-blue-500'
+                form.hexCode && !isValidHexCode(form.hexCode)
+                  ? "border-red-300 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-blue-500"
               }`}
             />
           </div>

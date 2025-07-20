@@ -56,7 +56,7 @@ export default function ViewProductsPage() {
       sortable: false,
       filterable: false,
       searchable: true,
-      width: "240px",
+      width: "200px",
       render: (product: any) => {
         const imageUrl = product.images?.[0] ? getImageUrl(product.images[0]) : null;
         return (
@@ -126,8 +126,8 @@ export default function ViewProductsPage() {
 
         return (
           <div className="flex items-center space-x-1">
-            <span className="text-sm font-semibold text-gray-900">
-              ${price.toFixed(2)}
+            <span className="text-sm font-medium text-gray-900">
+              Rs.{price.toFixed(2)}
             </span>
           </div>
         );

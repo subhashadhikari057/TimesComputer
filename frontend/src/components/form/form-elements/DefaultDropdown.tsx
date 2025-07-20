@@ -4,6 +4,7 @@ import { ChevronDown, X } from "lucide-react";
 interface DropdownOption {
   value: string | number;
   label: string;
+  hexCode?: string; 
 }
 
 interface DropdownProps {
@@ -19,6 +20,7 @@ interface DropdownProps {
   error?: string;
   className?: string;
   size?: "sm" | "md" | "lg";
+  
 }
 
 interface MultiSelectDropdownProps {
@@ -34,6 +36,8 @@ interface MultiSelectDropdownProps {
   error?: string;
   className?: string;
   size?: "sm" | "md" | "lg";
+  renderOption?: (option: DropdownOption, isSelected: boolean) => React.ReactNode;
+  renderSelectedTag?: (option: DropdownOption) => React.ReactNode;
 }
 
 const sizeClasses = {
@@ -216,6 +220,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   error,
   className = "",
   size = "md",
+  renderOption,
+  renderSelectedTag,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -273,6 +279,34 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     max-h-60 overflow-auto
   `;
 
+  // Default tag renderer
+  const defaultRenderSelectedTag = (option: DropdownOption) => (
+    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+      {option.label}
+      <button
+        type="button"
+        onClick={(e) => handleRemoveTag(option.value, e)}
+        className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-blue-200 transition-colors"
+      >
+        <X size={10} />
+      </button>
+    </span>
+  );
+
+  // Default option renderer
+  const defaultRenderOption = (option: DropdownOption, isSelected: boolean) => (
+    <div className="flex items-center justify-between">
+      <span>{option.label}</span>
+      {isSelected && (
+        <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className={className}>
       {label && (
@@ -298,18 +332,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           <div className="flex flex-wrap gap-1 items-center">
             {selectedOptions.length > 0 ? (
               selectedOptions.map((option) => (
-                <span
-                  key={option.value}
-                  className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
-                >
-                  {option.label}
-                  <button
-                    type="button"
-                    onClick={(e) => handleRemoveTag(option.value, e)}
-                    className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-blue-200 transition-colors"
-                  >
-                    <X size={10} />
-                  </button>
+                <span key={option.value}>
+                  {renderSelectedTag ? renderSelectedTag(option) : defaultRenderSelectedTag(option)}
                 </span>
               ))
             ) : (
@@ -354,16 +378,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     role="option"
                     aria-selected={isSelected}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>{option.label}</span>
-                      {isSelected && (
-                        <div className="w-4 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
+                    {renderOption ? renderOption(option, isSelected) : defaultRenderOption(option, isSelected)}
                   </button>
                 );
               })
@@ -380,6 +395,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     </div>
   );
 };
+
 
 export default Dropdown;
 export { MultiSelectDropdown };

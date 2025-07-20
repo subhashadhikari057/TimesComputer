@@ -22,7 +22,7 @@ interface FormData {
   price: number;
   stock: number;
   isPublished: boolean;
-  isFeature: boolean; 
+  isFeature: boolean;
   brochure: string;
   brandId: number | null;
   categoryId: number | null;
@@ -40,7 +40,7 @@ const INITIAL_FORM_DATA: FormData = {
   price: 0,
   stock: 0,
   isPublished: true,
-  isFeature: true, 
+  isFeature: true,
   brochure: "",
   brandId: null,
   categoryId: null,
@@ -56,25 +56,83 @@ export default function CreateProduct() {
   const [form, setForm] = useState<FormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Function to generate slug from name
-  const generateSlug = (name: string) => {
+  const generateSlug = (name: string): string => {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+      .replace(/[^a-z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
+  const validateForm = (): boolean => {
+    // Required field validations
+    if (!form.name.trim()) {
+      toast.error("Product name is required");
+      return false;
+    }
+
+    if (!form.slug.trim()) {
+      toast.error("Product slug is required");
+      return false;
+    }
+
+    if (form.price <= 0) {
+      toast.error("Price must be greater than 0");
+      return false;
+    }
+
+    if (form.stock < 0) {
+      toast.error("Stock quantity cannot be negative");
+      return false;
+    }
+
+    if (form.images.length === 0) {
+      toast.error("At least one product image is required");
+      return false;
+    }
+
+    // Validate specifications (only if any spec has a key or value)
+    const hasIncompleteSpecs = form.specs.some(
+      (spec) => (spec.key && !spec.value) || (!spec.key && spec.value)
+    );
+    if (hasIncompleteSpecs) {
+      toast.error("Please complete all specification key-value pairs or remove empty ones");
+      return false;
+    }
+
+    // Validate brochure URL if provided
+    if (form.brochure && !isValidUrl(form.brochure)) {
+      toast.error("Please enter a valid brochure URL");
+      return false;
+    }
+
+    return true;
+  };
+
+  const isValidUrl = (string: string): boolean => {
+    try {
+      new URL(string);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value, type, checked } = e.target as HTMLInputElement;
-    
+
     setForm((prev) => {
       const newForm = {
         ...prev,
-        [name]: type === "checkbox" ? checked : (type === "number" ? Number(value) : value),
+        [name]:
+          type === "checkbox"
+            ? checked
+            : type === "number"
+            ? Number(value)
+            : value,
       };
 
       // Auto-generate slug when name changes
@@ -89,13 +147,30 @@ export default function CreateProduct() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
+    if (form.images.length + files.length > 10) {
+      toast.error("Maximum 10 images allowed");
+      return;
+    }
+
     files.forEach((file) => {
+      // Validate file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`File ${file.name} is too large. Maximum size is 10MB`);
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error(`File ${file.name} is not a valid image format`);
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const preview = e.target?.result as string;
         setForm((prev) => ({
           ...prev,
-          images: [...prev.images, { file, preview }]
+          images: [...prev.images, { file, preview }],
         }));
       };
       reader.readAsDataURL(file);
@@ -105,46 +180,77 @@ export default function CreateProduct() {
   const removeImage = (index: number) => {
     setForm((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images: prev.images.filter((_, i) => i !== index),
     }));
   };
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
+    toast.success("Form reset successfully");
+  };
+
+  const buildSubmissionData = () => {
+    const specsObject = form.specs.reduce((acc, spec) => {
+      if (spec.key && spec.value) {
+        acc[spec.key] = spec.value;
+      }
+      return acc;
+    }, {} as Record<string, string>);
+
+    const submissionData = new FormData();
+    
+    // Basic fields
+    submissionData.append("name", form.name);
+    submissionData.append("description", form.description);
+    submissionData.append("price", String(form.price));
+    submissionData.append("stock", String(form.stock));
+    submissionData.append("isPublished", String(form.isPublished));
+    submissionData.append("isFeature", String(form.isFeature));
+    submissionData.append("brochure", form.brochure);
+    
+    // Optional fields
+    if (form.brandId) submissionData.append("brandId", String(form.brandId));
+    if (form.categoryId) submissionData.append("categoryId", String(form.categoryId));
+    
+    // Arrays
+    if (form.colorIds.length > 0) {
+      submissionData.append("colorIds", JSON.stringify(form.colorIds));
+    }
+    if (form.featureTagIds.length > 0) {
+      submissionData.append("featureTagIds", JSON.stringify(form.featureTagIds));
+    }
+    if (form.marketingTagIds.length > 0) {
+      submissionData.append("marketingTagIds", JSON.stringify(form.marketingTagIds));
+    }
+    
+    // Images and specs
+    form.images.forEach((img) => submissionData.append("images", img.file));
+    submissionData.append("specs", JSON.stringify(specsObject));
+
+    return submissionData;
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
+    
     try {
-      const specsObject = form.specs.reduce((acc, spec) => {
-        if (spec.key && spec.value) {
-          acc[spec.key] = spec.value;
-        }
-        return acc;
-      }, {} as Record<string, string>);
-
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("description", form.description);
-      formData.append("price", String(form.price));
-      formData.append("stock", String(form.stock));
-      formData.append("isPublished", String(form.isPublished));
-      formData.append("isFeature", String(form.isFeature));
-      formData.append("brochure", form.brochure);
-      if (form.brandId) formData.append("brandId", String(form.brandId));
-      if (form.categoryId) formData.append("categoryId", String(form.categoryId));
-      formData.append("colorIds", JSON.stringify(form.colorIds));
-      formData.append("featureTagIds", JSON.stringify(form.featureTagIds));
-      formData.append("marketingTagIds", JSON.stringify(form.marketingTagIds));
-      form.images.forEach((img) => formData.append("images", img.file));
-      formData.append("specs", JSON.stringify(specsObject));
-
-      await createProduct(formData);
+      const submissionData = buildSubmissionData();
+      await createProduct(submissionData);
+      
       toast.success("Product created successfully!");
       router.push("/admin/product/all-products");
-    } catch (error) {
-      toast.error("Failed to create product. Please try again.");
+    } catch (err: any) {
+      const errorMessage =
+        err.response?.data?.errors ||
+        err.response?.data?.message ||
+        err.message ||
+        "An unexpected error occurred";
+      
+      toast.error(`Failed to create product: ${typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -206,13 +312,13 @@ export default function CreateProduct() {
               {/* Product Images */}
               <ComponentCard
                 title="Product Images"
-                desc="Upload product images (up to 10 images)"
+                desc="Upload product images (up to 10 images) - At least one image is required"
               >
                 <PhotoUpload
                   label="Product Images"
-                  images={form.images.map(img => img.file)}
+                  images={form.images.map((img) => img.file)}
                   required={true}
-                  imagePreviews={form.images.map(img => img.preview)}
+                  imagePreviews={form.images.map((img) => img.preview)}
                   onImageUpload={handleImageUpload}
                   onRemoveImage={removeImage}
                   maxImages={10}
@@ -225,7 +331,9 @@ export default function CreateProduct() {
               {/* Specifications */}
               <Specifications
                 specifications={form.specs}
-                onSpecificationsChange={(specs) => setForm(prev => ({ ...prev, specs }))}
+                onSpecificationsChange={(specs) =>
+                  setForm((prev) => ({ ...prev, specs }))
+                }
               />
             </div>
 
@@ -242,11 +350,11 @@ export default function CreateProduct() {
                     name="price"
                     value={form.price}
                     onChange={handleFormChange}
-                    min={0}
+                    min={0.01}
                     step={0.01}
                     placeholder="0.00"
                     required
-                    helpText="Enter the selling price"
+                    helpText="Enter the selling price (must be greater than 0)"
                   />
 
                   <DefaultNumberInput
@@ -268,7 +376,7 @@ export default function CreateProduct() {
                     helpText="Make this product visible to customers"
                   />
 
-                   <DefaultCheckbox
+                  <DefaultCheckbox
                     label="Feature"
                     name="isFeature"
                     checked={form.isFeature}
@@ -286,23 +394,32 @@ export default function CreateProduct() {
                 <AttributeSelector
                   selectedBrandId={form.brandId}
                   selectedCategoryId={form.categoryId}
-                  onBrandChange={(brandId) => setForm(prev => ({ ...prev, brandId }))}
-                  onCategoryChange={(categoryId) => setForm(prev => ({ ...prev, categoryId }))}
+                  onBrandChange={(brandId) =>
+                    setForm((prev) => ({ ...prev, brandId }))
+                  }
+                  onCategoryChange={(categoryId) =>
+                    setForm((prev) => ({ ...prev, categoryId }))
+                  }
                   selectedColorIds={form.colorIds}
-                  onColorsChange={(colorIds) => setForm(prev => ({ ...prev, colorIds }))}
+                  onColorsChange={(colorIds) =>
+                    setForm((prev) => ({ ...prev, colorIds }))
+                  }
                   selectedFeatureTagIds={form.featureTagIds}
-                  onFeatureTagsChange={(featureTagIds) => setForm(prev => ({ ...prev, featureTagIds }))}
+                  onFeatureTagsChange={(featureTagIds) =>
+                    setForm((prev) => ({ ...prev, featureTagIds }))
+                  }
                   selectedMarketingTagIds={form.marketingTagIds}
-                  onMarketingTagsChange={(marketingTagIds) => setForm(prev => ({ ...prev, marketingTagIds }))}
+                  onMarketingTagsChange={(marketingTagIds) =>
+                    setForm((prev) => ({ ...prev, marketingTagIds }))
+                  }
                 />
               </ComponentCard>
 
               <ComponentCard
                 title="Brochure"
-                desc="Provide a URL to an existing document"
+                desc="Provide a URL to an existing document (optional)"
               >
                 <div className="space-y-4">
-                  {/* URL Input */}
                   <DefaultInput
                     type="url"
                     placeholder="https://example.com/brochure.pdf"
@@ -313,7 +430,6 @@ export default function CreateProduct() {
                     helpText="Supported formats: PDF, DOC, DOCX, PPT, PPTX (max 50MB)"
                   />
 
-                  {/* URL Preview */}
                   {form.brochure && (
                     <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                       <div className="flex-shrink-0">
@@ -357,8 +473,6 @@ export default function CreateProduct() {
       <div className="fixed bottom-4 sm:bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50 sm:w-full sm:max-w-sm">
         <div className="bg-white rounded-lg shadow-2xl border border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center justify-center space-x-4">
-
-            {/* Action buttons */}
             <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
               <DefaultButton
                 variant="secondary"
@@ -380,8 +494,12 @@ export default function CreateProduct() {
                 className="flex-1 sm:flex-none py-2"
                 disabled={isSubmitting}
               >
-                <span className="sm:hidden">Save</span>
-                <span className="hidden sm:inline">Save Product</span>
+                <span className="sm:hidden">
+                  {isSubmitting ? "Saving..." : "Save"}
+                </span>
+                <span className="hidden sm:inline">
+                  {isSubmitting ? "Saving Product..." : "Save Product"}
+                </span>
               </DefaultButton>
             </div>
           </div>

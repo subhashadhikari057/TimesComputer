@@ -19,7 +19,7 @@ export async function refreshToken() {
 }
 
 // PATCH /auth/change-password → change password
-export async function changePassword(data: { oldPassword: string; newPassword: string }) {
+export async function changePassword(data: { oldPassword: string; newPassword: string, confirmPassword: string }) {
     const response = await axios.patch("/auth/change-password", data);
     return response.data;
 } 
