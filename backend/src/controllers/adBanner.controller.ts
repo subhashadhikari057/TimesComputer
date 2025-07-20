@@ -1,17 +1,24 @@
 import { Request, Response } from "express";
 import prisma from "../prisma/client";
+import path from "path";
 
 export const addAds = async (req: Request, res: Response) => {
     try {
+        const { link } = req.body;
+        if (!link) return res.status(404).send("link is required");
+
         const files = req.files as Express.Multer.File[];
         if (!files) {
             return res.status(400).json({ error: "At least one image is required." });
         }
 
-        const imagePaths = files.map(file => file.path);
+        const baseUrl = process.env.BASE_URL;
+        const imageUrl = files.map(file => `${baseUrl}/uploads/${path.basename(file.path)}`);
+
         const ads = await prisma.adBanner.create({
             data: {
-                images: imagePaths,
+                images: imageUrl,
+                link,
             },
         });
 

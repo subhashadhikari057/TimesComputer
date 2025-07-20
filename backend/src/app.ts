@@ -27,6 +27,7 @@ import credentials from './middlewares/credentials';
 dotenv.config();
 
 const app = express();
+const uploadPath = path.join(__dirname, "uploads");
 
 // ✅ Security Middlewares
 app.use(helmet());

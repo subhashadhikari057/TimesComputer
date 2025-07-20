@@ -8,6 +8,7 @@ import {
     updateBrandService,
     deleteBrandService,
 } from "../services/brand.service";
+import prisma from "../prisma/client";
 
 export const addBrand = async (req: Request, res: Response) => {
     try {
@@ -49,7 +50,8 @@ export const getBrandById = async (req: Request, res: Response) => {
         if (isNaN(id)) return res.status(400).json({ error: "Invalid Brand ID." });
 
         const Brand = await getBrandByIdService(id);
-        res.status(200).json({ message: "Brand retrieved successfully.", data: Brand });
+        const product = await prisma.product.findMany({ where: { id } });
+        res.status(200).json({ message: "Brand retrieved successfully.", data: Brand, product });
     } catch (error: any) {
         const status = error.message === "Brand not found." ? 404 : 500;
         res.status(status).json({ error: error.message });
