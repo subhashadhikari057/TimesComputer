@@ -6,12 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import * as PhosphorIcon from "phosphor-react";
-
 interface DropdownOption {
   label: string;
   value: string;
-  icon?: string; // Optional icon (backend or dummy)
+  icon?: string; // Optional icon (image URL only)
 }
 
 interface DropdownProps {
@@ -26,10 +24,18 @@ interface DropdownProps {
   enableIcon?: boolean;
 }
 
-function renderIcon(iconName?: string, className = "h-4 w-4 mr-2") {
-  if (!iconName) return null;
-  const IconComponent = (PhosphorIcon as any)[iconName];
-  return IconComponent ? <IconComponent className={className} weight="regular" /> : null;
+function renderIcon(iconUrl?: string, className = "h-4 w-4 mr-2") {
+  if (!iconUrl) return null;
+  
+  // Render as image only
+  return (
+    <img 
+      src={iconUrl} 
+      alt="Category icon" 
+      className={className}
+      style={{ filter: 'brightness(0) saturate(100%) invert(20%) sepia(18%) saturate(1952%) hue-rotate(200deg) brightness(95%) contrast(95%)' }}
+    />
+  );
 }
 
 export default function Dropdown({

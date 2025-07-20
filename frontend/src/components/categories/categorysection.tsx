@@ -1,30 +1,105 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CategoryCard } from "./categoriecard";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import Link from "next/link";
+import { getAllCategories } from "@/api/category";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { getImageUrl } from "@/lib/imageUtils";
+
+interface Category {
+  id: number;
+  title: string;
+  displayTitle: string;
+  image: string;
+}
 
 const TopCategories = () => {
-  const categories = [
-    { id: 1, title: "gaming laptop", displayTitle: "Gaming Laptop", image: "/products/Frame 68.png" },
-    { id: 2, title: "business laptop", displayTitle: "Business Laptop", image: "/products/Frame 134.png" },
-    { id: 3, title: "student laptop", displayTitle: "Student Laptop", image: "/products/Frame 135.png" },
-    { id: 4, title: "everyday laptop", displayTitle: "Everyday Laptop", image: "/products/Frame 136.png" },
-    { id: 5, title: "mac", displayTitle: "Mac", image: "/topcat/mac.avif" },
-    { id: 6, title: "keyboard", displayTitle: "Keyboard", image: "/topcat/keyboard.jpeg" },
-    { id: 7, title: "mouse", displayTitle: "Mouse", image: "/topcat/mouse.png" },
-    { id: 8, title: "monitor", displayTitle: "Monitor", image: "/topcat/monitor.jpeg" },
-  ];
-
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // Transform backend categories to component format
+  const transformCategories = (backendCategories: any[]): Category[] => {
+    return backendCategories.map((category) => ({
+      id: category.id,
+      title: category.name.toLowerCase(),
+      displayTitle: category.name,
+      image: getImageUrl(category.image)
+    }));
+  };
+
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getAllCategories();
+        const categoriesData = response.data || [];
+        const transformedCategories = transformCategories(categoriesData);
+        setCategories(transformedCategories);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+        setError("Failed to load categories");
+        // Fallback to empty array on error
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const visibleCategories =
     isMobile && !showAll ? categories.slice(0, 4) : categories;
 
-    const slugify = (text: string) => {
-      return text.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-    }
+  const slugify = (text: string) => {
+    return text.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-3 md:px-4 md:pb-2">
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-900">Top Categories</h2>
+        </div>
+        <div className="flex justify-center items-center py-8">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-3 md:px-4 md:pb-2">
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-900">Top Categories</h2>
+        </div>
+        <div className="text-center py-8 text-gray-500">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (categories.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-3 md:px-4 md:pb-2">
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-900">Top Categories</h2>
+        </div>
+        <div className="text-center py-8 text-gray-500">
+          No categories available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-3 md:px-4 md:pb-2">
@@ -35,27 +110,29 @@ const TopCategories = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 overflow-x-auto">
         {visibleCategories.map((category) => (
           <Link
-          key={category.id}
-          href={`/category/${encodeURIComponent(category.title)}`}
+            key={category.id}
+            href={`/category/${encodeURIComponent(category.title)}`}
           >
-          <CategoryCard
-            image={category.image}
-            title={category.displayTitle}
-            onClick={() => { }}
-            className="min-h-[60px] md:min-h-[80px]"
-          />
+            <CategoryCard
+              image={category.image}
+              title={category.displayTitle}
+              onClick={() => { }}
+              className="min-h-[60px] md:min-h-[80px]"
+            />
           </Link>
         ))}
       </div>
 
-      <div className="mt-4 md:hidden text-center">
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="text-primary font-medium hover:underline"
-        >
-          {showAll ? "View Less" : "View More"}
-        </button>
-      </div>
+      {categories.length > 4 && (
+        <div className="mt-4 md:hidden text-center">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="text-primary font-medium hover:underline"
+          >
+            {showAll ? "View Less" : "View More"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

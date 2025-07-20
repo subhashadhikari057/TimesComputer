@@ -5,104 +5,48 @@ import { Product } from "../../../types/product";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
+import { getAllProducts } from "@/api/product";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 function PopularProductsSection() {
-  const products: Product[] = [
-    {
-      id: 1,
-      images: ['/products/Frame 68.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: "best seller",
-      category: "Laptops"
-    },
-    {
-      id: 2,
-      images: ['/products/Frame 134.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: "new",
-      category: undefined
-    },
-    {
-      id: 3,
-      images: ['/products/Frame 135.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: undefined,
-      category: undefined
-    },
-    {
-      id: 4,
-      images: ['/products/Frame 136.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: undefined,
-      category: undefined
-    },
-    {
-      id: 5,
-      images: ['/products/Frame 136.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: undefined,
-      category: undefined
-    },
-    {
-      id: 6,
-      images: ['/products/Frame 136.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: undefined,
-      category: undefined
-    },
-    {
-      id: 7,
-      images: ['/products/Frame 136.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: undefined,
-      category: undefined
-    },
-    {
-      id: 8,
-      images: ['/products/Frame 136.png'],
-      rating: 4.5,
-      reviews: 200,
-      title: 'Apple 2024 MacBook Pro (16-inch)',
-      price: 149000,
-      currency: 'Rs',
-      tag: undefined,
-      category: undefined
-    },
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const initialCount = isMobile ? 4 : 8;
   const stepCount = 4;
   const [visibleCount, setVisibleCount] = useState(initialCount);
 
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getAllProducts();
+        // Filter only published products
+        const publishedProducts = Array.isArray(data) ? data.filter((product: any) => product.isPublished) : [];
+        
+        // Sort products by view count (most viewed first)
+        const sortedByViews = publishedProducts.sort((a: any, b: any) => {
+          const viewsA = a.views || a.viewCount || 0;
+          const viewsB = b.views || b.viewCount || 0;
+          return viewsB - viewsA; // Descending order (highest views first)
+        });
+        
+        setProducts(sortedByViews);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+        setError("Failed to load products");
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     // Reset visible count when screen size changes
@@ -120,6 +64,39 @@ function PopularProductsSection() {
   };
 
   const isFullyExpanded = visibleCount >= products.length;
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 md:py-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Popular Products</h2>
+        <div className="flex justify-center items-center py-8">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 md:py-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Popular Products</h2>
+        <div className="text-center py-8 text-gray-500">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 md:py-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Popular Products</h2>
+        <div className="text-center py-8 text-gray-500">
+          No products available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:py-8">

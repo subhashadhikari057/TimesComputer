@@ -1,10 +1,8 @@
-import { dummyProducts } from '@/lib/dummyproduct';
 import React, { useEffect, useState } from 'react'
 import ProductCard from './productcard';
-import axios from 'axios';
-import Link from 'next/link';
-import Image from 'next/image';
 import { Product } from "../../../types/product";
+import { getAllProducts } from '@/api/product';
+
 interface RecommendedProps {
     category?:string,
     currentSlug?:string
@@ -16,17 +14,26 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
     useEffect(() => {
       (async () => {
         try {
-          // -- Use this when backend is ready:
-          /*
-          const res = await axios.get(`/product?category=${category}`);
-          const filtered = res.data.filter((p: Product) => p.slug !== currentSlug);
+          const data = await getAllProducts();
+          const allProducts = Array.isArray(data) ? data : [];
+          
+          // Filter by category if provided, exclude current product, and limit to 4
+          let filtered = allProducts.filter((p: Product) => 
+            p.slug !== currentSlug && p.isPublished
+          );
+          
+          // If category is provided, filter by category
+          if (category) {
+            filtered = filtered.filter((p: Product) => {
+              const productCategory = typeof p.category === 'string' ? p.category : (p.category as any)?.name;
+              return productCategory?.toLowerCase() === category.toLowerCase();
+            });
+          }
+          
           setRecommended(filtered.slice(0, 4));
-          */
-  
-          // Temporary dummy fallback:
-          setRecommended(dummyProducts);
         } catch (err) {
           console.error("Failed to fetch recommended products", err);
+          setRecommended([]);
         }
       })();
     }, [category, currentSlug]);

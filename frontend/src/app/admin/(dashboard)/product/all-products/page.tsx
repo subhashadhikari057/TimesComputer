@@ -10,6 +10,7 @@ import {
   Eye,
   Calendar,
   Trash2,
+  Edit,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
@@ -19,6 +20,9 @@ import { useTableData } from "@/hooks/useTableState";
 import { useEffect, useState } from "react";
 import { getAllProducts, deleteProduct } from "@/api/product";
 import { toast } from "sonner";
+import { getImageUrl } from "@/lib/imageUtils";
+import Image from "next/image";
+import { DeleteConfirmation } from "@/components/common/helper_function";
 
 // Main Component
 export default function ViewProductsPage() {
@@ -53,18 +57,33 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: true,
       width: "240px",
-      render: (product: any) => (
-        <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-            <Package className="h-6 w-6 text-blue-600" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {product.name}
+      render: (product: any) => {
+        const imageUrl = product.images?.[0] ? getImageUrl(product.images[0]) : null;
+        return (
+          <div className="flex items-center space-x-4">
+            <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden">
+              {imageUrl ? (
+                <Image
+                  src={imageUrl}
+                  alt={product.name}
+                  width={48}
+                  height={48}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                  <Package className="h-6 w-6 text-blue-600" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {product.name}
+              </div>
             </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: "category",

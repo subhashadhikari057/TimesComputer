@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { getProductBySlug } from "@/api/product";
 import { Product } from "../../../../../types/product";
 import Reccomendedproducts from "@/components/products/reccomendedproducts";
+import { getImageUrl } from "@/lib/imageUtils";
 
 export default function ProductDetails() {
   const [productData, setProductData] = useState<Product>({});
@@ -77,7 +78,7 @@ export default function ProductDetails() {
                 }`}
               >
                 <Image
-                  src={thumb || "/products/Frame_68.png"}
+                  src={thumb ? getImageUrl(thumb) : "/products/Frame_68.png"}
                   alt={`Product view ${index + 1}`}
                   className="w-full h-full object-cover"
                   height={129.21}
@@ -92,7 +93,7 @@ export default function ProductDetails() {
         <div className="lg:col-span-6 order-1 lg:order-2">
           <div className="bg-gray-50 rounded-lg p-8 flex items-center justify-center">
             <Image
-              src={productData?.images?.[selectedImage] || "/products/Frame_68.png"}
+              src={productData?.images?.[selectedImage] ? getImageUrl(productData.images[selectedImage]) : "/products/Frame_68.png"}
               alt={productData?.name ?? "image not found"}
               className="max-w-full max-h-96 object-contain"
               height={551.72}
@@ -122,9 +123,8 @@ export default function ProductDetails() {
             <div className="mb-6">
               <span className="text-sm text-gray-600">Price: </span>
               <span className="text-2xl font-bold text-blue-600">
-                Rs. {productData?.price}
+                Rs {productData?.price ? productData.price.toLocaleString('en-IN') : "Price not available"}
               </span>
-              <span className="text-sm text-gray-500 ml-2">/pcs</span>
             </div>
 
             <Button className="w-full bg-primary text-white py-3 mb-4">

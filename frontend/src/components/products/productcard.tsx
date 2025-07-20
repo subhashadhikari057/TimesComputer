@@ -3,6 +3,7 @@ import Image from "next/image";
 
 import Link from 'next/link'; 
 import { Product } from "../../../types/product";
+import { getImageUrl } from "@/lib/imageUtils";
 
 interface ProductCardProps {
   product: Product;
@@ -10,17 +11,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, compact = false }: ProductCardProps) {
-  // const renderStars = (rating: number) =>
-  //   Array.from({ length: 5 }).map((_, i) => (
-  //     <Star
-  //       key={i}
-  //       className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.floor(rating)
-  //         ? "text-yellow-400 fill-yellow-400"
-  //         : "text-gray-300"
-  //         }`}
-  //     />
-  //   ));
-
   const getTagColor = (tag: string) => {
     switch (tag.toLowerCase()) {
       case "new":
@@ -49,8 +39,8 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         )}
 
         <Image
-          src={product?.images?.[0] ||"/image.png"}
-          alt={product.name || "image not found"}
+          src={product?.images?.[0] ? getImageUrl(product.images[0]) : "/image.png"}
+          alt={product.name || "Product image"}
           fill
           className="object-contain p-2"
           sizes={compact ? "33vw" : "(max-width: 640px) 90vw, 250px"}
@@ -60,22 +50,13 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
 
       {/* ---------- Info ---------- */}
       <div className={`flex flex-col gap-2 ${compact ? 'p-2' : 'p-3 sm:p-4'}`}>
-        {/* {!compact && (
-          // <div className="flex items-center gap-1">
-          //   {renderStars(product.rating || "")}
-          //   <span className="text-[10px] sm:text-xs text-gray-600">
-          //     {product.rating} ({product.reviews})
-          //   </span>
-          // </div>
-        )} */}
-
         <h3 className={`line-clamp-2 ${compact ? 'text-[14px]' : 'text-xs sm:text-sm'} font-medium text-gray-900 leading-snug`}>
-          {product.title}
+          {product.name}
         </h3>
 
         <div className="mt-1 flex items-center justify-between">
           <span className={`font-semibold text-blue-600 ${compact ? 'text-[10px]' : 'text-xs sm:text-base'}`}>
-            {product.currency} {product?.price || "not avilable"}
+            Rs {product?.price ? product.price.toLocaleString('en-IN') : "Price not available"}
           </span>
 
           {(

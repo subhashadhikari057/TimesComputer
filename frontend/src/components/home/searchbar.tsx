@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Input } from "../ui/input";
 import { useRouter, usePathname } from "next/navigation";
 import { Product } from "../../../types/product";
-import { dummyProducts } from "@/lib/dummyproduct";
+import { getAllProducts } from "@/api/product";
 
 interface SearchBarProps {
   isMobile?: boolean;
@@ -16,21 +16,37 @@ export default function SearchBar({ isMobile = false }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredResults, setFilteredResults] = useState<Product[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+  // Fetch all products on component mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await getAllProducts();
+        const products = Array.isArray(data) ? data.filter((product: any) => product.isPublished) : [];
+        setAllProducts(products);
+      } catch (error) {
+        console.error("Failed to fetch products for search:", error);
+        setAllProducts([]);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     const trimmedQuery = searchQuery.trim();
-    if (!trimmedQuery) {
+    if (!trimmedQuery || allProducts.length === 0) {
       setFilteredResults([]);
       setIsDropdownOpen(false);
       return;
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = dummyProducts.filter((product: Product) => {
+    const filtered = allProducts.filter((product: Product) => {
       const searchFields = [
         product.name?.toLowerCase(),
-        product.title?.toLowerCase(),
-        product.brand?.toLowerCase(),
+        typeof product.brand === 'string' ? product.brand.toLowerCase() : (product.brand as any)?.name?.toLowerCase(),
       ].filter(Boolean) as string[];
 
       return query.length === 1
@@ -38,9 +54,9 @@ export default function SearchBar({ isMobile = false }: SearchBarProps) {
         : searchFields.some(field => field.includes(query));
     });
 
-    setFilteredResults(filtered);
+    setFilteredResults(filtered.slice(0, 8)); // Limit to 8 results
     setIsDropdownOpen(filtered.length > 0);
-  }, [searchQuery]);
+  }, [searchQuery, allProducts]);
 
   const handleResultClick = (slug: string) => {
     router.push(`/products/${slug}`);
@@ -88,10 +104,16 @@ export default function SearchBar({ isMobile = false }: SearchBarProps) {
               className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm transition-colors"
               role="option"
             >
-              <div className="font-medium">{item.name || item.title}</div>
+              <div className="font-medium">{item.name}</div>
               <div className="flex justify-between">
-                {item.brand && <span className="text-xs text-gray-500">{item.brand}</span>}
-                <span className="text-xs font-semibold">${item.price?.toFixed(2)}</span>
+                {item.brand && (
+                  <span className="text-xs text-gray-500">
+                    {typeof item.brand === 'string' ? item.brand : (item.brand as any)?.name}
+                  </span>
+                )}
+                <span className="text-xs font-semibold">
+                  Rs {item.price ? item.price.toLocaleString('en-IN') : "N/A"}
+                </span>
               </div>
             </button>
           ))}

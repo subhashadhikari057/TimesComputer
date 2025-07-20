@@ -9,25 +9,94 @@ import { useState, useEffect } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
-import { laptopCategories, navLinks } from "@/lib/dummyData";
-import { Product } from "../../../types/product";
-import { dummyProducts } from "@/lib/dummyproduct";
+import { navLinks } from "@/lib/dummyData";
 import SearchBar from "./searchbar";
+import { getAllCategories } from "@/api/category";
+import { getImageUrl } from "@/lib/imageUtils";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [filteredResults, setFilteredResults] = useState<typeof dummyProducts>([]);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
+  // Transform backend categories to dropdown format
+  const transformCategories = (backendCategories: any[]) => {
+    // Create a simple SVG for "All Products" 
+    const allProductsIcon = 'data:image/svg+xml;base64,' + btoa(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+      </svg>
+    `);
+    
+    const allProductsOption = { label: "All Products", value: "products", icon: allProductsIcon };
+    
+    const transformedCategories = backendCategories.map((category) => ({
+      label: category.name,
+      value: category.name.toLowerCase().replace(/\s+/g, ' ').trim(),
+      icon: getImageUrl(category.icon) // Use getImageUrl for proper image handling
+    }));
+
+    return [allProductsOption, ...transformedCategories];
+  };
+
+  // Fetch categories from backend
+  const fetchCategories = async () => {
+    try {
+      setIsLoadingCategories(true);
+      const response = await getAllCategories();
+      const categoriesData = response.data || [];
+      const transformedCategories = transformCategories(categoriesData);
+      setCategories(transformedCategories);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+      // Fallback to empty array if API fails
+      const fallbackIcon = 'data:image/svg+xml;base64,' + btoa(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+        </svg>
+      `);
+      setCategories([{ label: "All Products", value: "products", icon: fallbackIcon }]);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Refresh categories when window gets focus (user comes back after adding categories)
+  useEffect(() => {
+    const handleWindowFocus = () => {
+      fetchCategories();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchCategories();
+      }
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   const getCurrentCategory = () => {
     if (pathname === "/") return undefined;
     if (pathname === "/products") return "products";
     if (pathname.startsWith("/category/")) {
       const categoryFromUrl = decodeURIComponent(pathname.split("/").pop() || "");
-      const matchingCategory = laptopCategories.find((cat) => cat.value === categoryFromUrl);
+      const matchingCategory = categories.find((cat: any) => cat.value === categoryFromUrl);
       return matchingCategory ? matchingCategory.value : undefined;
     }
     return undefined;
@@ -119,7 +188,7 @@ export default function Navbar() {
           {/* Dropdown */}
           <div className="w-[160px] md:w-[180px] flex-shrink-0">
             <Dropdown
-              options={laptopCategories}
+              options={categories}
               placeholder="Categories"
               value={currentCategory}
               onChange={handleCategoryChange}

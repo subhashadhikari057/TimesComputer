@@ -3,22 +3,15 @@
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import { getAllBrands } from '@/api/brand';
+import { getImageUrl } from '@/lib/imageUtils';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
-const brands = [
-  { name: 'Dell', imgSrc: '/brands/Frame 162.png', bgColor: 'bg-blue-500', textColor: 'text-white' },
-  { name: 'Apple', imgSrc: '/brands/Frame 163.png', bgColor: 'bg-gray-400', textColor: 'text-white' },
-  { name: 'Lenovo', imgSrc: '/brands/Frame 164.png', bgColor: 'bg-white', textColor: 'text-red-500' },
-  { name: 'ASUS', imgSrc: '/brands/Frame 165.png', bgColor: 'bg-black', textColor: 'text-white' },
-  { name: 'HP', imgSrc: '/brands/Frame 166.png', bgColor: 'bg-blue-600', textColor: 'text-white' },
-  { name: 'Acer', imgSrc: '/brands/Frame 167.png', bgColor: 'bg-green-500', textColor: 'text-white' },
-  {
-    name: 'Microsoft',
-    imgSrc: '/brands/Frame 168.png',
-    bgColor: 'bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-blue-500',
-    textColor: 'text-white',
-  },
-];
-
+interface Brand {
+  id: number;
+  name: string;
+  image: string;
+}
 
 type BrandCarouselProps = {
   title?: string;
@@ -29,6 +22,9 @@ export default function BrandCarousel({
   title = 'Shop by brands',
   titleClassName = '',
 }: BrandCarouselProps) {
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [translateX, setTranslateX] = useState(0);
   const [brandWidth, setBrandWidth] = useState(208);
@@ -39,12 +35,33 @@ export default function BrandCarousel({
   const pausedTimeRef = useRef<number>(0);
   const SCROLL_SPEED = 35;
 
+  // Fetch brands from backend
   useEffect(() => {
-    if (cardRef.current) {
-      const width = cardRef.current.offsetWidth + 16; // gap-4 = 16px
+    const fetchBrands = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getAllBrands();
+        const brandsData = response.data || [];
+        setBrands(brandsData);
+      } catch (err) {
+        console.error("Failed to fetch brands:", err);
+        setError("Failed to load brands");
+        setBrands([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrands();
+  }, []);
+
+  useEffect(() => {
+    if (cardRef.current && brands.length > 0) {
+      const width = cardRef.current.offsetWidth + 24; // gap-6 = 24px
       setBrandWidth(width);
     }
-  }, []);
+  }, [brands]);
 
   const TOTAL_WIDTH = brands.length * brandWidth;
 
@@ -88,8 +105,47 @@ export default function BrandCarousel({
   const handleMouseEnter = () => setIsPaused(true);
   const handleMouseLeave = () => setIsPaused(false);
 
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
+          {title}
+        </h2>
+        <div className="flex justify-center items-center py-16">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
+          {title}
+        </h2>
+        <div className="text-center py-16 text-gray-500">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (brands.length === 0) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
+          {title}
+        </h2>
+        <div className="text-center py-16 text-gray-500">
+          No brands available
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto px-2 py-6 font-sans">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
         {title}
       </h2>
@@ -97,32 +153,35 @@ export default function BrandCarousel({
       <div className="relative overflow-hidden">
         <div
           ref={containerRef}
-          className="flex gap-4 transition-transform duration-100 ease-out"
+          className="flex gap-6 transition-transform duration-100 ease-out"
           style={{
             transform: `translateX(-${translateX}px)`,
             width: `${brandWidth * brands.length * 2}px`,
           }}
         >
           {[...brands, ...brands].map((brand, index) => (
-  <Link
-    key={`${brand.name}-${index}`}
-    href={`/brand/${brand.name.toLowerCase()}`}
-    ref={index === 0 ? cardRef : null}
-    className="relative flex-shrink-0 w-36 h-20 sm:w-48 sm:h-24 rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-300"
-    onMouseEnter={handleMouseEnter}
-    onMouseLeave={handleMouseLeave}
-    aria-label={`Shop by brand ${brand.name}`}
-  >
-    <Image
-      src={brand.imgSrc}
-      alt={brand.name}
-      fill
-      style={{ objectFit: 'cover' }}
-      priority
-      sizes="(max-width: 640px) 12rem, 16rem" // for responsiveness
-    />
-  </Link>
-))}
+            <Link
+              key={`${brand.name}-${index}`}
+              href={`/brand/${brand.name.toLowerCase()}`}
+              ref={index === 0 ? cardRef : null}
+              className="relative flex-shrink-0 group"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              aria-label={`Shop by brand ${brand.name}`}
+            >
+              <div className="w-40 h-24 sm:w-48 sm:h-28 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-300 p-4 flex items-center justify-center">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={getImageUrl(brand.image)}
+                    alt={brand.name}
+                    fill
+                    className="object-contain filter brightness-75 group-hover:brightness-100 transition-all duration-300"
+                    sizes="(max-width: 640px) 160px, 192px"
+                  />
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

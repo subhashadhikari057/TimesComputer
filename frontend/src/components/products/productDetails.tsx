@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 import { PiWhatsappLogoThin } from "react-icons/pi";
+import { getImageUrl } from "@/lib/imageUtils";
 
 
 // Dummy data structure - easy to replace with API data
@@ -137,7 +138,7 @@ export default function ProductDetail() {
                   }`}
               >
                 <Image
-                  src={thumb || "/placeholder.svg"}
+                  src={thumb ? getImageUrl(thumb) : "/placeholder.svg"}
                   alt={`Product view ${index + 1}`}
                   className="w-full h-full object-cover"
                   height={129.21}
@@ -152,7 +153,7 @@ export default function ProductDetail() {
         <div className="lg:col-span-6 order-1 lg:order-2">
           <div className="bg-gray-50 rounded-lg p-8 flex items-center justify-center">
             <Image
-              src={product.mainImage || "/placeholder.svg"}
+              src={product.mainImage ? getImageUrl(product.mainImage) : "/placeholder.svg"}
               alt={product.title}
               className="max-w-full max-h-96 object-contain"
               height={551.72}
@@ -164,22 +165,13 @@ export default function ProductDetail() {
         {/* Product Information */}
         <div className="lg:col-span-5 order-3 space-y-6">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-4">{product.title}</h1>
-
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex items-center">{renderStars(product.rating)}</div>
-              <span className="text-sm text-gray-600">
-                {product.rating} ({product.reviewCount})
-              </span>
-            </div>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-4">{product.name}</h1>
 
             <div className="mb-6">
               <span className="text-sm text-gray-600">Price: </span>
               <span className="text-2xl font-bold text-blue-600">
-                {product.currency}
-                {product.price}
+                Rs {product.price ? product.price.toLocaleString('en-IN') : "Price not available"}
               </span>
-              <span className="text-sm text-gray-500 ml-2">/pcs</span>
             </div>
 
             <Button className="w-full bg-primary text-white py-3 mb-4">Buy in bulk</Button>
