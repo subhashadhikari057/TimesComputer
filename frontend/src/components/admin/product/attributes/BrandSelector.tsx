@@ -81,7 +81,7 @@ export default function BrandSelector({
           type="button"
           onClick={() => router.push("/admin/attributes/brand")}
           disabled={loading}
-          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed "
+          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-500 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500  transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed "
         >
           <Plus size={14} className="mr-1" />
           Add Brand

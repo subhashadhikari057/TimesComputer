@@ -3,111 +3,52 @@
 import {
   Plus,
   Palette,
-  CheckCircle,
-  Package,
   Search,
   Download,
   Calendar,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import ColorPopup from "./colorPopup";
+import { deleteColor, getAllColors } from "@/api/color";
 
 // Color interface
 interface Color {
   id: number;
   name: string;
   hexCode: string;
-  productCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
 // Main Component
 export default function ColorManagementPage() {
+  const [colorData, setColorData] = useState<Color[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingColor, setEditingColor] = useState<{
-    id: number;
-    name: string;
-    color: string;
-  } | null>(null);
+  const [editingColor, setEditingColor] = useState<Color | undefined>(undefined);
 
-  // Sample data matching the product page structure
-  const colorData: Color[] = [
-    {
-      id: 1,
-      name: "Midnight Black",
-      hexCode: "#000000",
-      productCount: 45,
-      createdAt: "2025-07-01",
-      updatedAt: "2025-07-15",
-    },
-    {
-      id: 2,
-      name: "Snow White",
-      hexCode: "#FFFFFF",
-      productCount: 32,
-      createdAt: "2025-06-24",
-      updatedAt: "2025-07-10",
-    },
-    {
-      id: 3,
-      name: "Ocean Blue",
-      hexCode: "#0066CC",
-      productCount: 12,
-      createdAt: "2025-07-15",
-      updatedAt: "2025-07-15",
-    },
-    {
-      id: 4,
-      name: "Forest Green",
-      hexCode: "#228B22",
-      productCount: 67,
-      createdAt: "2025-07-10",
-      updatedAt: "2025-07-12",
-    },
-    {
-      id: 5,
-      name: "Sunset Orange",
-      hexCode: "#FF6347",
-      productCount: 23,
-      createdAt: "2025-06-30",
-      updatedAt: "2025-07-08",
-    },
-    {
-      id: 6,
-      name: "Purple Rain",
-      hexCode: "#8A2BE2",
-      productCount: 8,
-      createdAt: "2025-06-25",
-      updatedAt: "2025-07-05",
-    },
-    {
-      id: 7,
-      name: "Rose Gold",
-      hexCode: "#E8B4A0",
-      productCount: 0,
-      createdAt: "2025-06-22",
-      updatedAt: "2025-07-01",
-    },
-    {
-      id: 8,
-      name: "Silver",
-      hexCode: "#C0C0C0",
-      productCount: 28,
-      createdAt: "2025-06-20",
-      updatedAt: "2025-07-03",
-    },
-  ];
+  const fetchColors = async () => {
+    try {
+      const res = await getAllColors();
+      setColorData(res.data);
+    } catch (error) {
+      toast.error("Failed to fetch colors.");
+    } finally{
+      setLoading(false);
+    }
+  };
 
-  // Define columns for the table (similar to product page)
+  useEffect(() => {
+    fetchColors();
+  }, []);
+
   const colorColumns: Column[] = [
     {
       id: "name",
@@ -152,30 +93,6 @@ export default function ColorManagementPage() {
       ),
     },
     {
-      id: "productCount",
-      label: "Products",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (color: Color) => (
-        <div className="flex items-center space-x-1">
-          <Package className="w-4 h-4 text-gray-400" />
-          <span
-            className={`text-sm font-medium ${
-              color.productCount === 0
-                ? "text-red-600"
-                : color.productCount < 10
-                ? "text-yellow-600"
-                : "text-gray-900"
-            }`}
-          >
-            {color.productCount} items
-          </span>
-        </div>
-      ),
-    },
-    {
       id: "createdAt",
       label: "Created At",
       sortable: true,
@@ -212,21 +129,19 @@ export default function ColorManagementPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  // Event handlers
-  const handleEdit = (row: any, index: number) => {
-    // Convert Color to the format expected by ColorPopup
-    const colorData = {
-      id: row.id,
-      name: row.name,
-      color: row.hexCode, // Map hexCode to color for ColorPopup
-    };
-    setEditingColor(colorData);
+  const handleEdit = (row: any) => {
+    setEditingColor(row);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any, index: number) => {
-    console.log("Delete color:", row, index);
-    toast.success("Color deleted successfully!");
+  const handleDelete = async (row: any) => {
+    try {
+      await deleteColor(row.id);
+      toast.success("Color deleted successfully");
+      await fetchColors();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete color");
+    }
   };
 
   const handleExport = () => {
@@ -244,16 +159,18 @@ export default function ColorManagementPage() {
 
   const handleCloseEditPopup = () => {
     setShowEditPopup(false);
-    setEditingColor(null);
+    setEditingColor(undefined);
   };
 
   // Calculate stats
   const totalColors = colorData.length;
-  const colorsWithProducts = colorData.filter((c) => c.productCount > 0).length;
-  const totalProducts = colorData.reduce(
-    (sum, color) => sum + color.productCount,
-    0
-  );
+  // const colorsWithProducts = colorData.filter((c) => c.productCount > 0).length;
+  // const totalProducts = colorData.reduce(
+  //   (sum, color) => sum + color.productCount,
+  //   0
+  // );
+
+ 
 
   return (
     <div className="p-6 space-y-6">
@@ -277,13 +194,18 @@ export default function ColorManagementPage() {
       </div>
 
       {/* Add Color Popup */}
-      <ColorPopup isOpen={showAddPopup} onClose={handleCloseAddPopup} />
+      <ColorPopup 
+      isOpen={showAddPopup} 
+      onClose={handleCloseAddPopup}
+      onSuccess={fetchColors}
+       />
 
       {/* Edit Color Popup */}
       <ColorPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
-        initialData={editingColor || undefined}
+        onSuccess={fetchColors}
+        initialData={editingColor}
       />
 
       {/* Statistics - Same structure as product page */}
@@ -295,7 +217,7 @@ export default function ColorManagementPage() {
           Icon={Palette}
           color="text-purple-600"
         />
-        <StatCard
+        {/* <StatCard
           title="Colors in Use"
           value={colorsWithProducts.toString()}
           change={`${Math.round(
@@ -310,7 +232,7 @@ export default function ColorManagementPage() {
           change={`Avg ${Math.round(totalProducts / totalColors)} per color`}
           Icon={Package}
           color="text-blue-600"
-        />
+        /> */}
       </div>
 
       {/* Table Container - Same structure as product page */}
@@ -351,20 +273,20 @@ export default function ColorManagementPage() {
                   Export
                 </button>
 
-                <div className="flex-1">
+                {/* <div className="flex-1">
                   <FilterComponent
                     filters={filters}
                     filterConfigs={filterConfigs}
                     onFilterChange={handleFilterChange}
                     onResetFilters={handleResetFilters}
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Table - Same as product page */}
+        {loading ? <div className="p-6 text-center">Loading colors...</div> : 
         <DefaultTable
           selectedItems={selectedItems}
           onSelectAll={handleSelectAll}
@@ -375,7 +297,9 @@ export default function ColorManagementPage() {
           onDelete={handleDelete}
           sortConfig={sortConfig}
           onSort={handleSort}
-        />
+        /> }
+
+        
       </div>
     </div>
   );

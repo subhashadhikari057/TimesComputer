@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
-import Dropdown from './form/form-elements/dropdown';
+import Dropdown from '@/components/form/form-elements/dropdown';
 
 const sortOptions = [
   { label: 'Featured', value: 'featured' },

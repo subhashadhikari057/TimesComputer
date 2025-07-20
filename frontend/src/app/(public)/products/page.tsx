@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import SortSelect from "@/components/sortselect";
+import SortSelect from "@/components/common/sortselect";
 import { getAllProducts } from "@/api/product";
 import ProductCard from "@/components/products/productcard";
 import FilterSidebar from "@/components/sidebar/sidebar";

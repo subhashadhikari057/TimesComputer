@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { getAllFeatureTags, createFeatureTag } from "@/api/featureTag";
+import { getAllFeatureTags } from "@/api/featureTag";
+import { MultiSelectDropdown } from "@/components/form/form-elements/DefaultDropdown";
 
 interface FeatureTag {
   id: number;
@@ -39,13 +40,16 @@ export default function FeatureTagSelector({
     }
   };
 
-  const handleTagChange = (tagId: number, checked: boolean) => {
-    if (checked) {
-      onFeatureTagsChange([...selectedFeatureTagIds, tagId]);
-    } else {
-      onFeatureTagsChange(selectedFeatureTagIds.filter(id => id !== tagId));
-    }
+  const handleTagsChange = (tagIds: (string | number)[]) => {
+    // Convert to number array since our API expects numbers
+    const numberIds = tagIds.map(id => Number(id));
+    onFeatureTagsChange(numberIds);
   };
+
+  const featureTagOptions = featureTags.map((tag) => ({
+    value: tag.id,
+    label: tag.name,
+  }));
 
   return (
     <div>
@@ -57,49 +61,32 @@ export default function FeatureTagSelector({
           type="button"
           onClick={() => router.push("/admin/attributes/tag")}
           disabled={loading}
-          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 hover:border-purple-300 focus:outline-none focus:ring-1 focus:ring-purple-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-500 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={14} className="mr-1" />
           Add Feature Tag
         </button>
       </div>
 
-      <div className="border border-gray-300 rounded-lg p-3 max-h-40 overflow-y-auto">
-        {loading ? (
-          <div className="text-center py-2">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500 mx-auto"></div>
-          </div>
-        ) : featureTags.length === 0 ? (
-          <p className="text-gray-500 text-sm text-center py-2">
-            No feature tags available
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {featureTags.map((tag) => (
-              <label
-                key={tag.id}
-                className="flex items-center space-x-2 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedFeatureTagIds.includes(tag.id)}
-                  onChange={(e) => handleTagChange(tag.id, e.target.checked)}
-                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                />
-                <span className="text-sm text-gray-700">{tag.name}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+      <MultiSelectDropdown
+        id="featureTags"
+        name="featureTags"
+        value={selectedFeatureTagIds}
+        onChange={handleTagsChange}
+        options={featureTagOptions}
+        placeholder="Select feature tags"
+        disabled={loading}
+        size="md"
+      />
 
+      {/* Selection count */}
       {selectedFeatureTagIds.length > 0 && (
         <div className="mt-2">
           <p className="text-xs text-gray-500">
-            {selectedFeatureTagIds.length} feature tag(s) selected
+            {selectedFeatureTagIds.length} feature tag{selectedFeatureTagIds.length !== 1 ? 's' : ''} selected
           </p>
         </div>
       )}
     </div>
   );
-} 
+}

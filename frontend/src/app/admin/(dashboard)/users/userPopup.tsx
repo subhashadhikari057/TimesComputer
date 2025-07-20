@@ -10,13 +10,19 @@ interface UserFormData {
   id?: number;
   name: string;
   email: string;
-  password?: string;
+  password: string;
 }
 
 interface UserPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData?: Partial<UserFormData>;
+  onSuccess?: () => void;
+  initialData?: {
+    id: number;
+    name: string;
+    email: string;
+    password?: string;
+  };
 }
 
 const INITIAL_FORM_DATA: UserFormData = {
@@ -28,7 +34,8 @@ const INITIAL_FORM_DATA: UserFormData = {
 export default function UserPopup({
   isOpen,
   onClose,
-  initialData = {},
+  onSuccess,
+  initialData,
 }: UserPopupProps) {
   const [form, setForm] = useState<UserFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
@@ -39,15 +46,23 @@ export default function UserPopup({
 
   useEffect(() => {
     if (isOpen) {
-      const updatedForm = { ...INITIAL_FORM_DATA, ...initialData, password: "" };
-      setForm(updatedForm);
+      if (initialData) {
+        setForm({
+          id: initialData.id,
+          name: initialData.name,
+          email: initialData.email,
+          password: initialData.password || "",
+        });
+      } else {
+        setForm(INITIAL_FORM_DATA);
+      }
       setShowValidation(false);
       setError(null);
     }
   }, [isOpen]);
 
   const resetForm = () => {
-    setForm({ ...INITIAL_FORM_DATA, ...initialData, password: "" });
+    setForm(INITIAL_FORM_DATA);
     setShowValidation(false);
     setError(null);
   };
@@ -78,20 +93,23 @@ export default function UserPopup({
       setLoading(true);
       setError(null);
 
-      const saveData = {
-        name: form.name.trim(),
-        email: form.email.trim().toLowerCase(),
-      };
+      const formData = new FormData();
+      formData.append("name", form.name.trim());
+      formData.append("email", form.email.trim());
+      if (!isEditMode) {
+        formData.append("password", form.password);
+      }
 
       if (isEditMode) {
-        await updateAdminUser(initialData.id!, saveData);
+        await updateAdminUser(form.id!, formData);
         toast.success("Admin user updated successfully!");
       } else {
-        await createAdminUser({
-          ...saveData,
-          password: form.password || "",
-        });
+        await createAdminUser(formData);
         toast.success("Admin user created successfully!");
+      }
+
+      if (onSuccess) {
+        onSuccess();
       }
 
       handleCancel();
@@ -120,7 +138,8 @@ export default function UserPopup({
   const getValidationMessage = () => {
     if (form.name.trim() === "") return "Name is required.";
     if (form.email.trim() === "") return "Email is required.";
-    if (!isValidEmail(form.email.trim())) return "Please enter a valid email address.";
+    if (!isValidEmail(form.email.trim()))
+      return "Please enter a valid email address.";
     return "";
   };
 
@@ -142,8 +161,8 @@ export default function UserPopup({
             ? "Updating..."
             : "Creating..."
           : isEditMode
-            ? "Update"
-            : "Add User"
+          ? "Update"
+          : "Add User"
       }
       isLoading={loading}
       maxWidth="md"

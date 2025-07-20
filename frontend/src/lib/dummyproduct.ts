@@ -10,7 +10,7 @@ export const dummyProducts: Product[] = [
       currency: "Rs.",
       tag: "new",
       category: "Laptop",
-      images: ["/products/laptop1.png"],
+      images: ["/products/Frame_68.png"],
       description: "A powerful laptop for daily tasks.",
       specs: {
         Brand: "HP",
@@ -28,7 +28,7 @@ export const dummyProducts: Product[] = [
       currency: "Rs.",
       tag: "best seller",
       category: "Laptop",
-      images: ["/products/laptop2.png"],
+      images: ["/products/Frame_134.png"],
       description: "Reliable laptop for professionals.",
       specs: {
         Brand: "Dell",
@@ -46,7 +46,7 @@ export const dummyProducts: Product[] = [
       currency: "Rs.",
       tag: "limited",
       category: "Keyboard",
-      images: ["/products/keyboard1.png"],
+      images: ["/products/Frame_136.png"],
       description: "Premium wireless keyboard.",
       specs: {
         Brand: "Logitech",
@@ -63,7 +63,7 @@ export const dummyProducts: Product[] = [
       currency: "Rs.",
       tag: "new",
       category: "Laptop",
-      images: ["/products/laptop3.png"],
+      images: ["/products/Frame_135.png"],
       description: "Affordable and efficient.",
       specs: {
         Brand: "Lenovo",

@@ -121,7 +121,7 @@ const DefaultTable: React.FC<DefaultTableProps> = ({
                     column.className
                   }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
                     <span className={`${column.sortable ? "cursor-pointer" : ""} whitespace-nowrap`}>
                       {column.label}
                     </span>

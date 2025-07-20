@@ -6,57 +6,44 @@ import Dropdown from "../form/form-elements/dropdown";
 import { Input } from "../ui/input";
 import { Twitter, Facebook, Search } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
 import { laptopCategories, navLinks } from "@/lib/dummyData";
+import { Product } from "../../../types/product";
+import { dummyProducts } from "@/lib/dummyproduct";
+import SearchBar from "./searchbar";
 
 export default function Navbar() {
-  const searchParams = useSearchParams()
-  const pathname = usePathname()
-  const router = useRouter()
-  
-  // Get the current category from the URL
-  const getCurrentCategory = () => {
-    // On homepage, return undefined to show placeholder
-    if (pathname === '/') {
-      return undefined;
-    }
-    // On products page, return all-products
-    if (pathname === '/products') {
-      return 'all-products';
-    }
-    // On category pages, return the category
-    if (pathname.startsWith('/category/')) {
-      const categoryFromUrl = decodeURIComponent(pathname.split('/').pop() || '');
-      // Find matching category in our options
-      const matchingCategory = laptopCategories.find(cat => cat.value === categoryFromUrl);
-      return matchingCategory ? matchingCategory.value : undefined;
-    }
-    // On brand pages, return undefined to show placeholder
-    if (pathname.startsWith('/brand/')) {
-      return undefined;
-    }
-    // Default to undefined to show placeholder
-    return undefined;
-  };
-  
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const [filteredResults, setFilteredResults] = useState<typeof dummyProducts>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+
+  const getCurrentCategory = () => {
+    if (pathname === "/") return undefined;
+    if (pathname === "/products") return "products";
+    if (pathname.startsWith("/category/")) {
+      const categoryFromUrl = decodeURIComponent(pathname.split("/").pop() || "");
+      const matchingCategory = laptopCategories.find((cat) => cat.value === categoryFromUrl);
+      return matchingCategory ? matchingCategory.value : undefined;
+    }
+    return undefined;
+  };
+
   const currentCategory = getCurrentCategory();
 
   const handleCategoryChange = (value: string | undefined) => {
     if (value === undefined) {
-      // When cleared, navigate to home page
       router.push("/");
       return;
     }
-    
-    if (value === "all-products") {
-      // For "All Products", go to products page
+
+    if (value === "products" || value === "all-products") {
       router.push("/products");
     } else {
-      // For specific categories, go to category page
       router.push(`/category/${value}`);
     }
   };
@@ -80,7 +67,7 @@ export default function Navbar() {
           />
 
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-16 text-[16px] font-semibold">
+          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-16 text-[16px] font-bold">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -94,8 +81,8 @@ export default function Navbar() {
 
           {/* Right Contact Info - Desktop only */}
           <div className="hidden md:flex flex-col text-right text-primary text-sm leading-tight">
-            <span className="font-semibold">Have Questions?</span>
-            <a href="tel:9808113344" className="text-lg font-semibold hover:underline">
+            <span className="font-bold">Have Questions?</span>
+            <a href="tel:9808113344" className="text-lg font-bold hover:underline">
               9808113344
             </a>
           </div>
@@ -113,12 +100,7 @@ export default function Navbar() {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         </div>
@@ -133,24 +115,22 @@ export default function Navbar() {
 
       {/* Category + Search + Icons */}
       <section className="bg-primary h-14">
-        <div className="w-full max-w-screen-xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-4">
+        <div className="w-full max-w-screen-xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-4 relative">
           {/* Dropdown */}
           <div className="w-[160px] md:w-[180px] flex-shrink-0">
             <Dropdown
               options={laptopCategories}
-              placeholder="Select Categories"
+              placeholder="Categories"
               value={currentCategory}
               onChange={handleCategoryChange}
               allowDeselect={true}
+              enableIcon={true}
             />
           </div>
 
-          {/* Centered Search */}
+          {/* Desktop Search */}
           <div className="hidden md:flex justify-center flex-1">
-            <Input
-              className="w-full max-w-[450px] h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
-              placeholder="Search"
-            />
+            <SearchBar />
           </div>
 
           {/* Icons */}
@@ -164,14 +144,14 @@ export default function Navbar() {
               <Search className="w-6 h-6" />
             </button>
 
-            {/* Show all icons on desktop */}
+            {/* Desktop Icons */}
             <div className="hidden md:flex items-center gap-6">
               <Twitter className="w-6 h-6" />
               <Facebook className="w-6 h-6" />
               <FaWhatsapp className="w-6 h-6" />
             </div>
 
-            {/* Only Twitter on mobile */}
+            {/* Mobile Icons */}
             <div className="md:hidden">
               <FaWhatsapp className="w-6 h-6" />
             </div>
@@ -179,14 +159,10 @@ export default function Navbar() {
 
           {/* Mobile Search Input */}
           {showMobileSearch && (
-            <div className="md:hidden w-full">
-              <Input
-                className="w-full h-[40px] bg-white text-primary font-semibold text-[16px] border-none"
-                placeholder="Search"
-                autoFocus
-              />
-            </div>
-          )}
+  <div className="md:hidden w-full">
+    <SearchBar isMobile />
+  </div>
+)}
         </div>
       </section>
     </header>
