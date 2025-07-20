@@ -66,7 +66,6 @@ export const updateBrand = async (req: Request, res: Response) => {
         let updateData: any = {};
         if (name && typeof name === 'string') updateData.name = name;
         if (files && files['image'] && files['image'][0]) updateData.image = files['image'][0].path;
-        if (files && files['icon'] && files['icon'][0]) updateData.icon = files['icon'][0].path;
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({ error: "No valid fields provided for update." });
         }
