@@ -307,7 +307,7 @@ export default function CategoryManagementPage() {
         </div>
 
         {loading ? (
-          <div className="p-6">Loading brands...</div>
+          <div className="p-6">Loading Category...</div>
         ) : (
           <DefaultTable
             selectedItems={selectedItems}

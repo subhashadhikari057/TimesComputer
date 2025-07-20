@@ -9,15 +9,16 @@ import {
   Trash2,
   Mail,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import FilterComponent from "@/components/admin/product/filter";
+
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
-import UserPopup from "./userPopup";
 import { getAllAdmins, deleteAdminUser } from "@/api/adminUser";
+import { DeleteConfirmation } from "@/components/common/helper_function";
+import { useRouter } from "next/navigation";
+import UserPopup from "./userPopup";
 
 // User interface
 interface User {
@@ -29,14 +30,20 @@ interface User {
 
 // Main Component
 export default function UsersPage() {
+  const router = useRouter();
   const [userData, setUserData] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Popup state management
-  const [isAddUserPopupOpen, setIsAddUserPopupOpen] = useState(false);
-  const [isEditUserPopupOpen, setIsEditUserPopupOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
+  const [deleteModal, setDeleteModal] = useState<{
+      isOpen: boolean;
+      user: User | null;
+    }>({
+      isOpen: false,
+      user: null
+    });
 
   async function fetchUsers() {
     setLoading(true);
@@ -100,10 +107,9 @@ export default function UsersPage() {
     sortConfig,
     selectedItems,
     processedData,
-    filterConfigs,
+  
     handleSearchChange,
-    handleFilterChange,
-    handleResetFilters,
+  
     handleSort,
     handleSelectAll,
     handleSelectItem,
@@ -115,20 +121,39 @@ export default function UsersPage() {
   });
 
   // Event handlers
-  const handleEdit = (row: any, index: number) => {
-    setEditingUser(row);
-    setIsEditUserPopupOpen(true);
+  const handleEdit = (row: any) => {
+     setEditingUser(row);
+    setShowEditPopup(true);
   };
 
-  const handleDelete = async (row: any, index: number) => {
-    try {
-      await deleteAdminUser(row.id);
-      setUserData((prev) => prev.filter((u) => u.id !== row.id));
-      toast.success("User deleted successfully");
-    } catch (err) {
-      toast.error("Failed to delete user");
-    }
-  };
+  const handleDelete = (row: any) => {
+      setDeleteModal({
+        isOpen: true,
+        user: row
+      });
+    };``
+  
+    const confirmDelete = async () => {
+      if (!deleteModal.user) return;
+      
+      try {
+        await deleteAdminUser(deleteModal.user.id);
+        toast.success("User deleted successfully");
+
+        // Update userData by filtering out the deleted user
+        setUserData(prev => prev.filter(user => user.id !== deleteModal.user!.id));
+
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Failed to delete user");
+      } finally {
+        setDeleteModal({ isOpen: false, user: null });
+      }
+    };
+  
+    const cancelDelete = () => {
+      setDeleteModal({ isOpen: false, user: null });
+    };
+
 
   const handleExport = () => {
     console.log("Export users");
@@ -136,19 +161,18 @@ export default function UsersPage() {
   };
 
   const handleAddUser = () => {
-    console.log("Add user clicked");
-    setIsAddUserPopupOpen(true);
+    setShowAddPopup(true);
   };
 
-  // Popup close handlers
-  const handleCloseAddUserPopup = () => {
-    setIsAddUserPopupOpen(false);
+   const handleCloseAddPopup = () => {
+    setShowAddPopup(false);
   };
 
-  const handleCloseEditUserPopup = () => {
-    setIsEditUserPopupOpen(false);
+  const handleCloseEditPopup = () => {
+    setShowEditPopup(false);
     setEditingUser(undefined);
   };
+
 
   // Calculate stats
   const totalUsers = userData.length;
@@ -175,6 +199,18 @@ export default function UsersPage() {
           </button>
         </div>
       </div>
+
+      <UserPopup 
+            isOpen={showAddPopup} 
+            onClose={handleCloseAddPopup} 
+            onSuccess={fetchUsers}
+            />
+            <UserPopup
+              isOpen={showEditPopup}
+              onClose={handleCloseEditPopup}
+              onSuccess={fetchUsers}
+              initialData={editingUser}
+            />
 
       {/* Statistics  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -272,19 +308,14 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* User Popups */}
-      <UserPopup
-        isOpen={isAddUserPopupOpen}
-        onClose={handleCloseAddUserPopup}
-        onSuccess={fetchUsers}
-      />
-
-      <UserPopup
-        isOpen={isEditUserPopupOpen}
-        onClose={handleCloseEditUserPopup}
-        onSuccess={fetchUsers}
-        initialData={editingUser}
-      />
+       {/* Delete Confirmation Modal */}
+            <DeleteConfirmation
+              isOpen={deleteModal.isOpen}
+              onClose={cancelDelete}
+              onConfirm={confirmDelete}
+              title="Delete User"
+              itemName={deleteModal.user?.name}
+            />
     </div>
   );
 }

@@ -57,12 +57,6 @@ export const convertApiImagesToFormImages = (images: string[]): { file: File; pr
   return images.map(imagePath => createImageFileFromUrl(imagePath));
 };
 
-/**
- * Gets the first image URL from an array, with fallback
- * @param images - Array of image paths
- * @param fallback - Fallback image URL
- * @returns First image URL or fallback
- */
 export const getFirstImageUrl = (images: string[], fallback: string = '/placeholder-image.jpg'): string => {
   if (!images || images.length === 0) {
     return fallback;
