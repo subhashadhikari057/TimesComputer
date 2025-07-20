@@ -34,9 +34,9 @@ export const createProductService = async (data: any) => {
   const {
     name, slug, description, price, stock, isPublished,
     brochure, specs, brandId, categoryId,
-    images, featureTagIds, marketingTagIds, colorIds
+    images, featureTagIds, marketingTagIds, colorIds, isFeature
   } = data;
-  
+
 
   return prisma.product.create({
     data: {
@@ -46,6 +46,7 @@ export const createProductService = async (data: any) => {
       price,
       stock,
       isPublished,
+      isFeature,
       brochure,
       specs,
       brand: brandId ? { connect: { id: brandId } } : undefined,
@@ -79,6 +80,7 @@ export const updateProductService = async (id: number, data: any) => {
     price,
     stock,
     isPublished,
+    isFeature,
     brochure,
     specs,
     brand: brandId !== undefined
