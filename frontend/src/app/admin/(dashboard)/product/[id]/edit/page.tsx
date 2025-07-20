@@ -28,9 +28,9 @@ interface FormData {
   categoryId: number | null;
   colorIds: number[];
   featureTagIds: number[];
-  marketingTagIds: number[];
+  marketingTagIds: number | null;
   specs: { key: string; value: string }[];
-  images: { file: File; preview: string }[];
+  images: { file?: File; preview: string; existingPath?: string }[];
 }
 
 const INITIAL_FORM_DATA: FormData = {
@@ -45,7 +45,7 @@ const INITIAL_FORM_DATA: FormData = {
   categoryId: null,
   colorIds: [],
   featureTagIds: [],
-  marketingTagIds: [],
+  marketingTagIds: null,
   specs: [{ key: "", value: "" }],
   images: [],
 };
@@ -53,7 +53,6 @@ const INITIAL_FORM_DATA: FormData = {
 // Fetch product data using the centralized image utilities
 const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
   const data = await getProductById(Number(id));
-
   return {
     id: data.id,
     name: data.name,
@@ -66,18 +65,17 @@ const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
     brandId: data.brandId || null,
     categoryId: data.categoryId || null,
     colorIds:
-      data.colors?.map((colorRelation: any) => colorRelation.color.id) || [],
+      data.colors?.map((colorRelation: { color: { id: number } }) => colorRelation.color.id) || [],
     featureTagIds:
-      data.featureTags?.map((tagRelation: any) => tagRelation.tag.id) || [],
+      data.featureTags?.map((tagRelation: { tag: { id: number } }) => tagRelation.tag.id) || [],
     marketingTagIds:
-      data.marketingTags?.map((tagRelation: any) => tagRelation.tag.id) || [],
+      data.marketingTags?.map((tagRelation: { tag: { id: number } }) => tagRelation.tag.id) || [],
     specs: data.specs
       ? Object.entries(data.specs).map(([key, value]) => ({
           key,
           value: String(value),
         }))
       : [{ key: "", value: "" }],
-    // Use the centralized utility function
     images: convertApiImagesToFormImages(data.images || []),
   };
 };
@@ -96,7 +94,7 @@ export default function EditProduct() {
         setIsLoading(true);
         const data = await fetchProduct(id);
         setForm(data);
-      } catch (err) {
+      } catch {
         setError("Failed to load product data");
         toast.error("Failed to load product data");
       } finally {
@@ -168,6 +166,7 @@ export default function EditProduct() {
       formData.append("price", String(form.price));
       formData.append("stock", String(form.stock));
       formData.append("isPublished", String(form.isPublished));
+      formData.append("isFeature", String(form.isFeature));
       formData.append("brochure", form.brochure);
 
       if (form.brandId) formData.append("brandId", String(form.brandId));
@@ -178,8 +177,24 @@ export default function EditProduct() {
       formData.append("featureTagIds", JSON.stringify(form.featureTagIds));
       formData.append("marketingTagIds", JSON.stringify(form.marketingTagIds));
 
-      form.images.forEach((img) => formData.append("images", img.file));
+      // Separate new and existing images
+      const existingImagePaths: string[] = [];
+      form.images.forEach((img) => {
+        if (img.file) {
+          formData.append("images", img.file);
+        } else if (img.existingPath) {
+          existingImagePaths.push(img.existingPath);
+        }
+      });
       formData.append("specs", JSON.stringify(specsObject));
+
+      // Always send the existing images as a JSON string
+      formData.append("existingImages", JSON.stringify(existingImagePaths));
+
+      // If all images are removed (form.images is empty), send an empty array to clear images
+      if (form.images.length === 0) {
+        formData.append("images", "");
+      }
 
       await updateProduct(Number(id), formData);
       toast.success("Product updated successfully!");
@@ -300,7 +315,7 @@ export default function EditProduct() {
               >
                 <PhotoUpload
                   label="Product Images"
-                  images={form.images.map((img) => img.file)}
+                  images={form.images.map((img) => img.file).filter((f): f is File => !!f)}
                   required={false}
                   imagePreviews={form.images.map((img) => img.preview)}
                   onImageUpload={handleImageUpload}

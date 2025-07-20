@@ -2,7 +2,6 @@
 
 import {
   Plus,
-  DollarSign,
   CheckCircle,
   Package,
   Search,
@@ -10,7 +9,7 @@ import {
   Eye,
   Calendar,
   Trash2,
-  Edit,
+  Grid,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import StatCard from "@/components/admin/dashboard/Statcards";
@@ -22,7 +21,6 @@ import { getAllProducts, deleteProduct } from "@/api/product";
 import { toast } from "sonner";
 import { getImageUrl } from "@/lib/imageUtils";
 import Image from "next/image";
-import { DeleteConfirmation } from "@/components/common/helper_function";
 
 // Main Component
 export default function ViewProductsPage() {
@@ -37,7 +35,7 @@ export default function ViewProductsPage() {
       setError(null);
       try {
         const data = await getAllProducts();
-        setProducts(Array.isArray(data) ? data : (data.products || []));
+        setProducts(Array.isArray(data) ? data : data.products || []);
       } catch (err: any) {
         setError("Failed to fetch products");
       } finally {
@@ -46,7 +44,6 @@ export default function ViewProductsPage() {
     }
     fetchProducts();
   }, []);
-
 
   // Define columns for the table
   const newColumns: Column[] = [
@@ -58,7 +55,9 @@ export default function ViewProductsPage() {
       searchable: true,
       width: "200px",
       render: (product: any) => {
-        const imageUrl = product.images?.[0] ? getImageUrl(product.images[0]) : null;
+        const imageUrl = product.images?.[0]
+          ? getImageUrl(product.images[0])
+          : null;
         return (
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden">
@@ -94,7 +93,7 @@ export default function ViewProductsPage() {
       width: "120px",
       render: (product: any) => (
         <div className="text-sm text-gray-900">
-          {product.category?.name || product.category || 'No Category'}
+          {product.category?.name || product.category || "No Category"}
         </div>
       ),
     },
@@ -107,7 +106,7 @@ export default function ViewProductsPage() {
       width: "120px",
       render: (product: any) => (
         <div className="text-sm font-medium text-gray-900">
-          {product.brand?.name || product.brand || 'No Brand'}
+          {product.brand?.name || product.brand || "No Brand"}
         </div>
       ),
     },
@@ -142,12 +141,13 @@ export default function ViewProductsPage() {
       width: "120px",
       render: (product: any) => (
         <div
-          className={`text-sm font-medium ${product.stock === 0
+          className={`text-sm font-medium ${
+            product.stock === 0
               ? "text-red-600"
               : product.stock < 10
-                ? "text-yellow-600"
-                : "text-gray-900"
-            }`}
+              ? "text-yellow-600"
+              : "text-gray-900"
+          }`}
         >
           {product.stock} units
         </div>
@@ -163,10 +163,11 @@ export default function ViewProductsPage() {
       render: (product: any) => {
         return (
           <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${product.isPublished
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+              product.isPublished
                 ? "bg-green-100 text-green-800"
                 : "bg-gray-100 text-gray-800"
-              }`}
+            }`}
           >
             {product.isPublished ? (
               <>
@@ -271,7 +272,7 @@ export default function ViewProductsPage() {
           title="Total Products"
           value={products.length.toString()}
           change="+12% from last month"
-          Icon={Package}
+          Icon={Grid}
           color="text-blue-600"
         />
         <StatCard
@@ -282,10 +283,10 @@ export default function ViewProductsPage() {
           color="text-green-600"
         />
         <StatCard
-          title="Total Value"
-          value="$177.91"
-          change="Current stock value"
-          Icon={DollarSign}
+          title="Out of Stock"
+          value={products.filter((p) => p.stock === 0).length.toString()}
+          change=""
+          Icon={Package}
           color="text-purple-600"
         />
       </div>
@@ -350,7 +351,7 @@ export default function ViewProductsPage() {
             onSelectAll={handleSelectAll}
             onSelectItem={handleSelectItem}
             columns={newColumns}
-            data={processedData} 
+            data={processedData}
             onEdit={handleEdit}
             onDelete={handleDelete}
             sortConfig={sortConfig}

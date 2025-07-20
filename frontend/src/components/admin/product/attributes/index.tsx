@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+
 import BrandSelector from "./BrandSelector";
 import CategorySelector from "./CategorySelector";
 import ColorSelector from "./ColorSelector";
@@ -16,8 +16,8 @@ interface AttributeSelectorProps {
   onColorsChange: (colorIds: number[]) => void;
   selectedFeatureTagIds: number[];
   onFeatureTagsChange: (tagIds: number[]) => void;
-  selectedMarketingTagIds: number[];
-  onMarketingTagsChange: (tagIds: number[]) => void;
+  selectedMarketingTagIds: number | null;
+  onMarketingTagsChange: (tagIds: number | null) => void;
 }
 
 export default function AttributeSelector({

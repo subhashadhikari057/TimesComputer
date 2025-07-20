@@ -223,24 +223,11 @@ return (
         <StatCard
           title="Total Brands"
           value={totalBrands.toString()}
-          change="+12% from last month"
+          change=""
           Icon={Award}
           color="text-blue-600"
         />
-        <StatCard
-          title="Active Brands"
-          value={activeBrands.toString()}
-          change={`${Math.round(totalBrands * 100)}% active`}
-          Icon={CheckCircle}
-          color="text-green-600"
-        />
-        {/* <StatCard
-          title="Total Products"
-          value={totalProducts.toString()}
-          change={`Avg ${Math.round(totalProducts / totalBrands)} per brand`}
-          Icon={Package}
-          color="text-purple-600"
-        /> */}
+        
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">

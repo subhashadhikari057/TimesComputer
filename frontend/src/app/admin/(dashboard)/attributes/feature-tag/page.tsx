@@ -191,28 +191,13 @@ const [deleteModal, setDeleteModal] = useState<{
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Total FeatureTags"
+          title="Total Feature Tags"
           value={totalFeatureTags.toString()}
-          change="+12% from last month"
+          change=""
           Icon={Tag}
           color="text-purple-600"
         />
-        <StatCard
-          title="Active FeatureTags"
-          value={activeFeatureTags.toString()}
-          change={`${Math.round(totalFeatureTags * 100)}% active`}
-          Icon={CheckCircle}
-          color="text-green-600"
-        />
-        {/* <StatCard
-          title="Total Products"
-          value={totalProducts.toString()}
-          change={`Avg ${Math.round(
-            totalProducts / totalFeatureTags
-          )} per featureTag`}
-          Icon={Package}
-          color="text-blue-600"
-        /> */}
+        
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">

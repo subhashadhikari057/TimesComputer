@@ -32,28 +32,20 @@ export const getImageUrls = (imagePaths: string[]): string[] => {
   return imagePaths.map(getImageUrl);
 };
 
-/**
- * Creates a File object from an image URL for form handling
- * @param imageUrl - The image URL
- * @param fileName - Optional filename (will extract from URL if not provided)
- * @returns Object with file and preview URL
- */
-export const createImageFileFromUrl = (imageUrl: string, fileName?: string): { file: File; preview: string } => {
-  const extractedFileName = fileName || imageUrl.split("/").pop() || "image.jpg";
-  const file = new File([""], extractedFileName, { type: "image/jpeg" });
-  
+
+export const createImageFileFromUrl = (imageUrl: string, fileName?: string): { preview: string; existingPath: string } => {
   return {
-    file: file,
     preview: getImageUrl(imageUrl),
+    existingPath: imageUrl,
   };
 };
 
 /**
  * Converts API image data to form-compatible format
  * @param images - Array of image paths from API
- * @returns Array of objects with file and preview
+ * @returns Array of objects with preview and existingPath
  */
-export const convertApiImagesToFormImages = (images: string[]): { file: File; preview: string }[] => {
+export const convertApiImagesToFormImages = (images: string[]): { preview: string; existingPath: string }[] => {
   return images.map(imagePath => createImageFileFromUrl(imagePath));
 };
 

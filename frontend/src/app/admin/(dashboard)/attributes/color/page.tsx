@@ -226,26 +226,11 @@ export default function ColorManagementPage() {
         <StatCard
           title="Total Colors"
           value={totalColors.toString()}
-          change="+12% from last month"
+          change=""
           Icon={Palette}
           color="text-purple-600"
         />
-        {/* <StatCard
-          title="Colors in Use"
-          value={colorsWithProducts.toString()}
-          change={`${Math.round(
-            (colorsWithProducts / totalColors) * 100
-          )}% in use`}
-          Icon={CheckCircle}
-          color="text-green-600"
-        />
-        <StatCard
-          title="Total Products"
-          value={totalProducts.toString()}
-          change={`Avg ${Math.round(totalProducts / totalColors)} per color`}
-          Icon={Package}
-          color="text-blue-600"
-        /> */}
+        
       </div>
 
       {/* Table Container - Same structure as product page */}
