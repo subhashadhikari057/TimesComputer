@@ -1,74 +1,114 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import HeroSection from "@/components/blog/blogHeroSection";
-
 import BlogCard from "@/components/blog/blogCard";
-// import { fetchBlogs } from "../services/blogService"; // 🔁 Uncomment this when backend is ready
+import { getAllBlogs } from "@/api/blog";
+import { getImageUrl } from "@/lib/imageUtils";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
-const dummyBlogs = [
-  {
-    id: '1',
-    title: "Best Laptops for Students in 2024?",
-    content: "Top student-friendly laptops that balance performance, portability, and price.",
-    images: ["/blog1.jpg"],
-  },
-  {
-    id: '2',
-    title: "Gaming Laptops Under NPR 1,00,000",
-    content: "Top student-friendly laptops that balance performance, portability, and price.",
-    images: ["/blog2.jpg"],
-  },
-  {
-    id: '4',
-    title: "How to Keep Your Laptop Fast?",
-    content: "Top student-friendly laptops that balance performance, portability, and price.",
-    images: ["/blog3.jpg"],
-  },
-  {
-    id: '5',
-    title: "Why Buy from Times Computer Automation?",
-    content: "Top student-friendly laptops that balance performance, portability, and price.",
-    images: ["/blog4.jpg"],
-  },
-  // Add more for 5 rows = 20 cards if you want
-];
+interface Blog {
+  id: number;
+  title: string;
+  content: string;
+  images: string[];
+  author: string;
+  slug: string;
+  metadata: any;
+  createdAt: string;
+  updatedAt: string;
+}
 
-export default async function BlogsPage() {
-  // const blogData = await fetchBlogs(); // 🔁 Use this when real API is connected
+export default function BlogsPage() {
+  const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const blogData = { data: dummyBlogs }; // 💾 For now use dummy data
+  // Fetch blogs from backend
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await getAllBlogs();
+        const blogsData = response.data || [];
+        
+        // Sort blogs by creation date (latest first)
+        const sortedBlogs = blogsData.sort((a: Blog, b: Blog) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        
+        setBlogs(sortedBlogs);
+      } catch (err) {
+        console.error("Failed to fetch blogs:", err);
+        setError("Failed to load blogs");
+        setBlogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
+
+  // Extract description from content (first 100 characters)
+  const extractDescription = (content: string) => {
+    // Remove HTML tags and get first 100 characters
+    const textContent = content.replace(/<[^>]*>/g, '');
+    return textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <HeroSection />
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="flex justify-center items-center py-16">
+            <LoadingSpinner />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <HeroSection />
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="text-center py-16 text-gray-500">
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
       <HeroSection />
-
-    
+      
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold mb-6"> Latest Blogs</h2>
-<div className="flex space-x-4 space-y-4 ">
-              {blogData.data.map((blog) => (
-            <BlogCard
-              key={blog.id}
-              id={blog.id}
-              image={blog.images[0] || "/default.jpg"}
-              title={blog.title}
-              description={blog.content.slice(0, 100) + "..."}
-            />
-          ))}
-        </div>
+        <h2 className="text-2xl font-bold mb-8">Latest Blogs</h2>
+        
+        {blogs.length === 0 ? (
+          <div className="text-center py-16 text-gray-500">
+            No blogs available
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {blogs.map((blog) => (
+              <BlogCard
+                key={blog.id}
+                id={blog.id.toString()}
+                image={blog.images?.[0] ? getImageUrl(blog.images[0]) : "/products/Frame_68.png"}
+                title={blog.title}
+                description={extractDescription(blog.content)}
+              />
+            ))}
+          </div>
+        )}
       </div>
-          <div className="max-w-7xl mx-auto px-6 mb-12">
-        <h2 className="text-2xl font-bold mb-6"> Popular Blogs</h2>
-<div className="flex space-x-3 space-y-4 ">
-              {blogData.data.map((blog) => (
-            <BlogCard
-              key={blog.id}
-              id={blog.id}
-              image={blog.images[0] || "/default.jpg"}
-              title={blog.title}
-              description={blog.content.slice(0, 100) + "..."}
-            />
-          ))}
-        </div>
-      </div>
-      </div>
+    </div>
   );
 }
