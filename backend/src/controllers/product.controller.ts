@@ -76,6 +76,7 @@ export const createProduct = async (req: Request, res: Response) => {
             colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : [],
             specs: req.body.specs ? JSON.parse(req.body.specs) : null,
             images: (req.files as Express.Multer.File[]).map(f => f.path),
+            isFeature: req.body.isFeature === 'true'
         });
 
         const product = await createProductService({ ...parsedData, slug });
@@ -104,6 +105,8 @@ export const updateProduct = async (req: Request, res: Response) => {
             images: req.files && Array.isArray(req.files)
                 ? (req.files as Express.Multer.File[]).map(f => f.path)
                 : undefined,
+            isFeature: req.body.isFeature === 'true'
+
         });
 
         const product = await updateProductService(id, parsedData);
