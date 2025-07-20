@@ -8,6 +8,7 @@ import PhotoUpload from "@/components/admin/product/photoUpload";
 import { toast } from "sonner";
 import { createBrand, updateBrand } from "@/api/brand";
 import { capitalizeFirstWord } from "@/components/common/helper_function";
+import { getImageUrl } from "@/lib/imageUtils";
 
 interface BrandFormData {
   id?: number;
@@ -51,7 +52,7 @@ export default function BrandPopup({
         setForm({
           id: initialData.id,
           name: initialData.name,
-          imagePreview: initialData.image,
+          imagePreview: getImageUrl(initialData.image),
         });
       } else {
         setForm(INITIAL_FORM_DATA);
@@ -59,7 +60,7 @@ export default function BrandPopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
@@ -75,7 +76,7 @@ export default function BrandPopup({
   const isFormValid = () => {
     return (
       form.name.trim() !== "" &&
-      (form.image !== null || form.imagePreview !== "")
+      (form.image !== undefined || form.imagePreview !== "")
     );
   };
 
@@ -88,8 +89,12 @@ export default function BrandPopup({
       setError(null);
 
       const formData = new FormData();
-       formData.append("name", form.name);
-      if (form.image) formData.append("image", form.image);
+      formData.append("name", form.name);
+      
+      // Only append image if we have a new file
+      if (form.image) {
+        formData.append("image", form.image);
+      }
 
       if (isEditMode) {
         await updateBrand(form.id!, formData);
@@ -107,7 +112,6 @@ export default function BrandPopup({
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message;
 
-      // Handle specific duplicate errors
       if (
         errorMessage.includes("already exists") ||
         errorMessage.includes("duplicate")
@@ -125,28 +129,21 @@ export default function BrandPopup({
     }
   };
 
-   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const capitalizedValue = capitalizeFirstWord(value);
     setForm((prev) => ({ ...prev, name: capitalizedValue }));
   };
 
-  const handleImageUpload = (files: File[], imageType: "image") => {
-    const file = files[0];
+  // Simplified image upload handler for single image
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
-
+    
     // Validate file type
-    let allowedTypes: string[] = [];
-    let errorMessage: string = "";
-
-    if (imageType === "image") {
-      allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      errorMessage =
-        "Invalid file type. Please upload PNG, JPG, or WebP files.";
-    }
-
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      setError(errorMessage);
+      setError("Invalid file type. Please upload PNG, JPG, or WebP files.");
       return;
     }
 
@@ -158,22 +155,21 @@ export default function BrandPopup({
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const previewKey = "imagePreview";
       setForm((prev) => ({
         ...prev,
-        [imageType]: file,
-        [previewKey]: e.target?.result as string,
+        image: file,
+        imagePreview: e.target?.result as string,
       }));
     };
     reader.readAsDataURL(file);
   };
 
-  const handleRemove = (imageType: "image") => {
-    const previewKey = "imagePreview";
+  // Simplified remove handler for single image
+  const removeImage = () => {
     setForm((prev) => ({
       ...prev,
-      [imageType]: undefined,
-      [previewKey]: "",
+      image: undefined,
+      imagePreview: "",
     }));
   };
 
@@ -202,7 +198,6 @@ export default function BrandPopup({
       maxWidth="md"
     >
       <div className="space-y-6">
-
         {/* Name Field */}
         <DefaultInput
           label="Brand Name"
@@ -213,7 +208,7 @@ export default function BrandPopup({
           required
         />
 
-        {/* Image Upload */}
+        {/* Image Upload - Convert single values to arrays for PhotoUpload */}
         <div className="grid gap-4 grid-cols-1">
           <div>
             <PhotoUpload
@@ -221,15 +216,17 @@ export default function BrandPopup({
               required={true}
               images={form.image ? [form.image] : []}
               imagePreviews={form.imagePreview ? [form.imagePreview] : []}
-              onImageUpload={(e) =>
-                handleImageUpload(Array.from(e.target.files || []), "image")
-              }
-              onRemoveImage={() => handleRemove("image")}
+              onImageUpload={handleImageUpload}
+              onRemoveImage={removeImage}
               maxImages={1}
+              maxSizeText="up to 10MB"
+              acceptedFormats="PNG, JPG, WebP"
+              uploadText="Click to upload brand image"
             />
           </div>
         </div>
-                   {/* Validation Message */}
+
+        {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm text-amber-700 font-medium">
@@ -241,8 +238,6 @@ export default function BrandPopup({
             </ul>
           </div>
         )}
-
-       
       </div>
     </AddDetailsPopup>
   );

@@ -20,7 +20,6 @@ import { toast } from "sonner";
 interface User {
   id: number;
   name: string;
- 
 }
 
 interface HeaderProps {
@@ -28,7 +27,7 @@ interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
   userDropdownOpen: boolean;
   setUserDropdownOpen: (open: boolean) => void;
-   user?: User | null;
+  user?: User | null;
 }
 
 export default function Header({
@@ -83,7 +82,9 @@ export default function Header({
   };
 
   const Avatar = ({ size = "w-10 h-10" }: { size?: string }) => (
-    <div className={`${size} border border-gray-300 rounded-full overflow-hidden flex items-center justify-center`}>
+    <div
+      className={`${size} border border-gray-300 rounded-full overflow-hidden flex items-center justify-center`}
+    >
       <div className="w-full h-full rounded-full bg-gray-100" />
     </div>
   );
@@ -120,11 +121,8 @@ export default function Header({
           <div className="flex items-center">
             {/* Desktop controls */}
             <div className="hidden md:flex items-center gap-2">
-              <IconButton icon={<Moon size={18} />} label="Toggle Theme" />
-              <IconButton icon={<Bell size={18} />} label="Notifications" />
-
               {/* User dropdown */}
-              <div className="relative">
+              <div className="relative pr-4">
                 <button
                   onClick={handleUserDropdownToggle}
                   className="flex items-center space-x-2 p-2 rounded-lg"
@@ -146,7 +144,12 @@ export default function Header({
                     <DropdownItem icon={UserCircle} text="Edit Profile" />
                     <DropdownItem icon={Settings} text="Account Settings" />
                     <hr className="my-1 border-gray-100" />
-                    <DropdownItem icon={LogOut} text="Log Out" danger onClick={handleLogOut} />
+                    <DropdownItem
+                      icon={LogOut}
+                      text="Log Out"
+                      danger
+                      onClick={handleLogOut}
+                    />
                   </div>
                 )}
               </div>
@@ -171,7 +174,7 @@ export default function Header({
             <div className="px-4 py-6">
               {/* User Profile Section */}
               <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
-                  <Avatar size="w-12 h-12" />
+                <Avatar size="w-12 h-12" />
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Asmit</p>
                   <p className="text-xs text-gray-500">asmit@example.com</p>
@@ -184,9 +187,9 @@ export default function Header({
                   Quick Actions
                 </h3>
                 <MobileMenuButton label="Dark Mode" icon={<Moon size={20} />} />
-                <MobileMenuButton 
-                  label="Notifications" 
-                  icon={<Bell size={20} />} 
+                <MobileMenuButton
+                  label="Notifications"
+                  icon={<Bell size={20} />}
                   badge="3"
                 />
               </div>
@@ -196,8 +199,14 @@ export default function Header({
                 <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                   Account
                 </h3>
-                <MobileMenuButton label="Edit Profile" icon={<UserCircle size={20} />} />
-                <MobileMenuButton label="Settings" icon={<Settings size={20} />} />
+                <MobileMenuButton
+                  label="Edit Profile"
+                  icon={<UserCircle size={20} />}
+                />
+                <MobileMenuButton
+                  label="Settings"
+                  icon={<Settings size={20} />}
+                />
               </div>
 
               {/* Logout Button */}
@@ -303,7 +312,10 @@ function MobileMenuButton({
           <span className="text-xs font-medium">{badge}</span>
         </div>
       )}
-      <ChevronRight size={16} className="text-gray-400 group-hover:text-gray-600" />
+      <ChevronRight
+        size={16}
+        className="text-gray-400 group-hover:text-gray-600"
+      />
     </button>
   );
 }

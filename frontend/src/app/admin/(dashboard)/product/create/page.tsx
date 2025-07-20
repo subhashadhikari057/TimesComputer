@@ -22,6 +22,7 @@ interface FormData {
   price: number;
   stock: number;
   isPublished: boolean;
+  isFeature: boolean; 
   brochure: string;
   brandId: number | null;
   categoryId: number | null;
@@ -39,6 +40,7 @@ const INITIAL_FORM_DATA: FormData = {
   price: 0,
   stock: 0,
   isPublished: true,
+  isFeature: false, 
   brochure: "",
   brandId: null,
   categoryId: null,
@@ -128,6 +130,7 @@ export default function CreateProduct() {
       formData.append("price", String(form.price));
       formData.append("stock", String(form.stock));
       formData.append("isPublished", String(form.isPublished));
+      formData.append("isFeature", String(form.isFeature));
       formData.append("brochure", form.brochure);
       if (form.brandId) formData.append("brandId", String(form.brandId));
       if (form.categoryId) formData.append("categoryId", String(form.categoryId));
@@ -263,6 +266,14 @@ export default function CreateProduct() {
                     checked={form.isPublished}
                     onChange={handleFormChange}
                     helpText="Make this product visible to customers"
+                  />
+
+                   <DefaultCheckbox
+                    label="Feature"
+                    name="isFeature"
+                    checked={form.isFeature}
+                    onChange={handleFormChange}
+                    helpText="Make this product a featured item"
                   />
                 </div>
               </ComponentCard>
