@@ -40,7 +40,7 @@ const INITIAL_FORM_DATA: FormData = {
   price: 0,
   stock: 0,
   isPublished: true,
-  isFeature: false, 
+  isFeature: true, 
   brochure: "",
   brandId: null,
   categoryId: null,

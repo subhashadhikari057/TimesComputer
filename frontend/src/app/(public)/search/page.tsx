@@ -33,7 +33,7 @@ export default function SearchPage() {
         const data = await getAllProducts();
         setProducts(data);
       } catch (err) {
-        console.error(err);
+      
         toast.error("Failed to fetch products.");
       } finally {
         setLoading(false);

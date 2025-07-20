@@ -112,6 +112,8 @@ export default function DashboardLayout({ children }: LayoutProps) {
           setSidebarOpen={setSidebarOpen}
           userDropdownOpen={userDropdownOpen}
           setUserDropdownOpen={setUserDropdownOpen}
+          
+      
         />
 
         {/* Main Content Area */}

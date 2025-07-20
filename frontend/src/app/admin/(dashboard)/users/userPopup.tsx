@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { createAdminUser, updateAdminUser } from "@/api/adminUser";
 
 interface UserFormData {
-  id?: number;
+  id?: string;
   name: string;
   email: string;
   password: string;
@@ -18,7 +18,7 @@ interface UserPopupProps {
   onClose: () => void;
   onSuccess?: () => void;
   initialData?: {
-    id: number;
+    id: string;
     name: string;
     email: string;
     password?: string;
@@ -93,18 +93,11 @@ export default function UserPopup({
       setLoading(true);
       setError(null);
 
-      const formData = new FormData();
-      formData.append("name", form.name.trim());
-      formData.append("email", form.email.trim());
-      if (!isEditMode) {
-        formData.append("password", form.password);
-      }
-
       if (isEditMode) {
-        await updateAdminUser(form.id!, formData);
+        await updateAdminUser(form.id!, form);
         toast.success("Admin user updated successfully!");
       } else {
-        await createAdminUser(formData);
+        await createAdminUser(form);
         toast.success("Admin user created successfully!");
       }
 
@@ -114,13 +107,7 @@ export default function UserPopup({
 
       handleCancel();
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        `Failed to ${isEditMode ? "update" : "create"} admin user`;
-
-      setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error("failed to save admin user");
       console.error(
         `Error ${isEditMode ? "updating" : "creating"} admin user:`,
         err

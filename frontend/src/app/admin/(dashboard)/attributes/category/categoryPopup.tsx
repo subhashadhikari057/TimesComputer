@@ -65,7 +65,7 @@ export default function CategoryPopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);

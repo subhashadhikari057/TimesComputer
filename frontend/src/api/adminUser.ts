@@ -19,13 +19,19 @@ export async function createAdminUser(data: any) {
 }
 
 // PATCH /admin/users/:id → update an admin user
-export async function updateAdminUser(id: number, data: any) {
+export async function updateAdminUser(id: string, data: any) {
     const response = await axios.patch(`/admin/users/${id}`, data);
     return response.data;
 }
 
 // DELETE /admin/users/:id → delete an admin user
-export async function deleteAdminUser(id: number) {
+export async function deleteAdminUser(id: string) {
     const response = await axios.delete(`/admin/users/${id}`);
     return response.data;
 } 
+
+// PATCH /admin/users/:id/password → reset admin user password
+export async function resetAdminPassword(id: string, data: any) {
+    const response = await axios.patch(`/admin/users/${id}/password`, data);
+    return response.data;
+}

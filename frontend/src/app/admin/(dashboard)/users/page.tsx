@@ -19,10 +19,11 @@ import { getAllAdmins, deleteAdminUser } from "@/api/adminUser";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import { useRouter } from "next/navigation";
 import UserPopup from "./userPopup";
+import ResetPasswordPopup from "./resetPasswordPopup";
 
 // User interface
 interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   password: string;
@@ -30,13 +31,14 @@ interface User {
 
 // Main Component
 export default function UsersPage() {
-  const router = useRouter();
   const [userData, setUserData] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
+  const [showResetPopup, setShowResetPopup] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
+  const [resettingPasswordUser, setResettingPasswordUser] = useState<User | undefined>(undefined);
   const [deleteModal, setDeleteModal] = useState<{
       isOpen: boolean;
       user: User | null;
@@ -126,12 +128,19 @@ export default function UsersPage() {
     setShowEditPopup(true);
   };
 
+  const handleResetPassword = (row: any) => {
+     setResettingPasswordUser(row);
+    setShowResetPopup(true);
+  };
+
   const handleDelete = (row: any) => {
       setDeleteModal({
         isOpen: true,
         user: row
       });
-    };``
+    };
+
+    
   
     const confirmDelete = async () => {
       if (!deleteModal.user) return;
@@ -173,6 +182,13 @@ export default function UsersPage() {
     setEditingUser(undefined);
   };
 
+   const handleCloseResetPopup = () => {
+    setShowResetPopup(false);
+    setResettingPasswordUser(undefined);
+  };
+
+  
+
 
   // Calculate stats
   const totalUsers = userData.length;
@@ -210,6 +226,13 @@ export default function UsersPage() {
               onClose={handleCloseEditPopup}
               onSuccess={fetchUsers}
               initialData={editingUser}
+            />
+
+            <ResetPasswordPopup
+            user={resettingPasswordUser}
+              isOpen={showResetPopup}
+            onClose={handleCloseResetPopup}
+              onSuccess={fetchUsers}
             />
 
       {/* Statistics  */}
@@ -304,6 +327,7 @@ export default function UsersPage() {
             onDelete={handleDelete}
             sortConfig={sortConfig}
             onSort={handleSort}
+            onResetPassword={handleResetPassword}
           />
         )}
       </div>
