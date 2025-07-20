@@ -52,6 +52,7 @@ model Product {
   views         Int                   @default(0)
   brandId       Int?
   categoryId    Int?
+  isFeature     Boolean               @default(true)
   images        String[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
@@ -68,7 +69,6 @@ model Brand {
   image     String
   products  Product[]
   createdAt DateTime  @default(now())
-  products  Product[]
 }
 
 model Category {
