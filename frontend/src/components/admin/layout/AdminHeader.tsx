@@ -17,11 +17,18 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface User {
+  id: number;
+  name: string;
+ 
+}
+
 interface HeaderProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   userDropdownOpen: boolean;
   setUserDropdownOpen: (open: boolean) => void;
+   user?: User | null;
 }
 
 export default function Header({
@@ -29,9 +36,12 @@ export default function Header({
   setSidebarOpen,
   userDropdownOpen,
   setUserDropdownOpen,
+  user,
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
+
+  const displayName = user?.name || "Admin";
 
   const closeAllMenus = () => {
     setMobileMenuOpen(false);
@@ -99,7 +109,7 @@ export default function Header({
           {/* Center title */}
           <div className="flex flex-col items-center text-center">
             <h1 className="text-[16px] sm:text-[18px] font-bold text-gray-800">
-              Welcome back, Asmit
+              Welcome back, {displayName}
             </h1>
             <p className="hidden md:block text-[14px] text-gray-500">
               Monitor, manage, and move forward.

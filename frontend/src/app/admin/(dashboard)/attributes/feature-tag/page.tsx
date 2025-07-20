@@ -11,12 +11,13 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import FilterComponent from "@/components/admin/product/filter";
+
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import FeatureTagPopup from "./featureTagPopup";
 import { deleteFeatureTag, getAllFeatureTags } from "@/api/featureTag"; // ✅ API import
+import { DeleteConfirmation } from "@/components/common/helper_function";
 
 interface FeatureTag {
   id: number;
@@ -31,6 +32,13 @@ export default function FeatureTagPage() {
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [editingFeatureTag, setEditingFeatureTag] = useState<FeatureTag | undefined>(undefined);
+const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    featureTag: FeatureTag | null;
+  }>({
+    isOpen: false,
+    featureTag: null,
+  });
 
   const fetchFeatureTags = async () => {
       try {
@@ -106,17 +114,34 @@ export default function FeatureTagPage() {
     setShowEditPopup(true);
   };
 
-  const handleDelete = async (row: any) => {
-    try {
-          await deleteFeatureTag(row.id);
-          toast.success("Feature tag deleted successfully");
-          await fetchFeatureTags();
+  const handleDelete = (row: any) => {
+      setDeleteModal({
+        isOpen: true,
+        featureTag: row,
+      });
+    };
+  
+    const confirmDelete = async () => {
+      if (!deleteModal.featureTag) return;
+  
+      try {
+        await deleteFeatureTag(deleteModal.featureTag.id);
+        toast.success("Feature tag deleted successfully");
 
-        } catch (error: any) {
-          toast.error(error.response?.data?.error || "Failed to delete feature tag");
-        }
-   
-  };
+        setFeatureTagData((prev) =>
+          prev.filter((featureTag) => featureTag.id !== deleteModal.featureTag!.id)
+        );
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Failed to delete Feature Tag");
+      } finally {
+        setDeleteModal({ isOpen: false, featureTag: null });
+      }
+    };
+  
+    const cancelDelete = () => {
+      setDeleteModal({ isOpen: false, featureTag: null });
+    };
+
 
   const handleExport = () => {
     console.log("Export featureTags");
@@ -261,6 +286,15 @@ export default function FeatureTagPage() {
           sortConfig={sortConfig}
           onSort={handleSort}
         /> }
+
+        {/* Delete Confirmation Modal */}
+                <DeleteConfirmation
+                  isOpen={deleteModal.isOpen}
+                  onClose={cancelDelete}
+                  onConfirm={confirmDelete}
+                  title="Delete Feature Tag"
+                  itemName={deleteModal.featureTag?.name}
+                />
 
         
       </div>

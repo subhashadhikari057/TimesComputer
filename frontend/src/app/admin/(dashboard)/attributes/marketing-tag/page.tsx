@@ -17,6 +17,7 @@ import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import MarketingTagPopup from "./marketingTagPopup";
 import { deleteMarketingTag, getAllMarketingTags } from "@/api/marketingTag"; // ✅ API import
+import { DeleteConfirmation } from "@/components/common/helper_function";
 
 interface MarketingTag {
   id: number;
@@ -31,6 +32,13 @@ export default function MarketingTagManagementPage() {
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [editingMarketingTag, setEditingMarketingTag] = useState<MarketingTag | undefined>(undefined);
+  const [deleteModal, setDeleteModal] = useState<{
+      isOpen: boolean;
+      marketingTag: MarketingTag | null;
+    }>({
+      isOpen: false,
+      marketingTag: null,
+    });
 
   const fetchMarketingTags = async () => {
       try {
@@ -106,16 +114,33 @@ export default function MarketingTagManagementPage() {
     setShowEditPopup(true);
   };
 
-  const handleDelete = async (row: any) => {
-    try {
-              await deleteMarketingTag(row.id);
-              toast.success("Marketing Tag deleted successfully");
-              await fetchMarketingTags();
+  const handleDelete = (row: any) => {
+      setDeleteModal({
+        isOpen: true,
+        marketingTag: row,
+      });
+    };
+  
+    const confirmDelete = async () => {
+      if (!deleteModal.marketingTag) return;
+  
+      try {
+        await deleteMarketingTag(deleteModal.marketingTag.id);
+        toast.success("Marketing Tag deleted successfully");
 
-            } catch (error: any) {
-              toast.error(error.response?.data?.error || "Failed to delete marketing tag");
-            }
-  };
+        setMarketingTagData((prev) =>
+          prev.filter((marketingTag) => marketingTag.id !== deleteModal.marketingTag!.id)
+        );
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Failed to delete Marketing Tag");
+      } finally {
+        setDeleteModal({ isOpen: false, marketingTag: null });
+      }
+    };
+  
+    const cancelDelete = () => {
+      setDeleteModal({ isOpen: false, marketingTag: null });
+    };
 
   const handleExport = () => {
     console.log("Export marketingTags");
@@ -260,6 +285,15 @@ export default function MarketingTagManagementPage() {
           sortConfig={sortConfig}
           onSort={handleSort}
         /> }
+
+        {/* Delete Confirmation Modal */}
+                <DeleteConfirmation
+                  isOpen={deleteModal.isOpen}
+                  onClose={cancelDelete}
+                  onConfirm={confirmDelete}
+                  title="Delete Marketing Tag"
+                  itemName={deleteModal.marketingTag?.name}
+                />
 
         
       </div>

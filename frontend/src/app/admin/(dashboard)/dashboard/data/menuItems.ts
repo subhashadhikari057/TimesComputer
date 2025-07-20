@@ -53,14 +53,17 @@ export const menuItems: MenuItem[] = [
     label: "Manage Ads",
     icon: Megaphone,
     hasSubmenu: false,
-    href: "/admin/ads",
+   
   },
   {
     id: "blogs",
     label: "Manage Blogs",
     icon: FileText,
-    hasSubmenu: false,
-    href: "/admin/blogs",
+    hasSubmenu: true,
+    subItems: [
+      { label: "All Blogs", href: "/admin/blogs" },
+      { label: "Create Blog", href: "/admin/blogs/create" },
+    ],
   },
 ];
 

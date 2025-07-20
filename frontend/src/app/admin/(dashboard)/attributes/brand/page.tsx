@@ -4,7 +4,6 @@ import {
   Plus,
   Award,
   CheckCircle,
-  Package,
   Search,
   Download,
   Calendar,
@@ -12,12 +11,15 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import FilterComponent from "@/components/admin/product/filter";
+
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import BrandPopup from "./brandPopup";
-import { deleteBrand, getAllBrands } from "@/api/brand"; // ✅ Imported from API
+import { deleteBrand, getAllBrands } from "@/api/brand"; 
+import { DeleteConfirmation } from "@/components/common/helper_function";
+import { getImageUrl } from "@/lib/imageUtils";
+
 
 // Brand interface
 interface Brand {
@@ -36,11 +38,18 @@ export default function BrandManagementPage() {
   const [editingBrand, setEditingBrand] = useState<Brand | undefined>(
     undefined
   );
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    brand: Brand | null;
+  }>({
+    isOpen: false,
+    brand: null
+  });
 
   const fetchBrands = async () => {
     try {
       const res = await getAllBrands();
-      setBrandData(res.data || res); // Adjust depending on backend shape
+      setBrandData(res.data || res);
     } catch (err) {
       toast.error("Failed to fetch brands.");
     } finally {
@@ -60,12 +69,15 @@ export default function BrandManagementPage() {
       filterable: true,
       searchable: true,
       width: "300px",
-      render: (brand: Brand) => (
+      render: (brand: Brand) => {
+
+        const imageUrl = getImageUrl(brand.image);
+return (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
             {brand.image ? (
               <img
-                src={brand.image}
+                src={imageUrl}
                 alt={brand.name}
                 className="h-full w-full object-cover"
               />
@@ -79,7 +91,8 @@ export default function BrandManagementPage() {
             </div>
           </div>
         </div>
-      ),
+);
+      },
     },
     {
       id: "createdAt",
@@ -99,14 +112,12 @@ export default function BrandManagementPage() {
 
   const {
     searchTerm,
-    filters,
+  
     sortConfig,
     selectedItems,
     processedData,
-    filterConfigs,
+  
     handleSearchChange,
-    handleFilterChange,
-    handleResetFilters,
     handleSort,
     handleSelectAll,
     handleSelectItem,
@@ -122,15 +133,32 @@ export default function BrandManagementPage() {
     setShowEditPopup(true);
   };
 
-  const handleDelete = async (row: any) => {
-    try {
-      await deleteBrand(row.id);
-      toast.success("Brand deleted successfully");
-      await fetchBrands();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete brand");
-    }
+  const handleDelete = (row: any) => {
+    setDeleteModal({
+      isOpen: true,
+      brand: row
+    });
   };
+
+    const confirmDelete = async () => {
+      if (!deleteModal.brand) return;
+      
+      try {
+        await deleteBrand(deleteModal.brand.id);
+        toast.success("Brand deleted successfully");
+
+        setBrandData(prev => prev.filter(brand => brand.id !== deleteModal.brand!.id));
+
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Failed to delete Brand");
+      } finally {
+        setDeleteModal({ isOpen: false, brand: null });
+      }
+    };
+  
+    const cancelDelete = () => {
+      setDeleteModal({ isOpen: false, brand: null });
+    };
 
   const handleExport = () => {
     console.log("Export brands");
@@ -248,15 +276,6 @@ export default function BrandManagementPage() {
                   <Download className="h-4 w-4 mr-1" />
                   Export
                 </button>
-
-                {/* <div className="flex-1">
-                  <FilterComponent
-                    filters={filters}
-                    filterConfigs={filterConfigs}
-                    onFilterChange={handleFilterChange}
-                    onResetFilters={handleResetFilters}
-                  />
-                </div> */}
               </div>
             </div>
           </div>
@@ -277,6 +296,15 @@ export default function BrandManagementPage() {
             onSort={handleSort}
           />
         )}
+
+        {/* Delete Confirmation Modal */}
+              <DeleteConfirmation
+                isOpen={deleteModal.isOpen}
+                onClose={cancelDelete}
+                onConfirm={confirmDelete}
+                title="Delete Brand"
+                itemName={deleteModal.brand?.name}
+              />
       </div>
     </div>
   );

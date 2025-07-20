@@ -37,15 +37,6 @@ const INITIAL_FORM_DATA: CategoryFormData = {
   iconPreview: "",
 };
 
-// Helper function to capitalize first letter of each word
-const capitalizeWords = (str: string) => {
-  return str
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
-
 export default function CategoryPopup({
   isOpen,
   onClose,

@@ -10,12 +10,13 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import FilterComponent from "@/components/admin/product/filter";
+
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import ColorPopup from "./colorPopup";
 import { deleteColor, getAllColors } from "@/api/color";
+import { DeleteConfirmation } from "@/components/common/helper_function";
 
 // Color interface
 interface Color {
@@ -32,7 +33,16 @@ export default function ColorManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingColor, setEditingColor] = useState<Color | undefined>(undefined);
+  const [editingColor, setEditingColor] = useState<Color | undefined>(
+    undefined
+  );
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    color: Color | null;
+  }>({
+    isOpen: false,
+    color: null,
+  });
 
   const fetchColors = async () => {
     try {
@@ -40,7 +50,7 @@ export default function ColorManagementPage() {
       setColorData(res.data);
     } catch (error) {
       toast.error("Failed to fetch colors.");
-    } finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -92,20 +102,7 @@ export default function ColorManagementPage() {
         </div>
       ),
     },
-    {
-      id: "createdAt",
-      label: "Created At",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (color: Color) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(color.createdAt).toLocaleDateString()}
-        </div>
-      ),
-    },
+    
   ];
 
   // Use custom hook for table data management (same as product page)
@@ -134,14 +131,32 @@ export default function ColorManagementPage() {
     setShowEditPopup(true);
   };
 
-  const handleDelete = async (row: any) => {
+  const handleDelete = (row: any) => {
+    setDeleteModal({
+      isOpen: true,
+      color: row,
+    });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.color) return;
+
     try {
-      await deleteColor(row.id);
+      await deleteColor(deleteModal.color.id);
       toast.success("Color deleted successfully");
-      await fetchColors();
+
+      setColorData((prev) =>
+        prev.filter((color) => color.id !== deleteModal.color!.id)
+      );
     } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete color");
+      toast.error(error.response?.data?.error || "Failed to delete Color");
+    } finally {
+      setDeleteModal({ isOpen: false, color: null });
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, color: null });
   };
 
   const handleExport = () => {
@@ -170,8 +185,6 @@ export default function ColorManagementPage() {
   //   0
   // );
 
- 
-
   return (
     <div className="p-6 space-y-6">
       {/* Page Header - Same structure as product page */}
@@ -194,11 +207,11 @@ export default function ColorManagementPage() {
       </div>
 
       {/* Add Color Popup */}
-      <ColorPopup 
-      isOpen={showAddPopup} 
-      onClose={handleCloseAddPopup}
-      onSuccess={fetchColors}
-       />
+      <ColorPopup
+        isOpen={showAddPopup}
+        onClose={handleCloseAddPopup}
+        onSuccess={fetchColors}
+      />
 
       {/* Edit Color Popup */}
       <ColorPopup
@@ -286,20 +299,30 @@ export default function ColorManagementPage() {
           </div>
         </div>
 
-        {loading ? <div className="p-6 text-center">Loading colors...</div> : 
-        <DefaultTable
-          selectedItems={selectedItems}
-          onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
-          columns={colorColumns}
-          data={processedData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-        /> }
+        {loading ? (
+          <div className="p-6 text-center">Loading colors...</div>
+        ) : (
+          <DefaultTable
+            selectedItems={selectedItems}
+            onSelectAll={handleSelectAll}
+            onSelectItem={handleSelectItem}
+            columns={colorColumns}
+            data={processedData}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+        )}
 
-        
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmation
+          isOpen={deleteModal.isOpen}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Delete Color"
+          itemName={deleteModal.color?.name}
+        />
       </div>
     </div>
   );

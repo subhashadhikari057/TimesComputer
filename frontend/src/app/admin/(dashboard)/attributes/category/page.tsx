@@ -12,12 +12,13 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import CategoryPopup from "./categoryPopup";
 import { deleteCategory, getAllCategories } from "@/api/category"; // ✅ API import
+import { getImageUrl } from "@/lib/imageUtils";
+import { DeleteConfirmation } from "@/components/common/helper_function";
 
 interface Category {
   id: number;
@@ -26,7 +27,6 @@ interface Category {
   icon: string;
   createdAt: string;
   updatedAt: string;
-  
 }
 
 export default function CategoryManagementPage() {
@@ -34,18 +34,27 @@ export default function CategoryManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | undefined>(undefined);
+  const [editingCategory, setEditingCategory] = useState<Category | undefined>(
+    undefined
+  );
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    category: Category | null;
+  }>({
+    isOpen: false,
+    category: null,
+  });
 
   const fetchCategories = async () => {
-      try {
-        const res = await getAllCategories();
-        setCategoryData(res.data);
-      } catch (err) {
-        toast.error("Failed to fetch categories.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      const res = await getAllCategories();
+      setCategoryData(res.data);
+    } catch (err) {
+      toast.error("Failed to fetch categories.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchCategories();
@@ -59,22 +68,25 @@ export default function CategoryManagementPage() {
       filterable: true,
       searchable: true,
       width: "300px",
-      render: (category: Category) => (
-        <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center overflow-hidden">
-            <img
-              src={category.image}
-              alt={category.name}
-              className="h-full w-full object-cover"
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {category.name}
+      render: (category: Category) => {
+        const iconUrl = getImageUrl(category.icon);
+        return (
+          <div className="flex items-center space-x-4">
+            <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden">
+              <img
+                src={iconUrl}
+                alt={category.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {category.name}
+              </div>
             </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: "productCount",
@@ -117,14 +129,10 @@ export default function CategoryManagementPage() {
 
   const {
     searchTerm,
-    filters,
     sortConfig,
     selectedItems,
     processedData,
-    filterConfigs,
     handleSearchChange,
-    handleFilterChange,
-    handleResetFilters,
     handleSort,
     handleSelectAll,
     handleSelectItem,
@@ -140,15 +148,32 @@ export default function CategoryManagementPage() {
     setShowEditPopup(true);
   };
 
-  const handleDelete = async (row: any) => {
-     try {
-              await deleteCategory(row.id);
-              toast.success("Category deleted successfully");
-              await fetchCategories();
+  const handleDelete = (row: any) => {
+    setDeleteModal({
+      isOpen: true,
+      category: row,
+    });
+  };
 
-            } catch (error: any) {
-              toast.error(error.response?.data?.error || "Failed to delete category");
-            }
+  const confirmDelete = async () => {
+    if (!deleteModal.category) return;
+
+    try {
+      await deleteCategory(deleteModal.category.id);
+      toast.success("Category deleted successfully");
+
+      setCategoryData((prev) =>
+        prev.filter((category) => category.id !== deleteModal.category!.id)
+      );
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete Category");
+    } finally {
+      setDeleteModal({ isOpen: false, category: null });
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, category: null });
   };
 
   const handleExport = () => {
@@ -176,8 +201,6 @@ export default function CategoryManagementPage() {
   //   0
   // );
 
-  
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -198,11 +221,11 @@ export default function CategoryManagementPage() {
         </div>
       </div>
 
-      <CategoryPopup 
-      isOpen={showAddPopup}
-       onClose={handleCloseAddPopup} 
-       onSuccess={fetchCategories}
-       />
+      <CategoryPopup
+        isOpen={showAddPopup}
+        onClose={handleCloseAddPopup}
+        onSuccess={fetchCategories}
+      />
       <CategoryPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
@@ -283,19 +306,30 @@ export default function CategoryManagementPage() {
           </div>
         </div>
 
-        {loading ? <div className="p-6">Loading brands...</div> : <DefaultTable
-          selectedItems={selectedItems}
-          onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
-          columns={categoryColumns}
-          data={processedData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-        />}
+        {loading ? (
+          <div className="p-6">Loading Category...</div>
+        ) : (
+          <DefaultTable
+            selectedItems={selectedItems}
+            onSelectAll={handleSelectAll}
+            onSelectItem={handleSelectItem}
+            columns={categoryColumns}
+            data={processedData}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+        )}
 
-        
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmation
+          isOpen={deleteModal.isOpen}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Delete Category"
+          itemName={deleteModal.category?.name}
+        />
       </div>
     </div>
   );
