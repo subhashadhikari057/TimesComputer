@@ -60,7 +60,6 @@ export const getProductBySlug = async (req: Request, res: Response) => {
     }
 };
 
-
 export const createProduct = async (req: Request, res: Response) => {
     try {
         const slug = slugify(req.body.name, { lower: true, strict: true });
