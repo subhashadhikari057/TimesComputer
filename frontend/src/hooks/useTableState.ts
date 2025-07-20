@@ -190,7 +190,6 @@ export function useTableData<T extends Record<string, any>>({
 
   const handleBulkDelete = () => {
     const selectedData = selectedItems.map(index => processedData[index]);
-    console.log("Selected items for bulk delete:", selectedData);
     // TODO: Implement actual bulk delete logic
     setSelectedItems([]);
   };

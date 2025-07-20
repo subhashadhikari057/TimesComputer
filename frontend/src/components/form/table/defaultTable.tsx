@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Edit, Trash2, ChevronUp, ChevronDown, TimerReset, KeyRound } from "lucide-react";
 
 // Define types for the component
 export interface Column {
@@ -27,6 +27,7 @@ interface DefaultTableProps {
   data: TableData[];
   onEdit: (row: TableData, index: number) => void;
   onDelete: (row: TableData, index: number) => void;
+  onResetPassword?: (row: TableData, index: number) => void;
   className?: string;
   onSelectAll?: () => void;
   onSelectItem?: (index: number) => void;
@@ -75,6 +76,7 @@ const DefaultTable: React.FC<DefaultTableProps> = ({
   selectedItems,
   onEdit,
   onDelete,
+  onResetPassword,
   className = "",
   sortConfig = null,
   onSort = () => {},
@@ -176,6 +178,20 @@ const DefaultTable: React.FC<DefaultTableProps> = ({
                   <td className="px-4 py-4 text-sm text-gray-900">
                     <div className="flex items-center justify-end">
                       <div className="flex space-x-2">
+                        {onResetPassword && (
+                          <button
+                            onClick={() => onResetPassword(row, index)}
+                            disabled={isRowSelected}
+                            className={`inline-flex items-center px-3 py-1.5 text-sm font-medium border rounded-md ${
+                              isRowSelected
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200"
+                                : "text-green-600 bg-white border-green-300 hover:bg-green-50 hover:text-green-700 focus:ring-green-500"
+                            }`}
+                            title="Reset Password"
+                          >
+                            <KeyRound size={16} />
+                          </button>
+                        )}
                         <button
                           onClick={() => onEdit(row, index)}
                           disabled={isRowSelected}

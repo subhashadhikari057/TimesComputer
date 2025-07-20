@@ -42,7 +42,6 @@ export default function ColorSelector({
   };
 
   const handleColorsChange = (colorIds: (string | number)[]) => {
-    // Convert to number array since our API expects numbers
     const numberIds = colorIds.map(id => Number(id));
     onColorsChange(numberIds);
   };

@@ -42,35 +42,40 @@ export default function AdminLogin() {
     setShowPassword(!showPassword);
   }
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  // In your AdminLogin component, update the handleSubmit function:
+async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  e.preventDefault();
 
-    const errors: LoginFormError = {};
-    if (!form.email.trim()) errors.email = "Email is required";
-    if (!form.password.trim()) errors.password = "Password is required";
+  const errors: LoginFormError = {};
+  if (!form.email.trim()) errors.email = "Email is required";
+  if (!form.password.trim()) errors.password = "Password is required";
 
-    if (Object.keys(errors).length) {
-      setErr(errors);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await apiRequest("POST", "/auth/refresh/login", {
-        email: form.email,
-        password: form.password,
-        rememberMe: form.rememberMe,
-      });
-      toast.success("Login successful!");
-      // Redirect to admin dashboard
-      router.push("/admin/dashboard");
-    } catch (error) {
-      toast.error("Login failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+  if (Object.keys(errors).length) {
+    setErr(errors);
+    return;
   }
+
+  setIsLoading(true);
+
+  try {
+    const data = await apiRequest("POST", "/auth/refresh/login", {
+      email: form.email,
+      password: form.password,
+      rememberMe: form.rememberMe,
+    });
+    
+    
+    // Store user data in localStorage for the Header component to use
+    localStorage.setItem('user', JSON.stringify(data.user));
+    
+    toast.success("Login successful!");
+    router.push("/admin/dashboard");
+  } catch (error) {
+    toast.error("Login failed. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+}
 
   return (
     <div className="h-screen w-screen inset-0 z-50 absolute bg-[url('/background/login_bg.png')] bg-cover bg-center ">

@@ -22,6 +22,7 @@ interface FormData {
   price: number;
   stock: number;
   isPublished: boolean;
+  isFeature: boolean; 
   brochure: string;
   brandId: number | null;
   categoryId: number | null;
@@ -38,6 +39,7 @@ const INITIAL_FORM_DATA: FormData = {
   price: 0,
   stock: 0,
   isPublished: true,
+  isFeature: true,
   brochure: "",
   brandId: null,
   categoryId: null,
@@ -59,6 +61,7 @@ const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
     price: data.price,
     stock: data.stock,
     isPublished: data.isPublished,
+    isFeature: data.isFeature,
     brochure: data.brochure || "",
     brandId: data.brandId || null,
     categoryId: data.categoryId || null,
@@ -355,6 +358,14 @@ export default function EditProduct() {
                     checked={form.isPublished}
                     onChange={handleFormChange}
                     helpText="Make this product visible to customers"
+                  />
+
+                   <DefaultCheckbox
+                    label="Feature"
+                    name="isFeature"
+                    checked={form.isFeature}
+                    onChange={handleFormChange}
+                    helpText="Make this product a featured item"
                   />
                 </div>
               </ComponentCard>

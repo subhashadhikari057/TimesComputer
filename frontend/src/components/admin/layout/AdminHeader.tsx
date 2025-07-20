@@ -1,6 +1,6 @@
 "use client";
 
-import axios, { apiRequest } from "@/lib/axiosInstance";
+import  { apiRequest } from "@/lib/axiosInstance";
 import { useRouter } from "next/navigation";
 import {
   ChevronDown,
@@ -14,12 +14,13 @@ import {
   ChevronLeft,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
 interface User {
   id: number;
   name: string;
+  email?: string;
 }
 
 interface HeaderProps {
@@ -27,7 +28,6 @@ interface HeaderProps {
   setSidebarOpen: (open: boolean) => void;
   userDropdownOpen: boolean;
   setUserDropdownOpen: (open: boolean) => void;
-  user?: User | null;
 }
 
 export default function Header({
@@ -35,12 +35,32 @@ export default function Header({
   setSidebarOpen,
   userDropdownOpen,
   setUserDropdownOpen,
-  user,
 }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+          setUser(JSON.parse(storedUser!));
+          setLoading(false);
+          return;
+      } catch (error) {
+        router.push("/admin/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserData();
+  }, [router]);
+
+  // Use the actual user name from the API response, fallback to "Admin"
   const displayName = user?.name || "Admin";
+  const userEmail = user?.email || `${displayName.toLowerCase()}@example.com`;
 
   const closeAllMenus = () => {
     setMobileMenuOpen(false);
@@ -62,6 +82,9 @@ export default function Header({
   const handleLogOut = async () => {
     try {
       const response = await apiRequest("POST", "/auth/refresh/logout");
+      // Clear user data from localStorage
+      localStorage.removeItem('user');
+      setUser(null);
       toast.success("Logout successful!");
       router.push("/admin/login");
     } catch (error) {
@@ -85,7 +108,12 @@ export default function Header({
     <div
       className={`${size} border border-gray-300 rounded-full overflow-hidden flex items-center justify-center`}
     >
-      <div className="w-full h-full rounded-full bg-gray-100" />
+      <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center">
+        {/* Display first letter of user's name */}
+        <span className="text-gray-600 font-semibold text-sm">
+          {displayName.charAt(0).toUpperCase()}
+        </span>
+      </div>
     </div>
   );
 
@@ -110,7 +138,7 @@ export default function Header({
           {/* Center title */}
           <div className="flex flex-col items-center text-center">
             <h1 className="text-[16px] sm:text-[18px] font-bold text-gray-800">
-              Welcome back, {displayName}
+              {loading ? "Loading..." : `Welcome back, ${displayName}`}
             </h1>
             <p className="hidden md:block text-[14px] text-gray-500">
               Monitor, manage, and move forward.
@@ -131,7 +159,7 @@ export default function Header({
                 >
                   <Avatar />
                   <span className="hidden lg:inline-block text-sm font-medium text-gray-700">
-                    Asmit
+                    {displayName}
                   </span>
                   <ChevronDown size={18} className="text-gray-500" />
                 </button>
@@ -176,8 +204,8 @@ export default function Header({
               <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-gray-100">
                 <Avatar size="w-12 h-12" />
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Asmit</p>
-                  <p className="text-xs text-gray-500">asmit@example.com</p>
+                  <p className="text-sm font-semibold text-gray-900">{displayName}</p>
+                  <p className="text-xs text-gray-500">{userEmail}</p>
                 </div>
               </div>
 

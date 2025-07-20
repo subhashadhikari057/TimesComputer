@@ -27,7 +27,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: "product",
-    label: "Manage Products",
+    label: "Products",
     icon: Package,
     hasSubmenu: true,
     subItems: [
@@ -37,7 +37,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: "attributes",
-    label: "Manage Attributes",
+    label: "Attributes",
     icon: Palette,
     hasSubmenu: true,
     subItems: [
@@ -50,14 +50,14 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: "ads",
-    label: "Manage Ads",
+    label: "Ads",
     icon: Megaphone,
     hasSubmenu: false,
    
   },
   {
     id: "blogs",
-    label: "Manage Blogs",
+    label: "Blogs",
     icon: FileText,
     hasSubmenu: true,
     subItems: [
@@ -65,26 +65,13 @@ export const menuItems: MenuItem[] = [
       { label: "Create Blog", href: "/admin/blogs/create" },
     ],
   },
-];
-
-export const otherMenuItems: MenuItem[] = [
-  
   {
     id: "user",
-    label: "Manage Users",
+    label: "Users",
     icon: Lock,
     hasSubmenu: false,
     href: "/admin/users",
   },
-  {
-    id: "auth",
-    label: "Authentication",
-    icon: Lock,
-    hasSubmenu: true,
-    subItems: [
-      { label: "Change Password", href: "/admin/auth/login" },
-      { label: "Log Out", href: "/admin/auth/register" },
-    ],
-  },
- 
 ];
+
+

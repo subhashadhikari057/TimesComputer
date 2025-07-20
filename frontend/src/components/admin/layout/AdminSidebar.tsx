@@ -3,7 +3,6 @@
 import { X, ChevronDown, ChevronRight } from "lucide-react";
 import {
   menuItems,
-  otherMenuItems,
   MenuItem,
 } from "@/app/admin/(dashboard)/dashboard/data/menuItems";
 import Link from "next/link";
@@ -253,22 +252,6 @@ export default function Sidebar({
 
               <div className="space-y-2">
                 {menuItems.map(renderMenuItem)}
-
-                {isExpanded && (
-                  <div className="pt-4">
-                    <p
-                      className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
-                        sidebarOpen
-                          ? "opacity-100"
-                          : "group-hover:opacity-100"
-                      } transition-opacity duration-300`}
-                    >
-                      Others
-                    </p>
-                  </div>
-                )}
-
-                {otherMenuItems.map(renderMenuItem)}
               </div>
             </nav>
           </div>
