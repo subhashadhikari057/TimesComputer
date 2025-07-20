@@ -73,20 +73,7 @@ const [deleteModal, setDeleteModal] = useState<{
         </div>
       ),
     },
-    {
-      id: "createdAt",
-      label: "Created At",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (featureTag: FeatureTag) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(featureTag.createdAt).toLocaleDateString()}
-        </div>
-      ),
-    },
+   
   ];
 
   const {

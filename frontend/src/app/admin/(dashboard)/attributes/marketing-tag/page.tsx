@@ -73,32 +73,14 @@ export default function MarketingTagManagementPage() {
         </div>
       ),
     },
-    {
-      id: "createdAt",
-      label: "Created At",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (marketingTag: MarketingTag) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(marketingTag.createdAt).toLocaleDateString()}
-        </div>
-      ),
-    },
   ];
 
   const {
     searchTerm,
-    filters,
     sortConfig,
     selectedItems,
     processedData,
-    filterConfigs,
     handleSearchChange,
-    handleFilterChange,
-    handleResetFilters,
     handleSort,
     handleSelectAll,
     handleSelectItem,

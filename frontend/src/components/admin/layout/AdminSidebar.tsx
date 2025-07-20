@@ -196,9 +196,8 @@ export default function Sidebar({
 
   return (
     <>
-
       <div
-        className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out
+        className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out flex flex-col
           ${
             sidebarOpen
               ? "w-3/4 md:w-72 translate-x-0"
@@ -211,9 +210,10 @@ export default function Sidebar({
         <div
           className={`${
             isExpanded ? "min-w-72" : "min-w-20"
-          } transition-all duration-300`}
+          } transition-all duration-300 flex flex-col h-full`}
         >
-          <div className="flex items-center justify-between h-16 px-4 pt-4">
+          {/* Fixed Header */}
+          <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 pt-4 border-b border-gray-100">
             {isExpanded ? (
               <>
                 <span className="text-xl font-bold text-gray-800">
@@ -234,41 +234,44 @@ export default function Sidebar({
             )}
           </div>
 
-          <nav className="mt-6 px-4">
-            {isExpanded && (
-              <div className="mb-3">
-                <p
-                  className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
-                    sidebarOpen
-                      ? "opacity-100"
-                      : " group-hover:opacity-100"
-                  } transition-opacity duration-300`}
-                >
-                  Menu
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              {menuItems.map(renderMenuItem)}
-
+          {/* Scrollable Navigation */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            <nav className="mt-6 px-4 pb-6">
               {isExpanded && (
-                <div className="pt-4">
+                <div className="mb-3">
                   <p
                     className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
                       sidebarOpen
                         ? "opacity-100"
-                        : "group-hover:opacity-100"
+                        : " group-hover:opacity-100"
                     } transition-opacity duration-300`}
                   >
-                    Others
+                    Menu
                   </p>
                 </div>
               )}
 
-              {otherMenuItems.map(renderMenuItem)}
-            </div>
-          </nav>
+              <div className="space-y-2">
+                {menuItems.map(renderMenuItem)}
+
+                {isExpanded && (
+                  <div className="pt-4">
+                    <p
+                      className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
+                        sidebarOpen
+                          ? "opacity-100"
+                          : "group-hover:opacity-100"
+                      } transition-opacity duration-300`}
+                    >
+                      Others
+                    </p>
+                  </div>
+                )}
+
+                {otherMenuItems.map(renderMenuItem)}
+              </div>
+            </nav>
+          </div>
         </div>
       </div>
 
@@ -286,6 +289,24 @@ export default function Sidebar({
 
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
+        }
+
+        /* Custom scrollbar styling */
+        .overflow-y-auto::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+          background: rgba(156, 163, 175, 0.3);
+          border-radius: 3px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+          background: rgba(156, 163, 175, 0.5);
         }
       `}</style>
     </>

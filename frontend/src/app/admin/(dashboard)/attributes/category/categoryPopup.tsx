@@ -8,7 +8,7 @@ import IconUpload from "@/components/admin/product/iconUpload";
 import { toast } from "sonner";
 import { createCategory, updateCategory } from "@/api/category";
 import { capitalizeFirstWord } from "@/components/common/helper_function";
-
+import { getImageUrl } from "@/lib/imageUtils";
 
 interface CategoryFormData {
   id?: number;
@@ -56,8 +56,8 @@ export default function CategoryPopup({
         setForm({
           id: initialData.id,
           name: initialData.name,
-          imagePreview: initialData.image,
-          iconPreview: initialData.icon,
+          imagePreview: getImageUrl(initialData.image),
+          iconPreview: getImageUrl(initialData.icon),
         });
       } else {
         setForm(INITIAL_FORM_DATA);
@@ -65,7 +65,7 @@ export default function CategoryPopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
@@ -116,46 +116,43 @@ export default function CategoryPopup({
       const errorMessage =
         err.response?.data?.message || err.response?.data?.error || err.message;
 
-         // Handle specific duplicate errors
-    if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
-      toast.error("Category name already exists. Please choose a different name.");
-    } else {
-      toast.error(`Failed to ${isEditMode ? "update" : "create"} category`);
-    }
+      if (
+        errorMessage.includes("already exists") ||
+        errorMessage.includes("duplicate")
+      ) {
+        toast.error(
+          "Category name already exists. Please choose a different name."
+        );
+      } else {
+        toast.error(`Failed to ${isEditMode ? "update" : "create"} category`);
+      }
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      const capitalizedValue = capitalizeFirstWord(value);
-      setForm((prev) => ({ ...prev, name: capitalizedValue }));
-    };
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const capitalizedValue = capitalizeFirstWord(value);
+    setForm((prev) => ({ ...prev, name: capitalizedValue }));
+  };
 
-  const handleImageUpload = (files: File[], imageType: "image" | "icon") => {
-    const file = files[0];
+  // Fixed image upload handler
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     setError(null);
 
-    let allowedTypes: string[];
-    let errorMessage: string;
-
-    if (imageType === "icon") {
-      allowedTypes = ["image/svg+xml"];
-      errorMessage = "Invalid file type. Please upload SVG files only for icons.";
-    } else {
-      allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      errorMessage = "Invalid file type. Please upload PNG, JPG, or WebP files.";
-    }
-
+    // Validate file type for regular images
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      setError(errorMessage);
+      setError("Invalid file type. Please upload PNG, JPG, or WebP files.");
       return;
     }
 
+    // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       setError("File size too large. Please upload files smaller than 10MB.");
       return;
@@ -163,22 +160,59 @@ export default function CategoryPopup({
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
       setForm((prev) => ({
         ...prev,
-        [imageType]: file,
-        [previewKey]: e.target?.result as string,
+        image: file,
+        imagePreview: e.target?.result as string,
       }));
     };
     reader.readAsDataURL(file);
   };
 
-  const handleRemove = (imageType: "image" | "icon") => {
-    const previewKey = imageType === "image" ? "imagePreview" : "iconPreview";
+  // Fixed icon upload handler
+  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setError(null);
+
+    // Validate file type for icons (SVG only)
+    if (file.type !== "image/svg+xml") {
+      setError("Invalid file type. Please upload SVG files only for icons.");
+      return;
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File size too large. Please upload files smaller than 10MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setForm((prev) => ({
+        ...prev,
+        icon: file,
+        iconPreview: e.target?.result as string,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Fixed remove handlers
+  const removeImage = () => {
     setForm((prev) => ({
       ...prev,
-      [imageType]: undefined,
-      [previewKey]: "",
+      image: undefined,
+      imagePreview: "",
+    }));
+  };
+
+  const removeIcon = () => {
+    setForm((prev) => ({
+      ...prev,
+      icon: undefined,
+      iconPreview: "",
     }));
   };
 
@@ -200,13 +234,19 @@ export default function CategoryPopup({
             ? "Updating..."
             : "Creating..."
           : isEditMode
-            ? "Update Category"
-            : "Add Category"
+          ? "Update Category"
+          : "Add Category"
       }
       isLoading={loading}
       maxWidth="md"
     >
       <div className="space-y-6">
+        {/* Error Display */}
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
 
         <DefaultInput
           label="Category Name"
@@ -223,12 +263,10 @@ export default function CategoryPopup({
             required
             images={form.image ? [form.image] : []}
             imagePreviews={form.imagePreview ? [form.imagePreview] : []}
-            onImageUpload={(e) =>
-              handleImageUpload(Array.from(e.target.files || []), "image")
-            }
-            onRemoveImage={() => handleRemove("image")}
+            onImageUpload={handleImageUpload}
+            onRemoveImage={removeImage}
             maxImages={1}
-            maxSizeText="up to 10MB each"
+            maxSizeText="up to 10MB"
             acceptedFormats="PNG, JPG, WebP"
             uploadText="Click to upload image"
           />
@@ -238,17 +276,16 @@ export default function CategoryPopup({
             required
             images={form.icon ? [form.icon] : []}
             imagePreviews={form.iconPreview ? [form.iconPreview] : []}
-            onImageUpload={(e) =>
-              handleImageUpload(Array.from(e.target.files || []), "icon")
-            }
-            onRemoveImage={() => handleRemove("icon")}
+            onImageUpload={handleIconUpload}
+            onRemoveImage={removeIcon}
             maxImages={1}
             acceptedFormats="SVG"
-            maxSizeText="up to 10MB each"
+            maxSizeText="up to 10MB"
             uploadText="Click to upload SVG icon"
           />
         </div>
 
+        {/* Validation Message */}
         {!isFormValid() && showValidation && !loading && (
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm text-amber-700 font-medium">
@@ -256,7 +293,9 @@ export default function CategoryPopup({
             </p>
             <ul className="text-sm text-amber-600 mt-1 list-disc list-inside">
               {form.name.trim() === "" && <li>Category name</li>}
-              {!form.image && form.imagePreview === "" && <li>Category image</li>}
+              {!form.image && form.imagePreview === "" && (
+                <li>Category image</li>
+              )}
               {!form.icon && form.iconPreview === "" && <li>Category icon</li>}
             </ul>
           </div>
