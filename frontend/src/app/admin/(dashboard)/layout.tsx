@@ -65,6 +65,10 @@ export default function DashboardLayout({ children }: LayoutProps) {
       newActiveMenus.push("attributes");
     }
 
+    if (pathname.startsWith("/admin/blogs")) {
+      newActiveMenus.push("blogs");
+    }
+
     // Add other menu auto-open logic here as needed
 
     setActiveMenus(newActiveMenus);

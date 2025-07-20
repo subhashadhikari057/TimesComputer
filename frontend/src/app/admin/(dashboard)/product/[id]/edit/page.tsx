@@ -14,6 +14,7 @@ import Specifications from "@/components/admin/product/specification";
 import AttributeSelector from "@/components/admin/product/attributes";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
 import { getProductById, updateProduct } from "@/api/product";
+import { convertApiImagesToFormImages } from "@/lib/imageUtils";
 
 interface FormData {
   name: string;
@@ -47,13 +48,10 @@ const INITIAL_FORM_DATA: FormData = {
   images: [],
 };
 
-// Mock function to fetch product data
-// TODO: Replace with actual API call
+// Fetch product data using the centralized image utilities
 const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
-  // Use real API call
   const data = await getProductById(Number(id));
 
-  // Map API response to FormData shape if needed
   return {
     id: data.id,
     name: data.name,
@@ -76,23 +74,8 @@ const fetchProduct = async (id: string): Promise<FormData & { id: string }> => {
           value: String(value),
         }))
       : [{ key: "", value: "" }],
-    images: (data.images || []).map((imagePath: string) => {
-      const fileName = imagePath.split("/").pop() || "image.jpg";
-      const file = new File([""], fileName, { type: "image/jpeg" });
-
-      // Convert relative path to absolute URL
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-      const baseUrl = apiUrl.replace("/api", ""); // Remove /api for static files
-      const imageUrl = imagePath.startsWith("http")
-        ? imagePath // Already absolute URL
-        : `${baseUrl}/${imagePath}`; // Convert relative to absolute
-
-      return {
-        file: file,
-        preview: imageUrl,
-      };
-    }),
+    // Use the centralized utility function
+    images: convertApiImagesToFormImages(data.images || []),
   };
 };
 
@@ -206,7 +189,9 @@ export default function EditProduct() {
     }
   };
 
-  // Loading state
+  // Rest of your component remains the same...
+  // (Loading state, Error state, and JSX return)
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -218,7 +203,6 @@ export default function EditProduct() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
