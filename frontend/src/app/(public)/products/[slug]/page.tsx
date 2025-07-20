@@ -11,23 +11,26 @@ import { getProductBySlug } from "@/api/product";
 import { Product } from "../../../../../types/product";
 import Reccomendedproducts from "@/components/products/reccomendedproducts";
 import { getImageUrl } from "@/lib/imageUtils";
+import axios from "@/lib/axiosInstance";
 
 export default function ProductDetails() {
   const [productData, setProductData] = useState<Product>({});
   const [loading, setLoading] = useState(true);
   const { slug } = useParams<{ slug: string }>();
 
+  const productId = productData.id;
+
   useEffect(() => {
     const fetchProduct = async () => {
       if (!slug) return;
-      
+
       try {
         setLoading(true);
         const data = await getProductBySlug(slug);
         setProductData(data);
         toast.success("Product loaded successfully.");
       } catch (error) {
-        toast.error("Failed to fetch product.");
+        toast.error("Failed to fetch productData.");
         console.error("Error fetching product:", error);
       } finally {
         setLoading(false);
@@ -63,6 +66,28 @@ export default function ProductDetails() {
     );
   }
 
+  const handleBuyInBulk = async () => {
+    try {
+      const productId = productData.id;
+
+      const response = await axios.post(`/inquiry/post/${productId}`);
+
+      const whatsappURL = response.data.whatsappURL || response.data;
+
+      const whatsappAppURL = whatsappURL.replace(/^https:\/\/wa\.me/, 'whatsapp://send');
+
+      const newWindow = window.open(whatsappAppURL, '_blank');
+
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        window.open(whatsappURL, '_blank');
+      }
+    } catch (error) {
+      toast.error("Failed to place bulk order.");
+      console.error("Failed to get WhatsApp URL", error);
+    }
+  };
+
+
   return (
     <div className="max-w-7xl mx-auto mt-2 p-6 bg-white">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -73,9 +98,8 @@ export default function ProductDetails() {
               <button
                 key={index}
                 onClick={() => setSelectedImage(index)}
-                className={`flex-shrink-0 w-20 h-20 border-2 rounded-lg overflow-hidden ${
-                  selectedImage === index ? "border-blue-500" : "border-gray-200"
-                }`}
+                className={`flex-shrink-0 w-20 h-20 border-2 rounded-lg overflow-hidden ${selectedImage === index ? "border-blue-500" : "border-gray-200"
+                  }`}
               >
                 <Image
                   src={thumb ? getImageUrl(thumb) : "/products/Frame_68.png"}
@@ -127,7 +151,7 @@ export default function ProductDetails() {
               </span>
             </div>
 
-            <Button className="w-full bg-primary text-white py-3 mb-4">
+            <Button className="w-full bg-primary text-white py-3 mb-4" onClick={handleBuyInBulk}>
               Buy in bulk
             </Button>
             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -162,21 +186,19 @@ export default function ProductDetails() {
           <nav className="flex space-x-8">
             <button
               onClick={() => setActiveTab("specifications")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "specifications"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "specifications"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
             >
               Specifications
             </button>
             <button
               onClick={() => setActiveTab("description")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "description"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "description"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
             >
               Description
             </button>
