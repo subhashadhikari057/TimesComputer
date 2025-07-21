@@ -67,11 +67,11 @@ export default function Sidebar({
     // Collapsed sidebar - show only icons with submenu indicators
     if (!isExpanded) {
       return (
-        <div key={item.id} className="relative">
+        <div key={item.id} className="relative clean-element">
           {item.href && item.href !== "#" && !item.hasSubmenu ? (
             <Link
               href={item.href}
-              className={`w-full flex items-center justify-center px-3 py-3 rounded-md transition-colors ${baseClass} relative group`}
+              className={`w-full flex items-center justify-center px-3 py-3 rounded-md transition-colors ${baseClass} relative group clean-element`}
               title={item.label}
               onClick={() => {
                 if (window.innerWidth < 1024) {
@@ -89,7 +89,7 @@ export default function Sidebar({
               onClick={() =>
                 handleNavClick(item.href || "#", item.hasSubmenu, item.id)
               }
-              className={`w-full flex items-center justify-center px-3 py-3 rounded-md transition-colors ${baseClass} relative group`}
+              className={`w-full flex items-center justify-center px-3 py-3 rounded-md transition-colors ${baseClass} relative group clean-element`}
               title={item.label}
             >
               <Icon
@@ -105,17 +105,17 @@ export default function Sidebar({
     // Expanded sidebar - show full menu
     if (item.hasSubmenu) {
       return (
-        <div key={item.id}>
+        <div key={item.id} className="clean-element">
           <button
             onClick={() => handleNavClick(item.href || "#", true, item.id)}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition-colors ${baseClass}`}
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition-colors ${baseClass} clean-element`}
           >
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 clean-element">
               <Icon
                 size={16}
                 className={isHighlighted ? "text-blue-600" : "text-gray-600"}
               />
-              <span className="font-semibold text-[14px]">{item.label}</span>
+              <span className="font-semibold text-[14px] clean-text">{item.label}</span>
             </div>
             {isSubmenuExpanded ? (
               <ChevronDown
@@ -135,14 +135,14 @@ export default function Sidebar({
           </button>
 
           {isSubmenuExpanded && item.subItems && (
-            <div className="ml-8 mt-2 space-y-1 animate-fadeIn">
+            <div className="ml-8 mt-2 space-y-1 animate-fadeIn clean-element">
               {item.subItems.map((sub, i) => {
                 const active = isRouteActive(sub.href);
                 return (
                   <Link
                     key={i}
                     href={sub.href}
-                    className={`block px-3 py-2 text-[13px] font-semibold rounded-md transition-colors ${
+                    className={`block px-3 py-2 text-[13px] font-semibold rounded-md transition-colors clean-element ${
                       active
                         ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                         : "text-gray-600 hover:bg-gray-50"
@@ -153,7 +153,7 @@ export default function Sidebar({
                       }
                     }}
                   >
-                    {sub.label}
+                    <span className="clean-text">{sub.label}</span>
                     {isNavigating && active && (
                       <span className="ml-2 text-xs text-gray-400">...</span>
                     )}
@@ -170,7 +170,7 @@ export default function Sidebar({
       <Link
         key={item.id}
         href={item.href || "/admin/dashboard"}
-        className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
+        className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors clean-element ${
           isItemActive
             ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
             : "text-gray-700 hover:bg-gray-100"
@@ -185,7 +185,7 @@ export default function Sidebar({
           size={16}
           className={isItemActive ? "text-blue-600" : "text-gray-600"}
         />
-        <span className="font-semibold text-[14px]">{item.label}</span>
+        <span className="font-semibold text-[14px] clean-text">{item.label}</span>
         {isNavigating && isItemActive && (
           <span className="ml-auto text-xs text-gray-400">...</span>
         )}
@@ -196,7 +196,7 @@ export default function Sidebar({
   return (
     <>
       <div
-        className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out flex flex-col
+        className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out flex flex-col clean-sidebar
           ${
             sidebarOpen
               ? "w-3/4 md:w-64 translate-x-0"
@@ -209,37 +209,37 @@ export default function Sidebar({
         <div
           className={`${
             isExpanded ? "min-w-64" : "min-w-20"
-          } transition-all duration-300 flex flex-col h-full`}
+          } transition-all duration-300 flex flex-col h-full clean-element`}
         >
           {/* Fixed Header */}
-          <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 pt-4 border-b border-gray-100">
+          <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 pt-4 border-b border-gray-100 clean-header">
             {isExpanded ? (
               <>
-                <span className="text-xl font-bold text-gray-800">
+                <span className="text-xl font-bold text-gray-800 clean-text">
                   Times Computer
                 </span>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors"
+                  className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors clean-element"
                   aria-label="Close sidebar"
                 >
                   <X size={20} />
                 </button>
               </>
             ) : (
-              <div className="w-full flex justify-center">
-                <span className="text-lg font-bold text-gray-800">T</span>
+              <div className="w-full flex justify-center clean-element">
+                <span className="text-lg font-bold text-gray-800 clean-text">T</span>
               </div>
             )}
           </div>
 
           {/* Scrollable Navigation */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden">
-            <nav className="mt-6 px-4 pb-6">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden clean-element">
+            <nav className="mt-6 px-4 pb-6 clean-element">
               {isExpanded && (
-                <div className="mb-3">
+                <div className="mb-3 clean-element">
                   <p
-                    className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
+                    className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider clean-text ${
                       sidebarOpen
                         ? "opacity-100"
                         : " group-hover:opacity-100"
@@ -250,7 +250,7 @@ export default function Sidebar({
                 </div>
               )}
 
-              <div className="space-y-2">
+              <div className="space-y-2 clean-element">
                 {menuItems.map(renderMenuItem)}
               </div>
             </nav>
@@ -272,6 +272,53 @@ export default function Sidebar({
 
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
+        }
+
+        /* Prevent debugging overlays and numbers */
+        .clean-sidebar {
+          position: relative;
+          isolation: isolate;
+          z-index: 10;
+        }
+
+        .clean-element {
+          position: relative;
+          isolation: isolate;
+        }
+
+        .clean-element::before,
+        .clean-element::after {
+          display: none !important;
+        }
+
+        .clean-text {
+          position: relative;
+          z-index: 1;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+
+        .clean-header {
+          position: relative;
+          isolation: isolate;
+          z-index: 15;
+        }
+
+        /* Hide any debugging content */
+        .clean-element > [data-react-devtools-portal],
+        .clean-element > [data-react-devtools],
+        .clean-element::before,
+        .clean-element::after {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+        }
+
+        /* Prevent external overlays */
+        .clean-sidebar * {
+          position: relative;
         }
 
         /* Custom scrollbar styling */
