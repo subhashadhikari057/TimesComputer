@@ -26,3 +26,21 @@ export const logAudit = async ({
         },
     });
 };
+
+// Get recent audit logs with actor information
+export const getRecentAuditLogs = async (limit: number = 10) => {
+    return prisma.auditLog.findMany({
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                }
+            }
+        }
+    });
+};
