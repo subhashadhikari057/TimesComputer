@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/admin/(dashboard)/attributes/color"
-  ],
+, "src/lib/api.ts.remove"  ],
   "exclude": ["node_modules"]
 }

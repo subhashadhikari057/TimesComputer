@@ -116,6 +116,7 @@ function SignUpForm() {
           required
         />
         <button
+          tabIndex={-1}
           type="button"
           className="absolute right-2.5 top-2.5 align-middle cursor-pointer text-muted-foreground"
           onClick={() => setShowPassword(prev => !prev)}
@@ -135,6 +136,7 @@ function SignUpForm() {
           required
         />
         <button
+          tabIndex={-1}
           type="button"
           className="absolute right-2.5 top-2.5 align-middle cursor-pointer text-muted-foreground"
           onClick={() => setShowConfirm(prev => !prev)}

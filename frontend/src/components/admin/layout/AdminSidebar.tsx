@@ -23,6 +23,8 @@ export default function Sidebar({
   activeMenus,
   toggleSubmenu,
 }: SidebarProps) {
+  const isSuperAdmin = JSON.parse(localStorage.getItem('user') || '{}').role === "SUPERADMIN";
+  console.log(isSuperAdmin);
   const { isRouteActive } = useActiveRoute();
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -67,7 +69,7 @@ export default function Sidebar({
     // Collapsed sidebar - show only icons with submenu indicators
     if (!isExpanded) {
       return (
-        <div key={item.id} className="relative">
+        <div key={item.id} className={`relative ${(item.id === 'user' && isSuperAdmin === false) ? 'hidden' : ''}`}>
           {item.href && item.href !== "#" && !item.hasSubmenu ? (
             <Link
               href={item.href}
@@ -120,16 +122,14 @@ export default function Sidebar({
             {isSubmenuExpanded ? (
               <ChevronDown
                 size={16}
-                className={`${
-                  isHighlighted ? "text-blue-600" : "text-gray-600"
-                } transition-transform duration-200`}
+                className={`${isHighlighted ? "text-blue-600" : "text-gray-600"
+                  } transition-transform duration-200`}
               />
             ) : (
               <ChevronRight
                 size={16}
-                className={`${
-                  isHighlighted ? "text-blue-600" : "text-gray-600"
-                } transition-transform duration-200`}
+                className={`${isHighlighted ? "text-blue-600" : "text-gray-600"
+                  } transition-transform duration-200`}
               />
             )}
           </button>
@@ -142,11 +142,10 @@ export default function Sidebar({
                   <Link
                     key={i}
                     href={sub.href}
-                    className={`block px-3 py-2 text-[13px] font-semibold rounded-md transition-colors ${
-                      active
-                        ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}
+                    className={`block px-3 py-2 text-[13px] font-semibold rounded-md transition-colors ${active
+                      ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
+                      : "text-gray-600 hover:bg-gray-50"
+                      }`}
                     onClick={() => {
                       if (window.innerWidth < 1024) {
                         setSidebarOpen(false);
@@ -170,17 +169,17 @@ export default function Sidebar({
       <Link
         key={item.id}
         href={item.href || "/admin/dashboard"}
-        className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${
-          isItemActive
-            ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
-            : "text-gray-700 hover:bg-gray-100"
-        }`}
+        className={`${(item.id === 'user' && isSuperAdmin === false) ? 'hidden' : ''} flex items-center space-x-3 px-3 py-2 rounded-md transition-colors ${isItemActive
+          ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
+          : "text-gray-700 hover:bg-gray-100"
+          }`}
         onClick={() => {
           if (window.innerWidth < 1024) {
             setSidebarOpen(false);
           }
         }}
       >
+        ${(item.id === 'user' && isSuperAdmin === false) ? 'hidden' : ''}
         <Icon
           size={16}
           className={isItemActive ? "text-blue-600" : "text-gray-600"}
@@ -197,19 +196,17 @@ export default function Sidebar({
     <>
       <div
         className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out flex flex-col
-          ${
-            sidebarOpen
-              ? "w-3/4 md:w-72 translate-x-0"
-              : "w-20 -translate-x-full lg:translate-x-0 lg:hover:w-72"
+          ${sidebarOpen
+            ? "w-3/4 md:w-72 translate-x-0"
+            : "w-20 -translate-x-full lg:translate-x-0 lg:hover:w-72"
           }
           fixed left-0 lg:relative z-50 lg:z-auto overflow-hidden`}
         onMouseEnter={() => !sidebarOpen && setIsHovered(true)}
         onMouseLeave={() => !sidebarOpen && setIsHovered(false)}
       >
         <div
-          className={`${
-            isExpanded ? "min-w-72" : "min-w-20"
-          } transition-all duration-300 flex flex-col h-full`}
+          className={`${isExpanded ? "min-w-72" : "min-w-20"
+            } transition-all duration-300 flex flex-col h-full`}
         >
           {/* Fixed Header */}
           <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 pt-4 border-b border-gray-100">
@@ -239,11 +236,10 @@ export default function Sidebar({
               {isExpanded && (
                 <div className="mb-3">
                   <p
-                    className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
-                      sidebarOpen
-                        ? "opacity-100"
-                        : " group-hover:opacity-100"
-                    } transition-opacity duration-300`}
+                    className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${sidebarOpen
+                      ? "opacity-100"
+                      : " group-hover:opacity-100"
+                      } transition-opacity duration-300`}
                   >
                     Menu
                   </p>
