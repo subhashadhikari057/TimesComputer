@@ -90,6 +90,24 @@ export const updateProduct = async (req: Request, res: Response) => {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
 
+        // Parse existing images from the form field (JSON string)
+        let existingImages: string[] = [];
+        if (req.body.existingImages) {
+            try {
+                existingImages = JSON.parse(req.body.existingImages);
+            } catch {
+                existingImages = [];
+            }
+        }
+
+        // Get new uploaded images
+        const newImages = req.files && Array.isArray(req.files)
+            ? (req.files as Express.Multer.File[]).map(f => f.path)
+            : [];
+
+        // Merge existing and new images
+        const mergedImages = [...existingImages, ...newImages];
+
         const parsedData = UpdateProductSchema.parse({
             ...req.body,
             price: req.body.price ? parseFloat(req.body.price) : undefined,
@@ -101,11 +119,8 @@ export const updateProduct = async (req: Request, res: Response) => {
             marketingTagIds: req.body.marketingTagIds ? JSON.parse(req.body.marketingTagIds) : undefined,
             colorIds: req.body.colorIds ? JSON.parse(req.body.colorIds) : undefined,
             specs: req.body.specs ? JSON.parse(req.body.specs) : undefined,
-            images: req.files && Array.isArray(req.files)
-                ? (req.files as Express.Multer.File[]).map(f => f.path)
-                : undefined,
+            images: mergedImages,
             isFeature: req.body.isFeature === 'true'
-
         });
 
         const product = await updateProductService(id, parsedData);
