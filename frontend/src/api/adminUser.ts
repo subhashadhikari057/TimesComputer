@@ -35,3 +35,15 @@ export async function resetAdminPassword(id: string, data: any) {
     const response = await axios.patch(`/admin/users/${id}/password`, data);
     return response.data;
 }
+
+// Get recent audit logs
+export const getAuditLogs = async (limit: number = 10) => {
+  const response = await axios.get(`/admin/users/logs/audit?limit=${limit}`);
+  return response.data;
+};
+
+// Get recent login logs
+export const getLoginLogs = async (limit: number = 10) => {
+  const response = await axios.get(`/admin/users/logs/login?limit=${limit}`);
+  return response.data;
+};
