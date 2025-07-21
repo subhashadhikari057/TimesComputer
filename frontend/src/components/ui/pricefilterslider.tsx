@@ -135,7 +135,7 @@ export function PriceFilterSlider({
         {/* Apply Button */}
         <Button
           onClick={onApply}
-          className="w-full"
+          className="w-full text-background"
         >
           Apply
         </Button>

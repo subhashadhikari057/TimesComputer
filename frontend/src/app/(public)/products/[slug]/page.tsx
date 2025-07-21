@@ -13,6 +13,7 @@ import Reccomendedproducts from "@/components/products/reccomendedproducts";
 import { getImageUrl } from "@/lib/imageUtils";
 
 export default function ProductDetails() {
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [productData, setProductData] = useState<Product>({});
   const [loading, setLoading] = useState(true);
   const { slug } = useParams<{ slug: string }>();
@@ -20,11 +21,12 @@ export default function ProductDetails() {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!slug) return;
-      
+
       try {
         setLoading(true);
         const data = await getProductBySlug(slug);
         setProductData(data);
+        console.log(data);
         toast.success("Product loaded successfully.");
       } catch (error) {
         toast.error("Failed to fetch product.");
@@ -73,9 +75,8 @@ export default function ProductDetails() {
               <button
                 key={index}
                 onClick={() => setSelectedImage(index)}
-                className={`flex-shrink-0 w-20 h-20 border-2 rounded-lg overflow-hidden ${
-                  selectedImage === index ? "border-blue-500" : "border-gray-200"
-                }`}
+                className={`flex-shrink-0 w-20 h-20 border-2 rounded-lg overflow-hidden ${selectedImage === index ? "border-blue-500" : "border-gray-200"
+                  }`}
               >
                 <Image
                   src={thumb ? getImageUrl(thumb) : "/products/Frame_68.png"}
@@ -126,6 +127,20 @@ export default function ProductDetails() {
                 Rs {productData?.price ? productData.price.toLocaleString('en-IN') : "Price not available"}
               </span>
             </div>
+            {(productData?.colors)?.map((x, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setSelectedColor(x?.color?.hexCode)}
+                className={`mb-4 mx-2 w-5 h-5 rounded-full border-2 cursor-pointer transition-transform duration-200 ease-in-out
+      ${selectedColor === x.color.hexCode ? "border-black scale-110" : "border-gray-300"}
+    `}
+                style={{ backgroundColor: x.color.hexCode }}
+                aria-label={`Select color ${x.color.hexCode}`}
+                title={x.color.hexCode}
+              />
+            ))}
+
 
             <Button className="w-full bg-primary text-white py-3 mb-4">
               Buy in bulk
@@ -140,7 +155,7 @@ export default function ProductDetails() {
           {/* Key Features */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Key Features</h3>
-            <div className="space-y-2">
+            <div>
               {Object.entries(productData?.specs ?? {})
                 .slice(0, 5)
                 .map(([key, value], index) => (
@@ -158,25 +173,23 @@ export default function ProductDetails() {
 
       {/* Tabs and Specifications */}
       <div className="mt-12">
-        <div className="border-b border-gray-200">
+        <div>
           <nav className="flex space-x-8">
             <button
               onClick={() => setActiveTab("specifications")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "specifications"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "specifications"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
             >
               Specifications
             </button>
             <button
               onClick={() => setActiveTab("description")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "description"
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "description"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
             >
               Description
             </button>

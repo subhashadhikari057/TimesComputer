@@ -215,14 +215,14 @@ export default function Navbar() {
 
             {/* Desktop Icons */}
             <div className="hidden md:flex items-center gap-6">
-              <Twitter className="w-6 h-6" />
-              <Facebook className="w-6 h-6" />
-              <FaWhatsapp className="w-6 h-6" />
+              <Twitter onClick = {() => window.open('https://twitter.com/times_computer')} className="cursor-pointer w-6 h-6" />
+              <Facebook onClick = {() => window.open('https://www.facebook.com/timescomputers')} className="cursor-pointer w-6 h-6" />
+              <FaWhatsapp onClick = {() => window.open('https://api.whatsapp.com/send?phone=9808113344')} className="cursor-pointer w-6 h-6" />
             </div>
 
             {/* Mobile Icons */}
             <div className="md:hidden">
-              <FaWhatsapp className="w-6 h-6" />
+              <FaWhatsapp onClick = {() => window.open('https://api.whatsapp.com/send?phone=9808113344')} className="w-6 h-6" />
             </div>
           </div>
 
