@@ -8,13 +8,19 @@ import {
 import Link from "next/link";
 import { useActiveRoute } from "@/hooks/useActiveRoute";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   activeMenus: string[];
   toggleSubmenu: (menu: string) => void;
+}
+
+interface User {
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'SUPERADMIN';
 }
 
 export default function Sidebar({
@@ -27,6 +33,28 @@ export default function Sidebar({
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  // Get user data from localStorage to check role
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
+
+  // Filter menu items based on user role
+  const filteredMenuItems = menuItems.filter(item => {
+    // Hide Users section if user is ADMIN (only show for SUPERADMIN)
+    if (item.id === 'user' && user?.role === 'ADMIN') {
+      return false;
+    }
+    return true;
+  });
 
   // Determine if sidebar should show as expanded
   const isExpanded = sidebarOpen || isHovered;
@@ -251,7 +279,7 @@ export default function Sidebar({
               )}
 
               <div className="space-y-2 clean-element">
-                {menuItems.map(renderMenuItem)}
+                {filteredMenuItems.map(renderMenuItem)}
               </div>
             </nav>
           </div>
