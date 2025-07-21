@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} font-manrope antialiased bg-white text-primary`}
       >
-        <TopLoader showSpinner={false}/>
+        <TopLoader showSpinner={false} color="#1433AC"/>
         <Toaster duration={2000} position="top-center" richColors/>
         {children}
       </body>
