@@ -9,35 +9,23 @@ import {
     getAuditLogs,
     getLoginLogs,
 } from "../controllers/adminUser.controller";
-import { authenticate, authLimiter, isSuperadmin } from "../middlewares/auth.middleware";
+import { authenticate, authLimiter, isAdmin, isSuperadmin } from "../middlewares/auth.middleware";
 
 const router = Router();
 
-// ✅ Protect all admin routes: SUPERADMIN only
-router.use(authenticate, isSuperadmin);
+// ✅ All routes require authentication
+router.use(authenticate);
 
-// GET all admins
-router.get("/", getAdmins);
+// ✅ Dashboard data routes - Allow both ADMIN and SUPERADMIN
+router.get("/", isAdmin, getAdmins); // For dashboard user count
+router.get("/logs/audit", isAdmin, getAuditLogs); // For dashboard audit logs
+router.get("/logs/login", isAdmin, getLoginLogs); // For dashboard login logs
 
-// Create admin
-router.post("/", createAdminUser);
-
-// Update admin
-router.patch("/:id", updateAdminUser);
-
-// Delete admin
-router.delete("/:id", deleteAdminUser);
-
-// Reset admin password
-router.patch("/:id/password", authLimiter, resetAdminPassword);
-
-// Get single admin
-router.get("/:id", getSingleAdmin);
-
-// Get audit logs
-router.get("/logs/audit", getAuditLogs);
-
-// Get login logs
-router.get("/logs/login", getLoginLogs);
+// ✅ User management routes - SUPERADMIN only
+router.post("/", isSuperadmin, createAdminUser); // Create admin
+router.patch("/:id", isSuperadmin, updateAdminUser); // Update admin
+router.delete("/:id", isSuperadmin, deleteAdminUser); // Delete admin
+router.patch("/:id/password", isSuperadmin, authLimiter, resetAdminPassword); // Reset password
+router.get("/:id", isSuperadmin, getSingleAdmin); // Get single admin details
 
 export default router;
