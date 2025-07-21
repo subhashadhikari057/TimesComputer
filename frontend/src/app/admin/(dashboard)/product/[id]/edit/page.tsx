@@ -28,7 +28,7 @@ interface FormData {
   categoryId: number | null;
   colorIds: number[];
   featureTagIds: number[];
-  marketingTagIds: number | null;
+  marketingTagIds: number[];
   specs: { key: string; value: string }[];
   images: { file?: File; preview: string; existingPath?: string }[];
 }
@@ -45,7 +45,7 @@ const INITIAL_FORM_DATA: FormData = {
   categoryId: null,
   colorIds: [],
   featureTagIds: [],
-  marketingTagIds: null,
+  marketingTagIds: [],
   specs: [{ key: "", value: "" }],
   images: [],
 };
@@ -87,7 +87,6 @@ export default function EditProduct() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   useEffect(() => {
     const loadProduct = async () => {
       try {
@@ -107,6 +106,55 @@ export default function EditProduct() {
     }
   }, [id]);
 
+  const validateForm = (): boolean => {
+    // Required field validations
+    if (!form.name.trim()) {
+      toast.error("Product name is required");
+      return false;
+    }
+
+    if (form.price <= 0) {
+      toast.error("Price must be greater than 0");
+      return false;
+    }
+
+    if (form.stock < 0) {
+      toast.error("Stock quantity cannot be negative");
+      return false;
+    }
+
+    if (form.images.length === 0) {
+      toast.error("At least one product image is required");
+      return false;
+    }
+
+    // Validate specifications (only if any spec has a key or value)
+    const hasIncompleteSpecs = form.specs.some(
+      (spec) => (spec.key && !spec.value) || (!spec.key && spec.value)
+    );
+    if (hasIncompleteSpecs) {
+      toast.error("Please complete all specification key-value pairs or remove empty ones");
+      return false;
+    }
+
+    // Validate brochure URL if provided
+    if (form.brochure && !isValidUrl(form.brochure)) {
+      toast.error("Please enter a valid brochure URL");
+      return false;
+    }
+
+    return true;
+  };
+
+  const isValidUrl = (string: string): boolean => {
+    try {
+      new URL(string);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -125,7 +173,24 @@ export default function EditProduct() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
+    if (form.images.length + files.length > 10) {
+      toast.error("Maximum 10 images allowed");
+      return;
+    }
+
     files.forEach((file) => {
+      // Validate file size (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`File ${file.name} is too large. Maximum size is 10MB`);
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error(`File ${file.name} is not a valid image format`);
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const preview = e.target?.result as string;
@@ -151,6 +216,10 @@ export default function EditProduct() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
     try {
       const specsObject = form.specs.reduce((acc, spec) => {
@@ -191,24 +260,21 @@ export default function EditProduct() {
       // Always send the existing images as a JSON string
       formData.append("existingImages", JSON.stringify(existingImagePaths));
 
-      // If all images are removed (form.images is empty), send an empty array to clear images
-      if (form.images.length === 0) {
-        formData.append("images", "");
-      }
-
       await updateProduct(Number(id), formData);
       toast.success("Product updated successfully!");
       router.push("/admin/product/all-products");
-    } catch (error) {
-      console.error("Error updating product:", error);
-      toast.error("Failed to update product. Please try again.");
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.errors ||
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
+      
+      toast.error(`Failed to update product: ${typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage)}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Rest of your component remains the same...
-  // (Loading state, Error state, and JSX return)
 
   if (isLoading) {
     return (
@@ -311,12 +377,12 @@ export default function EditProduct() {
               {/* Product Images */}
               <ComponentCard
                 title="Product Images"
-                desc="Update product images (up to 10 images)"
+                desc="Update product images (at least 1 image required, up to 10 images)"
               >
                 <PhotoUpload
                   label="Product Images"
                   images={form.images.map((img) => img.file).filter((f): f is File => !!f)}
-                  required={false}
+                  required={true}
                   imagePreviews={form.images.map((img) => img.preview)}
                   onImageUpload={handleImageUpload}
                   onRemoveImage={removeImage}
@@ -349,11 +415,11 @@ export default function EditProduct() {
                     name="price"
                     value={form.price}
                     onChange={handleFormChange}
-                    min={0}
+                    min={0.01}
                     step={0.01}
                     placeholder="0.00"
                     required
-                    helpText="Enter the selling price"
+                    helpText="Enter the selling price (must be greater than 0)"
                   />
 
                   <DefaultNumberInput
