@@ -11,9 +11,10 @@ import {
     updateAdmin,
     deleteAdmin,
     countSuperadmins,
+    getRecentLoginLogs,
 } from "../services/adminUser.service";
 import { hashPassword } from "../services/auth.service";
-import { logAudit } from "../services/auditLog.service";
+import { logAudit, getRecentAuditLogs } from "../services/auditLog.service";
 
 // ✅ GET /admin/users
 export const getAdmins = async (_req: Request, res: Response) => {
@@ -189,5 +190,27 @@ export const getSingleAdmin = async (req: Request, res: Response) => {
         });
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch admin", error: err });
+    }
+};
+
+// ✅ GET /admin/logs/audit - Get recent audit logs
+export const getAuditLogs = async (req: Request, res: Response) => {
+    try {
+        const limit = parseInt(req.query.limit as string) || 10;
+        const auditLogs = await getRecentAuditLogs(limit);
+        res.json(auditLogs);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch audit logs", error });
+    }
+};
+
+// ✅ GET /admin/logs/login - Get recent login logs
+export const getLoginLogs = async (req: Request, res: Response) => {
+    try {
+        const limit = parseInt(req.query.limit as string) || 10;
+        const loginLogs = await getRecentLoginLogs(limit);
+        res.json(loginLogs);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch login logs", error });
     }
 };

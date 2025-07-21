@@ -7,6 +7,7 @@ import {
   deleteCategoryService,
 } from "../services/category.service";
 import prisma from "../prisma/client";
+import { logAudit } from "../services/auditLog.service";
 
 export const addCategory = async (req: Request, res: Response) => {
   try {
@@ -32,6 +33,21 @@ export const addCategory = async (req: Request, res: Response) => {
 
     const category = await addCategoryService({ name, image: imagePath, icon: iconPath });
 
+    // Log audit
+    try {
+      const currentUser = (req as any).user;
+      await logAudit({
+        actorId: currentUser?.id,
+        targetId: category.id.toString(),
+        action: "CREATE_CATEGORY",
+        message: `Created category: ${category.name}`,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+      });
+    } catch (logError) {
+      console.error("Audit log error:", logError);
+    }
+
     res.status(201).json({ message: "Category created successfully.", data: category });
   } catch (error: any) {
     if (error.message.includes("exists")) {
@@ -41,10 +57,10 @@ export const addCategory = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllCategory = async (_req: Request, res: Response) => {
+export const getAllCategories = async (_req: Request, res: Response) => {
   try {
-    const categories = await getAllCategoryService();
-    res.status(200).json({ message: "Categories retrieved successfully.", data: categories });
+    const category = await getAllCategoryService();
+    res.status(200).json({ message: "Category retrieved successfully.", data: category });
   } catch (error: any) {
     res.status(500).json({ error: "Internal server error", details: error.message });
   }
@@ -53,7 +69,7 @@ export const getAllCategory = async (_req: Request, res: Response) => {
 export const getCategoryById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid Category ID." });
 
     const category = await getCategoryByIdService(id);
     const product = await prisma.product.findMany({ where: { id } });
@@ -76,7 +92,24 @@ export const updateCategory = async (req: Request, res: Response) => {
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ error: "No valid fields provided for update." });
     }
+    
     const updatedCategory = await updateCategoryService(id, updateData);
+
+    // Log audit
+    try {
+      const currentUser = (req as any).user;
+      await logAudit({
+        actorId: currentUser?.id,
+        targetId: id.toString(),
+        action: "UPDATE_CATEGORY",
+        message: `Updated category: ${updatedCategory.name}`,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+      });
+    } catch (logError) {
+      console.error("Audit log error:", logError);
+    }
+
     res.status(200).json({ message: "Category updated successfully.", data: updatedCategory });
   } catch (error: any) {
     const status = error.message.includes("not found") ? 404 :
@@ -88,9 +121,26 @@ export const updateCategory = async (req: Request, res: Response) => {
 export const deleteCategory = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid category ID." });
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid Category ID." });
 
+    const categoryToDelete = await getCategoryByIdService(id);
     const deleted = await deleteCategoryService(id);
+
+    // Log audit
+    try {
+      const currentUser = (req as any).user;
+      await logAudit({
+        actorId: currentUser?.id,
+        targetId: id.toString(),
+        action: "DELETE_CATEGORY",
+        message: `Deleted category: ${categoryToDelete.name}`,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"]
+      });
+    } catch (logError) {
+      console.error("Audit log error:", logError);
+    }
+
     res.status(200).json({ message: "Category deleted successfully.", data: deleted });
   } catch (error: any) {
     const status = error.message === "Category not found." ? 404 : 500;

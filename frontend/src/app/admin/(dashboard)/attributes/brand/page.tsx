@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Plus,
-  Award,
-  CheckCircle,
-  Search,
-  Download,
-  Calendar,
-  Trash2,
-} from "lucide-react";
+import { Plus, Award, Search, Download, Calendar, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 
@@ -16,10 +8,10 @@ import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import BrandPopup from "./brandPopup";
-import { deleteBrand, getAllBrands } from "@/api/brand"; 
+import { deleteBrand, getAllBrands } from "@/api/brand";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import { getImageUrl } from "@/lib/imageUtils";
-
+import ExportPopup from "@/components/form/table/exportModal";
 
 // Brand interface
 interface Brand {
@@ -35,6 +27,7 @@ export default function BrandManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | undefined>(
     undefined
   );
@@ -43,7 +36,7 @@ export default function BrandManagementPage() {
     brand: Brand | null;
   }>({
     isOpen: false,
-    brand: null
+    brand: null,
   });
 
   const fetchBrands = async () => {
@@ -68,30 +61,29 @@ export default function BrandManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "300px",
+     
       render: (brand: Brand) => {
-
         const imageUrl = getImageUrl(brand.image);
-return (
-        <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
-            {brand.image ? (
-              <img
-                src={imageUrl}
-                alt={brand.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <Award className="h-6 w-6 text-blue-600" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {brand.name}
+        return (
+          <div className="flex items-center space-x-4">
+            <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
+              {brand.image ? (
+                <img
+                  src={imageUrl}
+                  alt={brand.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <Award className="h-6 w-6 text-blue-600" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {brand.name}
+              </div>
             </div>
           </div>
-        </div>
-);
+        );
       },
     },
     {
@@ -100,7 +92,7 @@ return (
       sortable: true,
       filterable: false,
       searchable: false,
-      width: "120px",
+    
       render: (brand: Brand) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
@@ -112,11 +104,11 @@ return (
 
   const {
     searchTerm,
-  
+
     sortConfig,
     selectedItems,
     processedData,
-  
+
     handleSearchChange,
     handleSort,
     handleSelectAll,
@@ -136,33 +128,33 @@ return (
   const handleDelete = (row: any) => {
     setDeleteModal({
       isOpen: true,
-      brand: row
+      brand: row,
     });
   };
 
-    const confirmDelete = async () => {
-      if (!deleteModal.brand) return;
-      
-      try {
-        await deleteBrand(deleteModal.brand.id);
-        toast.success("Brand deleted successfully");
+  const confirmDelete = async () => {
+    if (!deleteModal.brand) return;
 
-        setBrandData(prev => prev.filter(brand => brand.id !== deleteModal.brand!.id));
+    try {
+      await deleteBrand(deleteModal.brand.id);
+      toast.success("Brand deleted successfully");
 
-      } catch (error: any) {
-        toast.error(error.response?.data?.error || "Failed to delete Brand");
-      } finally {
-        setDeleteModal({ isOpen: false, brand: null });
-      }
-    };
-  
-    const cancelDelete = () => {
+      setBrandData((prev) =>
+        prev.filter((brand) => brand.id !== deleteModal.brand!.id)
+      );
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete Brand");
+    } finally {
       setDeleteModal({ isOpen: false, brand: null });
-    };
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, brand: null });
+  };
 
   const handleExport = () => {
-    console.log("Export brands");
-    toast.success("Brands exported successfully!");
+    setIsExportModalOpen(true);
   };
 
   const handleAddBrand = () => {
@@ -184,8 +176,6 @@ return (
   //   (sum, brand) => sum + brand.productCount,
   //   0
   // );
-
- 
 
   return (
     <div className="p-6 space-y-6">
@@ -227,7 +217,6 @@ return (
           Icon={Award}
           color="text-blue-600"
         />
-        
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
@@ -285,13 +274,22 @@ return (
         )}
 
         {/* Delete Confirmation Modal */}
-              <DeleteConfirmation
-                isOpen={deleteModal.isOpen}
-                onClose={cancelDelete}
-                onConfirm={confirmDelete}
-                title="Delete Brand"
-                itemName={deleteModal.brand?.name}
-              />
+        <DeleteConfirmation
+          isOpen={deleteModal.isOpen}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Delete Brand"
+          itemName={deleteModal.brand?.name}
+        />
+
+        <ExportPopup
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          data={processedData}
+          columns={brandColumns}
+          title="Products"
+          filename="Brand_Details"
+        />
       </div>
     </div>
   );

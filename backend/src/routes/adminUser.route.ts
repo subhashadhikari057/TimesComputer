@@ -5,7 +5,9 @@ import {
     updateAdminUser,
     deleteAdminUser,
     resetAdminPassword,
-    getSingleAdmin
+    getSingleAdmin,
+    getAuditLogs,
+    getLoginLogs,
 } from "../controllers/adminUser.controller";
 import { authenticate, authLimiter, isSuperadmin } from "../middlewares/auth.middleware";
 
@@ -29,8 +31,13 @@ router.delete("/:id", deleteAdminUser);
 // Reset admin password
 router.patch("/:id/password", authLimiter, resetAdminPassword);
 
-
+// Get single admin
 router.get("/:id", getSingleAdmin);
 
+// Get audit logs
+router.get("/logs/audit", getAuditLogs);
+
+// Get login logs
+router.get("/logs/login", getLoginLogs);
 
 export default router;

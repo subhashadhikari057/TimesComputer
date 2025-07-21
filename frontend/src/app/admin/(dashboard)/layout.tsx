@@ -95,7 +95,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         sidebarOpen={sidebarOpen}
@@ -112,12 +112,14 @@ export default function DashboardLayout({ children }: LayoutProps) {
           setSidebarOpen={setSidebarOpen}
           userDropdownOpen={userDropdownOpen}
           setUserDropdownOpen={setUserDropdownOpen}
-          
-      
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">{children}</main>
+        <main className="flex-1 overflow-hidden bg-gray-50 min-w-0 w-full">
+          <div className="h-full overflow-y-auto overflow-x-hidden w-full min-w-0">
+            <div className="w-full min-w-0 max-w-none">{children}</div>
+          </div>
+        </main>
       </div>
 
       {/* Overlay for mobile when sidebar is open */}

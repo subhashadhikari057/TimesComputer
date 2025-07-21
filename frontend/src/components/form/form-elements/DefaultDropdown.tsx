@@ -73,7 +73,6 @@ const iconPositions = {
 // ORIGINAL DROPDOWN COMPONENT - UNCHANGED
 const Dropdown: React.FC<DropdownProps> = ({
   id,
-  name,
   value,
   onChange,
   options,

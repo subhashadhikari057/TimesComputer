@@ -66,7 +66,7 @@ export default function ColorManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "200px",
+     
       render: (color: Color) => (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden">
@@ -93,7 +93,7 @@ export default function ColorManagementPage() {
       sortable: true,
       filterable: true,
       searchable: true,
-      width: "120px",
+  
       render: (color: Color) => (
         <div className="flex items-center space-x-2">
           <span className="text-sm font-mono text-gray-900">
@@ -157,11 +157,6 @@ export default function ColorManagementPage() {
 
   const cancelDelete = () => {
     setDeleteModal({ isOpen: false, color: null });
-  };
-
-  const handleExport = () => {
-    console.log("Export colors");
-    toast.success("Colors exported successfully!");
   };
 
   const handleAddColor = () => {
@@ -262,24 +257,6 @@ export default function ColorManagementPage() {
                 </button>
               )}
 
-              <div className="flex items-center space-x-2 w-full sm:w-auto">
-                <button
-                  onClick={handleExport}
-                  className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <Download className="h-4 w-4 mr-1" />
-                  Export
-                </button>
-
-                {/* <div className="flex-1">
-                  <FilterComponent
-                    filters={filters}
-                    filterConfigs={filterConfigs}
-                    onFilterChange={handleFilterChange}
-                    onResetFilters={handleResetFilters}
-                  />
-                </div> */}
-              </div>
             </div>
           </div>
         </div>

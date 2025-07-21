@@ -16,8 +16,8 @@ interface AttributeSelectorProps {
   onColorsChange: (colorIds: number[]) => void;
   selectedFeatureTagIds: number[];
   onFeatureTagsChange: (tagIds: number[]) => void;
-  selectedMarketingTagIds: number | null;
-  onMarketingTagsChange: (tagIds: number | null) => void;
+  selectedMarketingTagIds: number[];
+  onMarketingTagsChange: (tagIds: number[]) => void;
 }
 
 export default function AttributeSelector({

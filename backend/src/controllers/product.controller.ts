@@ -11,6 +11,7 @@ import {
 import { CreateProductSchema, UpdateProductSchema } from '../validations/product.schema';
 import prisma from '../prisma/client';
 import slugify from 'slugify';
+import { logAudit } from '../services/auditLog.service';
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
@@ -26,32 +27,17 @@ export const getProductById = async (req: Request, res: Response) => {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
 
-        await prisma.product.update({
-            where: { id },
-            data: { views: { increment: 1 } },
-        });
-
         const product = await getProductByIdService(id);
-        if (!product) return res.status(404).json({ error: 'Product not found.' });
-
         res.status(200).json(product);
     } catch (error) {
         handleError(res, error);
     }
 };
 
-
 export const getProductBySlug = async (req: Request, res: Response) => {
     try {
         const { slug } = req.params;
-
-        const existing = await prisma.product.findUnique({ where: { slug } });
-        if (!existing) return res.status(404).json({ error: 'Product not found.' });
-
-        await prisma.product.update({
-            where: { slug },
-            data: { views: { increment: 1 } },
-        });
+        if (!slug) return res.status(400).json({ error: 'Product slug is required.' });
 
         const product = await getProductBySlugService(slug);
         res.status(200).json(product);
@@ -79,6 +65,22 @@ export const createProduct = async (req: Request, res: Response) => {
         });
 
         const product = await createProductService({ ...parsedData, slug });
+
+        // Log audit
+        try {
+            const currentUser = (req as any).user;
+            await logAudit({
+                actorId: currentUser?.id,
+                targetId: product.id.toString(),
+                action: "CREATE_PRODUCT",
+                message: `Created product: ${product.name}`,
+                ip: req.ip,
+                userAgent: req.headers["user-agent"]
+            });
+        } catch (logError) {
+            console.error("Audit log error:", logError);
+        }
+
         res.status(201).json(product);
     } catch (error) {
         handleError(res, error);
@@ -124,6 +126,22 @@ export const updateProduct = async (req: Request, res: Response) => {
         });
 
         const product = await updateProductService(id, parsedData);
+
+        // Log audit
+        try {
+            const currentUser = (req as any).user;
+            await logAudit({
+                actorId: currentUser?.id,
+                targetId: id.toString(),
+                action: "UPDATE_PRODUCT",
+                message: `Updated product: ${product.name}`,
+                ip: req.ip,
+                userAgent: req.headers["user-agent"]
+            });
+        } catch (logError) {
+            console.error("Audit log error:", logError);
+        }
+
         res.status(200).json(product);
     } catch (error) {
         handleError(res, error);
@@ -133,10 +151,31 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const id = parseInt(req.params.id);
-        if (isNaN(id)) return res.status(404).json({ message: 'Invalid product ID.' });
+        if (isNaN(id)) return res.status(400).json({ error: 'Invalid product ID.' });
 
-        await deleteProductService(id);
-        res.status(204).send();
+        const productToDelete = await getProductByIdService(id);
+        if (!productToDelete) {
+            return res.status(404).json({ error: 'Product not found.' });
+        }
+        
+        const result = await deleteProductService(id);
+
+        // Log audit
+        try {
+            const currentUser = (req as any).user;
+            await logAudit({
+                actorId: currentUser?.id,
+                targetId: id.toString(),
+                action: "DELETE_PRODUCT",
+                message: `Deleted product: ${productToDelete.name}`,
+                ip: req.ip,
+                userAgent: req.headers["user-agent"]
+            });
+        } catch (logError) {
+            console.error("Audit log error:", logError);
+        }
+
+        res.status(200).json(result);
     } catch (error) {
         handleError(res, error);
     }

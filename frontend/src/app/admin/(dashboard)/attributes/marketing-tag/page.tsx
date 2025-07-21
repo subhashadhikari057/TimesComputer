@@ -57,11 +57,11 @@ export default function MarketingTagManagementPage() {
   const marketingTagColumns: Column[] = [
     {
       id: "name",
-      label: "MarketingTag",
+      label: "Marketing Tag",
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "300px",
+      
       render: (marketingTag: MarketingTag) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
@@ -122,11 +122,6 @@ export default function MarketingTagManagementPage() {
     const cancelDelete = () => {
       setDeleteModal({ isOpen: false, marketingTag: null });
     };
-
-  const handleExport = () => {
-    console.log("Export marketingTags");
-    toast.success("MarketingTags exported successfully!");
-  };
 
   const handleAddMarketingTag = () => {
     setShowAddPopup(true);
@@ -200,7 +195,7 @@ export default function MarketingTagManagementPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search marketingTags..."
+                placeholder="Search marketing Tags..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
@@ -217,25 +212,6 @@ export default function MarketingTagManagementPage() {
                   Delete ({selectedItems.length})
                 </button>
               )}
-
-              <div className="flex items-center space-x-2 w-full sm:w-auto">
-                <button
-                  onClick={handleExport}
-                  className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <Download className="h-4 w-4 mr-1" />
-                  Export
-                </button>
-
-                {/* <div className="flex-1">
-                  <FilterComponent
-                    filters={filters}
-                    filterConfigs={filterConfigs}
-                    onFilterChange={handleFilterChange}
-                    onResetFilters={handleResetFilters}
-                  />
-                </div> */}
-              </div>
             </div>
           </div>
         </div>

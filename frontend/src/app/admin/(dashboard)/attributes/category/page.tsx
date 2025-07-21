@@ -16,9 +16,11 @@ import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import CategoryPopup from "./categoryPopup";
-import { deleteCategory, getAllCategories } from "@/api/category"; // ✅ API import
+import { deleteCategory, getAllCategories } from "@/api/category"; 
+
 import { getImageUrl } from "@/lib/imageUtils";
 import { DeleteConfirmation } from "@/components/common/helper_function";
+import ExportPopup from "@/components/form/table/exportModal";
 
 interface Category {
   id: number;
@@ -34,6 +36,7 @@ export default function CategoryManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | undefined>(
     undefined
   );
@@ -67,7 +70,7 @@ export default function CategoryManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "300px",
+   
       render: (category: Category) => {
         const iconUrl = getImageUrl(category.icon);
         return (
@@ -94,7 +97,7 @@ export default function CategoryManagementPage() {
       sortable: true,
       filterable: false,
       searchable: false,
-      width: "120px",
+   
       render: (category: Category) => (
         <div className="flex items-center space-x-1">
           <Package className="w-4 h-4 text-gray-400" />
@@ -117,7 +120,7 @@ export default function CategoryManagementPage() {
       sortable: true,
       filterable: false,
       searchable: false,
-      width: "120px",
+    
       render: (category: Category) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
@@ -314,6 +317,15 @@ export default function CategoryManagementPage() {
           title="Delete Category"
           itemName={deleteModal.category?.name}
         />
+
+        <ExportPopup
+                  isOpen={isExportModalOpen}
+                  onClose={() => setIsExportModalOpen(false)}
+                  data={processedData}
+                  columns={categoryColumns}
+                  title="Products"
+                  filename="Brand_Details"
+                />
       </div>
     </div>
   );

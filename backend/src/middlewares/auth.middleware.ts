@@ -11,10 +11,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     try {
-        const decoded = jwt.verify(token, ACCESS_SECRET) as { id: string };
+        const decoded = jwt.verify(token, ACCESS_SECRET) as { email: string };
 
         // fetch full user by ID
-        const user = await prisma.adminUser.findFirst({ where: { id: decoded.id } });
+        const user = await prisma.adminUser.findFirst({ where: { email: decoded.email } });
 
         if (!user || !user.isActive) {
             return res.status(401).json({ message: "Unauthorized" });
