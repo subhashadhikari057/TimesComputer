@@ -66,7 +66,7 @@ export default function ColorManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "200px",
+     
       render: (color: Color) => (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden">
@@ -93,7 +93,7 @@ export default function ColorManagementPage() {
       sortable: true,
       filterable: true,
       searchable: true,
-      width: "120px",
+  
       render: (color: Color) => (
         <div className="flex items-center space-x-2">
           <span className="text-sm font-mono text-gray-900">

@@ -6,7 +6,7 @@ import {
   Package,
   Search,
   Download,
-  Eye,
+ 
   Calendar,
   Trash2,
   Grid,
@@ -24,7 +24,6 @@ import Image from "next/image";
 import ExportPopup from "@/components/form/table/exportModal";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 
-
 // Main Component
 export default function ViewProductsPage() {
   const router = useRouter();
@@ -32,216 +31,212 @@ export default function ViewProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-   const [deleteModal, setDeleteModal] = useState<{
-      isOpen: boolean;
-      product: any | null;
-    }>({
-      isOpen: false,
-      product: null
-    });
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    product: any | null;
+  }>({
+    isOpen: false,
+    product: null,
+  });
 
-     async function fetchProducts() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getAllProducts();
-        setProducts(Array.isArray(data) ? data : data.products || []);
-      } catch (err: any) {
-        setError("Failed to fetch products");
-      } finally {
-        setLoading(false);
-      }
+  async function fetchProducts() {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAllProducts();
+      setProducts(Array.isArray(data) ? data : data.products || []);
+    } catch (err: any) {
+      setError("Failed to fetch products");
+    } finally {
+      setLoading(false);
     }
+  }
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
- 
   const newColumns: Column[] = [
-    {
-      id: "name",
-      label: "Product Name", 
-      sortable: false,
-      filterable: false,
-      searchable: true,
-      width: "200px",
-      render: (product: any) => {
-        const imageUrl = product.images?.[0]
-          ? getImageUrl(product.images[0])
-          : null;
-        return (
-          <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden">
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={product.name}
-                  width={48}
-                  height={48}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                  <Package className="h-6 w-6 text-blue-600" />
-                </div>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-gray-900 truncate">
-                {product.name}
-              </div>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      id: "category",
-      label: "Category",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (product: any) => (
-        <div className="text-sm text-gray-900">
-          {product.category?.name || product.category || "No Category"}
-        </div>
-      ),
-    },
-    {
-      id: "brand",
-      label: "Brand",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (product: any) => (
-        <div className="text-sm font-medium text-gray-900">
-          {product.brand?.name || product.brand || "No Brand"}
-        </div>
-      ),
-    },
-    {
-      id: "price",
-      label: "Price (Rs.)",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (product: any) => {
-        const price =
-          typeof product.price === "string"
-            ? parseFloat(product.price.replace("$", ""))
-            : product.price;
+  {
+    id: "images",
+    label: "Product Images",
+    sortable: false,
+    filterable: false,
+    searchable: false,
 
-        return (
-          <div className="flex items-center space-x-1">
-            <span className="text-sm font-medium text-gray-900">
-              Rs.{price.toFixed(2)}
-            </span>
-          </div>
-        );
-      },
+    widthClass: "w-16 lg:w-20",
+    render: (product: any) => {
+      const imageUrl = product.images?.[0]
+        ? getImageUrl(product.images[0])
+        : null;
+      return (
+        <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0">
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={product.name}
+              width={40}
+              height={40}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="h-10 w-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+              <Package className="h-5 w-5 text-blue-600" />
+            </div>
+          )}
+        </div>
+      );
     },
-    {
-      id: "stock",
-      label: "Stock",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (product: any) => (
-        <div
-          className={`text-sm font-medium ${
-            product.stock === 0
-              ? "text-red-600"
-              : product.stock < 10
-              ? "text-yellow-600"
-              : "text-gray-900"
+  },
+  {
+    id: "name",
+    label: "Product Name",
+    sortable: false,
+    filterable: false,
+    searchable: true,
+    widthClass: "w-48 lg:w-1/4",
+    render: (product: any) => {
+      return (
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-gray-900 break-words leading-tight max-w-xs">
+            {product.name}
+          </div>
+        </div>
+      );
+    },
+  },
+  {
+    id: "category",
+    label: "Category",
+    sortable: true,
+    filterable: true,
+    searchable: true,
+    widthClass: "w-28 lg:w-32",
+    render: (product: any) => (
+      <div
+        className="text-sm text-gray-900 truncate"
+        title={product.category?.name || product.category || "No Category"}
+      >
+        {product.category?.name || product.category || "No Category"}
+      </div>
+    ),
+  },
+  {
+    id: "brand",
+    label: "Brand",
+    sortable: true,
+    filterable: true,
+    searchable: true,
+    widthClass: "w-28 lg:w-32",
+    render: (product: any) => (
+      <div
+        className="text-sm font-medium text-gray-900 truncate"
+        title={product.brand?.name || product.brand || "No Brand"}
+      >
+        {product.brand?.name || product.brand || "No Brand"}
+      </div>
+    ),
+  },
+  {
+    id: "price",
+    label: "Price (Rs.)",
+    sortable: true,
+    filterable: false,
+    searchable: false,
+    widthClass: "w-24 lg:w-28",
+    render: (product: any) => {
+      const price =
+        typeof product.price === "string"
+          ? parseFloat(product.price.replace("$", ""))
+          : product.price;
+
+      return (
+        <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
+          Rs.{price}
+        </div>
+      );
+    },
+  },
+  {
+    id: "stock",
+    label: "Stock",
+    sortable: true,
+    filterable: false,
+    searchable: false,
+    widthClass: "w-16 lg:w-20",
+    render: (product: any) => (
+      <div
+        className={`text-sm font-medium break-words leading-tight line-clamp-2 ${
+          product.stock === 0
+            ? "text-red-600"
+            : product.stock < 10
+            ? "text-yellow-600"
+            : "text-gray-900"
+        }`}
+      >
+        {product.stock} units
+      </div>
+    ),
+  },
+  {
+    id: "isPublished",
+    label: "Status",
+    sortable: true,
+    filterable: true,
+    searchable: true,
+    widthClass: "w-28 lg:w-32",
+    render: (product: any) => {
+      return (
+        <span
+          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+            product.isPublished
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
           }`}
         >
-          {product.stock} units
-        </div>
-      ),
+          <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+          {product.isPublished ? "Published" : "Draft"}
+        </span>
+      );
     },
-    {
-      id: "isPublished",
-      label: "Status",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (product: any) => {
-        return (
-          <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-              product.isPublished
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {product.isPublished ? (
-              <>
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Published
-              </>
-            ) : (
-              <>
-                <Eye className="w-3 h-3 mr-1" />
-                Draft
-              </>
-            )}
-          </span>
-        );
-      },
+  },
+  {
+    id: "isFeature",
+    label: "Featured",
+    sortable: true,
+    filterable: true,
+    searchable: true,
+    widthClass: "w-24 lg:w-28",
+    render: (product: any) => {
+      return (
+        <span
+          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+            product.isFeature
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+          {product.isFeature ? "Yes" : "No"}
+        </span>
+      );
     },
-    {
-      id: "isFeature",
-      label: "Featured",
-      sortable: true,
-      filterable: true,
-      searchable: true,
-      width: "120px",
-      render: (product: any) => {
-        return (
-          <span
-            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-              product.isFeature
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {product.isFeature ? (
-              <>
-                <CheckCircle className="w-3 h-3 mr-1" />
-                Yes
-              </>
-            ) : (
-              <>
-                <Eye className="w-3 h-3 mr-1" />
-                No
-              </>
-            )}
-          </span>
-        );
-      },
-    },
-    {
-      id: "createdAt",
-      label: "Created Date",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-      width: "120px",
-      render: (product: any) => (
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-3 h-3 mr-1" />
-          {new Date(product.createdAt).toLocaleDateString()}
-        </div>
-      ),
-    },
-  ];
+  },
+  {
+    id: "createdAt",
+    label: "Created Date",
+    sortable: true,
+    filterable: false,
+    searchable: false,
+    widthClass: "w-32 lg:w-36",
+    render: (product: any) => (
+      <div className="flex items-center text-sm text-gray-600 whitespace-nowrap">
+        <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
+        {new Date(product.createdAt).toLocaleDateString()}
+      </div>
+    ),
+  },
+];
 
   // Use custom hook for table data management
   const {
@@ -269,33 +264,32 @@ export default function ViewProductsPage() {
   };
 
   const handleDelete = (row: any) => {
-      setDeleteModal({
-        isOpen: true,
-        product: row
-      });
-    };
-  
-      const confirmDelete = async () => {
-        if (!deleteModal.product) return;
-        
-        try {
-          await deleteProduct(deleteModal.product.id);
-          toast.success("Product deleted successfully");
+    setDeleteModal({
+      isOpen: true,
+      product: row,
+    });
+  };
 
-          setProducts(prev => prev.filter(product => product.id !== deleteModal.product!.id));
+  const confirmDelete = async () => {
+    if (!deleteModal.product) return;
 
-        } catch (error: any) {
-          toast.error(error.response?.data?.error || "Failed to delete Product");
-        } finally {
-          setDeleteModal({ isOpen: false, product: null });
-        }
-      };
-    
-      const cancelDelete = () => {
-        setDeleteModal({ isOpen: false, product: null });
-      };
+    try {
+      await deleteProduct(deleteModal.product.id);
+      toast.success("Product deleted successfully");
 
-  
+      setProducts((prev) =>
+        prev.filter((product) => product.id !== deleteModal.product!.id)
+      );
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete Product");
+    } finally {
+      setDeleteModal({ isOpen: false, product: null });
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, product: null });
+  };
 
   const handleExport = () => {
     setIsExportModalOpen(true);
@@ -421,19 +415,19 @@ export default function ViewProductsPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-                    <DeleteConfirmation
-                      isOpen={deleteModal.isOpen}
-                      onClose={cancelDelete}
-                      onConfirm={confirmDelete}
-                      title="Delete Product"
-                      itemName={deleteModal.product?.name}
-                    />
+      <DeleteConfirmation
+        isOpen={deleteModal.isOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Product"
+        itemName={deleteModal.product?.name}
+      />
 
       <ExportPopup
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         data={processedData}
-        columns={newColumns} 
+        columns={newColumns}
         title="Products"
         filename="products_Details"
       />

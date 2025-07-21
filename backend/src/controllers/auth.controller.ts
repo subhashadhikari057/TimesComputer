@@ -140,6 +140,7 @@ export const changePassword = async (req: Request, res: Response) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const valid = await comparePassword(oldPassword, user.password);
+    
     if (!valid)
         return res.status(400).json({ message: "Old password is incorrect" });
 

@@ -61,7 +61,7 @@ const [deleteModal, setDeleteModal] = useState<{
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "200px",
+    
       render: (featureTag: FeatureTag) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
