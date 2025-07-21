@@ -14,6 +14,7 @@ import { getImageUrl } from "@/lib/imageUtils";
 import axios from "@/lib/axiosInstance";
 
 export default function ProductDetails() {
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [productData, setProductData] = useState<Product>({});
   const [loading, setLoading] = useState(true);
   const { slug } = useParams<{ slug: string }>();
@@ -28,6 +29,7 @@ export default function ProductDetails() {
         setLoading(true);
         const data = await getProductBySlug(slug);
         setProductData(data);
+        console.log(data);
         toast.success("Product loaded successfully.");
       } catch (error) {
         toast.error("Failed to fetch productData.");
@@ -150,6 +152,20 @@ export default function ProductDetails() {
                 Rs {productData?.price ? productData.price.toLocaleString('en-IN') : "Price not available"}
               </span>
             </div>
+            {(productData?.colors)?.map((x, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setSelectedColor(x?.color?.hexCode)}
+                className={`mb-4 mx-2 w-5 h-5 rounded-full border-2 cursor-pointer transition-transform duration-200 ease-in-out
+      ${selectedColor === x.color.hexCode ? "border-black scale-110" : "border-gray-300"}
+    `}
+                style={{ backgroundColor: x.color.hexCode }}
+                aria-label={`Select color ${x.color.hexCode}`}
+                title={x.color.hexCode}
+              />
+            ))}
+
 
             <Button className="w-full bg-primary text-white py-3 mb-4" onClick={handleBuyInBulk}>
               Buy in bulk
@@ -164,7 +180,7 @@ export default function ProductDetails() {
           {/* Key Features */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Key Features</h3>
-            <div className="space-y-2">
+            <div>
               {Object.entries(productData?.specs ?? {})
                 .slice(0, 5)
                 .map(([key, value], index) => (
@@ -182,7 +198,7 @@ export default function ProductDetails() {
 
       {/* Tabs and Specifications */}
       <div className="mt-12">
-        <div className="border-b border-gray-200">
+        <div>
           <nav className="flex space-x-8">
             <button
               onClick={() => setActiveTab("specifications")}

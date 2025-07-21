@@ -122,7 +122,7 @@ function PopularProductsSection() {
         <div className="mt-6 text-center">
           <Button
             onClick={handleViewToggle}
-            className="text-primary font-semibold hover:underline"
+            className="text-background/90 font-semibold  hover:underline"
           >
             {isFullyExpanded ? "View Less" : "View More"}
           </Button>

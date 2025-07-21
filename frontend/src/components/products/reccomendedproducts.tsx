@@ -26,7 +26,14 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
           if (category) {
             filtered = filtered.filter((p: Product) => {
               const productCategory = typeof p.category === 'string' ? p.category : (p.category as any)?.name;
-              return productCategory?.toLowerCase() === category.toLowerCase();
+              
+              // Add type checking before calling toLowerCase()
+              if (typeof productCategory === 'string' && typeof category === 'string') {
+                return productCategory.toLowerCase() === category.toLowerCase();
+              }
+              
+              // Fallback to direct comparison if either is not a string
+              return productCategory === category;
             });
           }
           
