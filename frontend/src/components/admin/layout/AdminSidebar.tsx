@@ -199,8 +199,8 @@ export default function Sidebar({
         className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out flex flex-col
           ${
             sidebarOpen
-              ? "w-3/4 md:w-72 translate-x-0"
-              : "w-20 -translate-x-full lg:translate-x-0 lg:hover:w-72"
+              ? "w-3/4 md:w-64 translate-x-0"
+              : "w-20 -translate-x-full lg:translate-x-0 lg:hover:w-64"
           }
           fixed left-0 lg:relative z-50 lg:z-auto overflow-hidden`}
         onMouseEnter={() => !sidebarOpen && setIsHovered(true)}
@@ -208,7 +208,7 @@ export default function Sidebar({
       >
         <div
           className={`${
-            isExpanded ? "min-w-72" : "min-w-20"
+            isExpanded ? "min-w-64" : "min-w-20"
           } transition-all duration-300 flex flex-col h-full`}
         >
           {/* Fixed Header */}

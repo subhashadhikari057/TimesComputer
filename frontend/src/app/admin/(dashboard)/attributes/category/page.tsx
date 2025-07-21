@@ -16,9 +16,11 @@ import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import CategoryPopup from "./categoryPopup";
-import { deleteCategory, getAllCategories } from "@/api/category"; // ✅ API import
+import { deleteCategory, getAllCategories } from "@/api/category"; 
+const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 import { getImageUrl } from "@/lib/imageUtils";
 import { DeleteConfirmation } from "@/components/common/helper_function";
+import ExportPopup from "@/components/form/table/exportModal";
 
 interface Category {
   id: number;
@@ -314,6 +316,15 @@ export default function CategoryManagementPage() {
           title="Delete Category"
           itemName={deleteModal.category?.name}
         />
+
+        <ExportPopup
+                  isOpen={isExportModalOpen}
+                  onClose={() => setIsExportModalOpen(false)}
+                  data={processedData}
+                  columns={categoryColumns}
+                  title="Products"
+                  filename="Brand_Details"
+                />
       </div>
     </div>
   );

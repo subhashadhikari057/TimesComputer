@@ -21,6 +21,9 @@ import { getAllProducts, deleteProduct } from "@/api/product";
 import { toast } from "sonner";
 import { getImageUrl } from "@/lib/imageUtils";
 import Image from "next/image";
+import ExportPopup from "@/components/form/table/exportModal";
+import { DeleteConfirmation } from "@/components/common/helper_function";
+
 
 // Main Component
 export default function ViewProductsPage() {
@@ -28,9 +31,16 @@ export default function ViewProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+   const [deleteModal, setDeleteModal] = useState<{
+      isOpen: boolean;
+      product: any | null;
+    }>({
+      isOpen: false,
+      product: null
+    });
 
-  useEffect(() => {
-    async function fetchProducts() {
+     async function fetchProducts() {
       setLoading(true);
       setError(null);
       try {
@@ -42,14 +52,16 @@ export default function ViewProductsPage() {
         setLoading(false);
       }
     }
+
+  useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Define columns for the table
+ 
   const newColumns: Column[] = [
     {
       id: "name",
-      label: "Product",
+      label: "Product Name", 
       sortable: false,
       filterable: false,
       searchable: true,
@@ -112,7 +124,7 @@ export default function ViewProductsPage() {
     },
     {
       id: "price",
-      label: "Price",
+      label: "Price (Rs.)",
       sortable: true,
       filterable: false,
       searchable: false,
@@ -185,8 +197,39 @@ export default function ViewProductsPage() {
       },
     },
     {
+      id: "isFeature",
+      label: "Featured",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      width: "120px",
+      render: (product: any) => {
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+              product.isFeature
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {product.isFeature ? (
+              <>
+                <CheckCircle className="w-3 h-3 mr-1" />
+                Yes
+              </>
+            ) : (
+              <>
+                <Eye className="w-3 h-3 mr-1" />
+                No
+              </>
+            )}
+          </span>
+        );
+      },
+    },
+    {
       id: "createdAt",
-      label: "Created At",
+      label: "Created Date",
       sortable: true,
       filterable: false,
       searchable: false,
@@ -201,7 +244,6 @@ export default function ViewProductsPage() {
   ];
 
   // Use custom hook for table data management
-  // This hook handles search, filters, sorting, and selection state
   const {
     searchTerm,
     filters,
@@ -226,19 +268,37 @@ export default function ViewProductsPage() {
     router.push(`/admin/product/${row.id}/edit`);
   };
 
-  const handleDelete = async (row: any) => {
-    try {
-      await deleteProduct(row.id);
-      setProducts((prev) => prev.filter((p) => p.id !== row.id));
-      toast.success("Product deleted successfully");
-    } catch (err) {
-      toast.error("Failed to delete product");
-    }
-  };
+  const handleDelete = (row: any) => {
+      setDeleteModal({
+        isOpen: true,
+        product: row
+      });
+    };
+  
+      const confirmDelete = async () => {
+        if (!deleteModal.product) return;
+        
+        try {
+          await deleteProduct(deleteModal.product.id);
+          toast.success("Product deleted successfully");
+
+          setProducts(prev => prev.filter(product => product.id !== deleteModal.product!.id));
+
+        } catch (error: any) {
+          toast.error(error.response?.data?.error || "Failed to delete Product");
+        } finally {
+          setDeleteModal({ isOpen: false, product: null });
+        }
+      };
+    
+      const cancelDelete = () => {
+        setDeleteModal({ isOpen: false, product: null });
+      };
+
+  
 
   const handleExport = () => {
-    console.log("Export products");
-    // TODO: Implement export functionality
+    setIsExportModalOpen(true);
   };
 
   const handleAddProduct = () => {
@@ -359,6 +419,24 @@ export default function ViewProductsPage() {
           />
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+                    <DeleteConfirmation
+                      isOpen={deleteModal.isOpen}
+                      onClose={cancelDelete}
+                      onConfirm={confirmDelete}
+                      title="Delete Product"
+                      itemName={deleteModal.product?.name}
+                    />
+
+      <ExportPopup
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        data={processedData}
+        columns={newColumns} 
+        title="Products"
+        filename="products_Details"
+      />
     </div>
   );
 }
