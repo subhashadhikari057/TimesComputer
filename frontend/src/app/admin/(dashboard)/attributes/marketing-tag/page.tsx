@@ -61,7 +61,7 @@ export default function MarketingTagManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "300px",
+      
       render: (marketingTag: MarketingTag) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">

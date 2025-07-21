@@ -20,7 +20,7 @@ export const comparePassword = async (
 
 export const attachAccessToken = (user: User, res: Response): Response => {
     const token = jwt.sign(
-        { email: user?.email, role: user?.role },
+        { id: user?.id, email: user?.email, role: user?.role },
         ACCESS_SECRET,
         { expiresIn: '1h' }
     );
@@ -35,7 +35,7 @@ export const attachAccessToken = (user: User, res: Response): Response => {
 
 export const attachRefreshToken = (user: User, res: Response): Response => {
     const token = jwt.sign(
-        { email: user?.email, role: user?.role },
+        { id: user?.id, email: user?.email, role: user?.role },
         REFRESH_SECRET,
         { expiresIn: '7d' }
     );

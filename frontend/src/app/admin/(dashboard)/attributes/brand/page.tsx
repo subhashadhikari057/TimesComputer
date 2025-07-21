@@ -61,7 +61,7 @@ export default function BrandManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-      width: "300px",
+     
       render: (brand: Brand) => {
         const imageUrl = getImageUrl(brand.image);
         return (
@@ -92,7 +92,7 @@ export default function BrandManagementPage() {
       sortable: true,
       filterable: false,
       searchable: false,
-      width: "120px",
+    
       render: (brand: Brand) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
