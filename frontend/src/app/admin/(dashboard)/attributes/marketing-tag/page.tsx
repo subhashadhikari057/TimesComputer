@@ -6,12 +6,11 @@ import {
   CheckCircle,
   Search,
   Download,
-  Calendar,
+
   Trash2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
-import FilterComponent from "@/components/admin/product/filter";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
@@ -185,28 +184,13 @@ export default function MarketingTagManagementPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Total MarketingTags"
+          title="Total Marketing Tags"
           value={totalMarketingTags.toString()}
-          change="+12% from last month"
+          change=""
           Icon={Tag}
           color="text-purple-600"
         />
-        <StatCard
-          title="Active MarketingTags"
-          value={activeMarketingTags.toString()}
-          change={`${Math.round(totalMarketingTags * 100)}% active`}
-          Icon={CheckCircle}
-          color="text-green-600"
-        />
-        {/* <StatCard
-          title="Total Products"
-          value={totalProducts.toString()}
-          change={`Avg ${Math.round(
-            totalProducts / totalMarketingTags
-          )} per marketingTag`}
-          Icon={Package}
-          color="text-blue-600"
-        /> */}
+        
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">

@@ -237,26 +237,10 @@ export default function CategoryManagementPage() {
         <StatCard
           title="Total Categories"
           value={totalCategories.toString()}
-          change="+12% from last month"
+          change=""
           Icon={Tag}
           color="text-purple-600"
         />
-        <StatCard
-          title="Active Categories"
-          value={activeCategories.toString()}
-          change={`${Math.round(totalCategories * 100)}% active`}
-          Icon={CheckCircle}
-          color="text-green-600"
-        />
-        {/* <StatCard
-          title="Total Products"
-          value={totalProducts.toString()}
-          change={`Avg ${Math.round(
-            totalProducts / totalCategories
-          )} per category`}
-          Icon={Package}
-          color="text-blue-600"
-        /> */}
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">

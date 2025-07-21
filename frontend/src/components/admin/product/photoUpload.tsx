@@ -33,13 +33,13 @@ export default function PhotoUpload({
   const isMaxReached = images.length >= maxImages;
   const hasImages = imagePreviews.length > 0;
   const isSingleMode = maxImages === 1;
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (maxImages > 1) {
       const files = Array.from(e.target.files || []);
       if (images.length + files.length > maxImages) {
         toast.error(`You can only upload up to ${maxImages} images`);
-        e.target.value = '';
+        e.target.value = "";
         return;
       }
     }
@@ -62,8 +62,8 @@ export default function PhotoUpload({
       {isSingleMode && (
         <>
           {hasImages ? (
-            <ImagePreview 
-              src={imagePreviews[0]} 
+            <ImagePreview
+              src={imagePreviews[0]}
               alt="Photo Preview"
               onRemove={() => onRemoveImage(0)}
               size="h-32"
@@ -89,42 +89,44 @@ export default function PhotoUpload({
           <UploadArea
             inputId={inputId}
             onFileChange={handleFileChange}
-            uploadText={isMaxReached ? `Maximum ${maxImages} images uploaded` : uploadText}
+            uploadText={
+              isMaxReached ? `Maximum ${maxImages} images uploaded` : uploadText
+            }
             acceptedFormats={acceptedFormats}
             maxSizeText={maxSizeText}
             isDisabled={isMaxReached}
             multiple={true}
             required={required}
           />
-          
-          {hasImages && <ImageGrid previews={imagePreviews} onRemoveImage={onRemoveImage} />}
+
+          {hasImages && (
+            <ImageGrid previews={imagePreviews} onRemoveImage={onRemoveImage} />
+          )}
         </>
       )}
 
-      <ImageCounter current={images.length} max={maxImages} />
+      <ImageCounter current={imagePreviews.length} max={maxImages} />
     </div>
   );
 }
 
-function ImagePreview({ 
-  src, 
-  alt, 
-  onRemove, 
+function ImagePreview({
+  src,
+  alt,
+  onRemove,
   size = "aspect-square",
-}: { 
-  src: string; 
-  alt: string; 
-  onRemove: () => void; 
+}: {
+  src: string;
+  alt: string;
+  onRemove: () => void;
   size?: string;
 }) {
   return (
     <div className="relative group">
-      <div className={`w-full ${size} bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden hover:border-gray-300 transition-colors`}>
-        <img
-          src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-        />
+      <div
+        className={`w-full ${size} bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden hover:border-gray-300 transition-colors`}
+      >
+        <img src={src} alt={alt} className="w-full h-full object-cover" />
       </div>
       <button
         type="button"
@@ -158,11 +160,13 @@ function UploadArea({
   required?: boolean;
 }) {
   return (
-    <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-      isDisabled 
-        ? 'border-gray-200 bg-gray-50 cursor-not-allowed' 
-        : 'border-gray-300 hover:border-gray-400 cursor-pointer'
-    }`}>
+    <div
+      className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+        isDisabled
+          ? "border-gray-200 bg-gray-50 cursor-not-allowed"
+          : "border-gray-300 hover:border-gray-400 cursor-pointer"
+      }`}
+    >
       <input
         type="file"
         multiple={multiple}
@@ -176,20 +180,26 @@ function UploadArea({
       <label
         htmlFor={inputId}
         className={`flex flex-col items-center justify-center ${
-          isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
+          isDisabled ? "cursor-not-allowed" : "cursor-pointer"
         }`}
       >
-        <Upload className={`w-8 h-8 mb-2 ${
-          isDisabled ? 'text-gray-300' : 'text-gray-400'
-        }`} />
-        <span className={`text-xs font-medium ${
-          isDisabled ? 'text-gray-400' : 'text-gray-700'
-        }`}>
+        <Upload
+          className={`w-8 h-8 mb-2 ${
+            isDisabled ? "text-gray-300" : "text-gray-400"
+          }`}
+        />
+        <span
+          className={`text-xs font-medium ${
+            isDisabled ? "text-gray-400" : "text-gray-700"
+          }`}
+        >
           {uploadText}
         </span>
-        <span className={`text-xs mt-1 ${
-          isDisabled ? 'text-gray-300' : 'text-gray-500'
-        }`}>
+        <span
+          className={`text-xs mt-1 ${
+            isDisabled ? "text-gray-300" : "text-gray-500"
+          }`}
+        >
           {acceptedFormats} {maxSizeText}
         </span>
       </label>
@@ -197,12 +207,12 @@ function UploadArea({
   );
 }
 
-function ImageGrid({ 
-  previews, 
-  onRemoveImage 
-}: { 
-  previews: string[]; 
-  onRemoveImage: (index: number) => void; 
+function ImageGrid({
+  previews,
+  onRemoveImage,
+}: {
+  previews: string[];
+  onRemoveImage: (index: number) => void;
 }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -219,8 +229,8 @@ function ImageGrid({
 }
 
 function ImageCounter({ current, max }: { current: number; max: number }) {
-  const label = current === 1 ? 'image' : 'images';
-  
+  const label = current === 1 ? "image" : "images";
+
   return (
     <div className="text-xs text-gray-500 text-center">
       {current} of {max} {label} uploaded

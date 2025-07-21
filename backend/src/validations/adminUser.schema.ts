@@ -15,7 +15,7 @@ export const UpdateAdminSchema = z.object({
     email: z.string().email().optional(),
     role: z.enum(["ADMIN", "SUPERADMIN"]).optional(),
     isActive: z.boolean().optional()
-}).strict();
+});
 
 // ✅ Schema: Admin ID param (for validation if needed)
 export const AdminIdParamSchema = z.object({

@@ -6,7 +6,7 @@ import {
   CheckCircle,
   Search,
   Download,
-  Calendar,
+ 
   Trash2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -45,7 +45,7 @@ const [deleteModal, setDeleteModal] = useState<{
         const res = await getAllFeatureTags();
         setFeatureTagData(res.data);
       } catch (err) {
-        toast.error("Failed to fetch featureTags.");
+        toast.error("Failed to fetch feature Tags.");
       } finally {
         setLoading(false);
       }
@@ -58,7 +58,7 @@ const [deleteModal, setDeleteModal] = useState<{
   const featureTagColumns: Column[] = [
     {
       id: "name",
-      label: "FeatureTag",
+      label: "Feature Tag",
       sortable: false,
       filterable: true,
       searchable: true,
@@ -131,8 +131,8 @@ const [deleteModal, setDeleteModal] = useState<{
 
 
   const handleExport = () => {
-    console.log("Export featureTags");
-    toast.success("FeatureTags exported successfully!");
+    
+    toast.success("Feature Tags exported successfully!");
   };
 
   const handleAddFeatureTag = () => {
@@ -161,7 +161,7 @@ const [deleteModal, setDeleteModal] = useState<{
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">FeatureTags</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Feature Tags</h1>
           <p className="text-gray-600">
             Manage your product Feature Tags and organize your catalog
           </p>
@@ -191,28 +191,13 @@ const [deleteModal, setDeleteModal] = useState<{
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
-          title="Total FeatureTags"
+          title="Total Feature Tags"
           value={totalFeatureTags.toString()}
-          change="+12% from last month"
+          change=""
           Icon={Tag}
           color="text-purple-600"
         />
-        <StatCard
-          title="Active FeatureTags"
-          value={activeFeatureTags.toString()}
-          change={`${Math.round(totalFeatureTags * 100)}% active`}
-          Icon={CheckCircle}
-          color="text-green-600"
-        />
-        {/* <StatCard
-          title="Total Products"
-          value={totalProducts.toString()}
-          change={`Avg ${Math.round(
-            totalProducts / totalFeatureTags
-          )} per featureTag`}
-          Icon={Package}
-          color="text-blue-600"
-        /> */}
+        
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
@@ -222,7 +207,7 @@ const [deleteModal, setDeleteModal] = useState<{
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search featureTags..."
+                placeholder="Search feature Tags..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full lg:w-120 pl-10 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white hover:border-gray-300 focus:outline-none"
