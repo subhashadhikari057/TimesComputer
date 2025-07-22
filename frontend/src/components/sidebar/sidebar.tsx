@@ -15,19 +15,26 @@ import { Label } from '@/components/ui/label';
 
 const DEFAULT_PRICE_RANGE: [number, number] = [25000, 500000];
 
+interface Product {
+  brand?: {
+    name: string;
+  } | string;
+  category?: {
+    name: string;
+  } | string;
+}
+
 interface FilterSidebarProps {
   onApplyFilters?: (filters: Filters) => void;
   defaultFilters?: Filters;
   category?: string;
-  brandName?: string;
-  products: any[];
+  products: Product[];
 }
 
 export default function FilterSidebar({
   onApplyFilters,
   defaultFilters = {},
   category,
-  brandName,
   products,
 }: FilterSidebarProps) {
   const [selectedBrands, setSelectedBrands] = useState<string[]>(
@@ -69,7 +76,7 @@ const [selectCategory, setSelectCategory] = useState<string[]>(
               ? p.brand
               : null
           )
-          .filter(Boolean)
+          .filter((brand): brand is string => brand !== null)
       : []
   ),
 ];
@@ -85,7 +92,7 @@ const categories = [
               ? p.category
               : null
           )
-          .filter(Boolean)
+          .filter((category): category is string => category !== null)
       : []
   ),
 ];

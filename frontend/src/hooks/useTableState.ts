@@ -1,5 +1,5 @@
 // hooks/useTableData.ts
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 // Types
 export interface SortConfig {
@@ -50,6 +50,39 @@ export interface UseTableDataReturn<T> {
   generateFilterOptions: (field: keyof T) => Array<{ value: unknown; label: string }>;
 }
 
+// Helper functions moved outside component to avoid dependency issues
+function getDisplayValue<T extends Record<string, unknown>>(item: T, field: string): string {
+  const value = item[field];
+  
+  if (value === null || value === undefined) {
+    return 'No ' + field.charAt(0).toUpperCase() + field.slice(1);
+  }
+  
+  // Handle nested objects (like category.name, brand.name)
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, unknown>;
+    return String(obj.name || obj.label || obj.title || value);
+  }
+  
+  return String(value);
+}
+
+function getFilterValue<T extends Record<string, unknown>>(item: T, field: string): unknown {
+  const value = item[field];
+  
+  if (value === null || value === undefined) {
+    return null;
+  }
+  
+  // For nested objects, use the name property for comparison
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, unknown>;
+    return obj.name || obj.label || obj.title || obj.id || String(value);
+  }
+  
+  return value;
+}
+
 export function useTableData<T extends Record<string, unknown>>({
   data,
   columns,
@@ -77,42 +110,8 @@ export function useTableData<T extends Record<string, unknown>>({
     [columns]
   );
 
-  // Helper function to extract display value from nested objects
-  const getDisplayValue = (item: T, field: string) => {
-    const value = item[field];
-    
-    if (value === null || value === undefined) {
-      return 'No ' + field.charAt(0).toUpperCase() + field.slice(1);
-    }
-    
-    // Handle nested objects (like category.name, brand.name)
-    if (typeof value === 'object' && value !== null) {
-      const obj = value as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-      return String(obj.name || obj.label || obj.title || value);
-    }
-    
-    return String(value);
-  };
-
-  // Helper function to extract filter value from nested objects
-  const getFilterValue = (item: T, field: string) => {
-    const value = item[field];
-    
-    if (value === null || value === undefined) {
-      return null;
-    }
-    
-    // For nested objects, use the name property for comparison
-    if (typeof value === 'object' && value !== null) {
-      const obj = value as any; // eslint-disable-line @typescript-eslint/no-explicit-any
-      return obj.name || obj.label || obj.title || obj.id || String(value);
-    }
-    
-    return value;
-  };
-
   // Generate filter options from data
-  const generateFilterOptions = (field: keyof T) => {
+  const generateFilterOptions = useCallback((field: keyof T) => {
     const uniqueValues = new Set();
     const options: Array<{ value: unknown; label: string }> = [];
     
@@ -130,7 +129,7 @@ export function useTableData<T extends Record<string, unknown>>({
     });
     
     return options.sort((a, b) => a.label.localeCompare(b.label));
-  };
+  }, [data]);
 
   // Generate filter configurations
   const filterConfigs: FilterConfig[] = useMemo(() => {
@@ -140,7 +139,7 @@ export function useTableData<T extends Record<string, unknown>>({
       type: field.type || 'select',
       options: (field.type || 'select') === 'select' ? generateFilterOptions(field.key) : undefined
     }));
-  }, [data, filterableFields, generateFilterOptions]);
+  }, [filterableFields, generateFilterOptions]);
 
   // Search handler
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -8,10 +8,18 @@ import { Column } from "@/components/form/table/defaultTable"; // Import your Co
 import Dropdown from "../form-elements/DefaultDropdown";
 import AddDetailsPopup from "@/components/common/popup";
 
+interface ExportableData extends Record<string, unknown> {
+  id?: string | number;
+}
+
+interface ProcessedRowData extends Record<string, string> {}
+
+interface ColumnStyles extends Record<number, { cellWidth: number }> {}
+
 interface ExportPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  data: any[];
+  data: ExportableData[];
   columns: Column[]; // Use your existing Column interface
   title: string; // e.g., "Products", "Brands", "Categories"
   filename?: string; // Optional custom filename
@@ -61,7 +69,7 @@ export default function ExportPopup({
   };
 
   // Function to extract plain text from JSX/rendered content
-  const extractTextFromJSX = (element: any): string => {
+  const extractTextFromJSX = (element: React.ReactNode): string => {
     if (element === null || element === undefined) {
       return "";
     }
@@ -75,10 +83,10 @@ export default function ExportPopup({
     }
 
     if (React.isValidElement(element)) {
-      const reactElement = element as React.ReactElement<any, any>;
+      const reactElement = element as React.ReactElement<Record<string, unknown>, string | React.JSXElementConstructor<Record<string, unknown>>>;
 
-      if (reactElement.props?.children) {
-        return extractTextFromJSX(reactElement.props.children);
+      if (reactElement.props?.children !== undefined) {
+        return extractTextFromJSX(reactElement.props.children as React.ReactNode);
       }
       return "";
     }
@@ -91,9 +99,9 @@ export default function ExportPopup({
     // Handle objects
     if (typeof element === "object" && element !== null) {
       // Common object patterns
-      if (element.name) return String(element.name);
-      if (element.label) return String(element.label);
-      if (element.title) return String(element.title);
+      if ('name' in element && typeof element.name === 'string') return element.name;
+      if ('label' in element && typeof element.label === 'string') return element.label;
+      if ('title' in element && typeof element.title === 'string') return element.title;
 
       // If it's a Date
       if (element instanceof Date) {
@@ -107,9 +115,9 @@ export default function ExportPopup({
   };
 
   // Function to process data for export by extracting text from rendered columns
-  const processDataForExport = (rawData: any[]) => {
+  const processDataForExport = (rawData: ExportableData[]): ProcessedRowData[] => {
     return rawData.map((row) => {
-      const processedRow: any = {};
+      const processedRow: ProcessedRowData = {};
 
       columns.forEach((column) => {
         try {
@@ -234,7 +242,7 @@ export default function ExportPopup({
       const pageWidth = doc.internal.pageSize.getWidth() - 28; // 14px margin on each side
       const baseColumnWidth = pageWidth / columns.length;
 
-      const columnStyles: any = {};
+      const columnStyles: ColumnStyles = {};
       columns.forEach((col, index) => {
         // Adjust column width based on content type
         let width = baseColumnWidth;
