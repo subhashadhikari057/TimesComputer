@@ -8,7 +8,7 @@ import FilterSidebar from '@/components/sidebar/sidebar';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { getAllProducts } from '@/api/product';
-import { toast } from 'sonner';
+
 import SkeletonLoader from '@/components/common/skeletonloader';
 
 
@@ -36,7 +36,6 @@ export default function AllProductsPage() {
         setProducts(published);
       } catch (error) {
         console.error("Error fetching products:", error);
-        toast.error("Failed to fetch products.");
         setProducts([]);
       } finally {
         setLoading(false);

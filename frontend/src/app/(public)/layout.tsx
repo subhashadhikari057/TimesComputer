@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Footer from "@/components/footer/footer";
 import Navbar from "@/components/home/navbar";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
+import CompareBar from "@/components/common/CompareBar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,6 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
       )}
       {children}
+      <CompareBar />
       <Footer />
     </>
   );

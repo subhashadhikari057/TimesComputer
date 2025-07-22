@@ -4,13 +4,21 @@ import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "../form/form-elements/dropdown";
 import { Input } from "../ui/input";
-import { Twitter, Facebook, Search } from "lucide-react";
+import { Twitter, Facebook, Search, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
-import { navLinks } from "@/lib/dummyData";
 import SearchBar from "./searchbar";
+
+// Navigation Links
+const navLinks = [
+  { title: "Home", href: "/" },
+  { title: "About", href: "/about" },
+  { title: "Blog", href: "/blogs" },
+  { title: "All Products", href: "/products" },
+  { title: "Compare", href: "/compare" },
+];
 import { getAllCategories } from "@/api/category";
 import { getImageUrl } from "@/lib/imageUtils";
 
@@ -148,11 +156,17 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Right Contact Info - Desktop only */}
+          {/* Store Locator - Desktop only */}
           <div className="hidden md:flex flex-col text-right text-primary text-sm leading-tight">
-            <span className="font-bold">Have Questions?</span>
-            <Link href="tel:+9779808113344" className="text-lg font-bold hover:underline">
-              9808113344
+            <span className="font-bold">Store Locator</span>
+            <Link 
+              href="https://www.google.com/maps/place/Time+Office+Automation+PVT+LTD/@27.7034555,85.3226347,17z/data=!3m1!4b1!4m6!3m5!1s0x39eb19a842976dcd:0x16f9af684b2eaa9c!8m2!3d27.7034555!4d85.3252096!16s%2Fg%2F11c5q8t8qy?entry=ttu"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-lg font-bold hover:underline"
+            >
+              <MapPin className="w-4 h-4" />
+              Kathmandu, Nepal
             </Link>
           </div>
 

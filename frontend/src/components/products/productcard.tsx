@@ -1,10 +1,11 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Plus, Check } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '../../../types/product';
 import { getImageUrl } from '@/lib/imageUtils';
+import { useCompare } from '@/contexts/CompareContext';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,20 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, compact = false, dynamicHeight = false }: ProductCardProps) {
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+  const inCompare = isInCompare(product.id!);
+
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (inCompare) {
+      removeFromCompare(product.id!);
+    } else {
+      addToCompare(product);
+    }
+  };
+
   const getTagColor = (tag: string) => {
     switch (tag.toLowerCase()) {
       case 'new':
@@ -89,22 +104,46 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
           {product.name}
         </h3>
 
-        <div className="mt-1 flex items-center justify-between">
-          <span
-            className={`font-semibold text-blue-600 ${
-              compact ? 'text-[10px]' : 'text-xs sm:text-base'
+        <div className="mt-1 space-y-2">
+          <div className="flex items-center justify-between">
+            <span
+              className={`font-semibold text-blue-600 ${
+                compact ? 'text-[10px]' : 'text-xs sm:text-base'
+              }`}
+            >
+              Rs {product?.price ? product.price.toLocaleString('en-IN') : 'Price not available'}
+            </span>
+
+            <Link
+              href={`/products/${product.slug}`}
+              className="flex items-center gap-1 text-[11px] sm:text-sm text-blue-600 hover:underline"
+            >
+              View
+              <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Link>
+          </div>
+
+          {/* Compare Button */}
+          <button
+            onClick={handleCompareClick}
+            className={`w-full flex items-center justify-center gap-1 px-2 py-1 rounded text-[10px] sm:text-xs font-medium transition-colors ${
+              inCompare
+                ? 'bg-green-100 text-green-700 border border-green-300'
+                : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
             }`}
           >
-            Rs {product?.price ? product.price.toLocaleString('en-IN') : 'Price not available'}
-          </span>
-
-          <Link
-            href={`/products/${product.slug}`}
-            className="flex items-center gap-1 text-[11px] sm:text-sm text-blue-600 hover:underline"
-          >
-            View
-            <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
-          </Link>
+            {inCompare ? (
+              <>
+                <Check className="h-3 w-3" />
+                In Compare
+              </>
+            ) : (
+              <>
+                <Plus className="h-3 w-3" />
+                Compare
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

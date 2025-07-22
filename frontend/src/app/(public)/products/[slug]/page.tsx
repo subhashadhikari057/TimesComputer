@@ -6,10 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { PiWhatsappLogoThin } from "react-icons/pi";
 import { useParams } from "next/navigation";
-import { toast } from "sonner";
+import { Plus, Check } from "lucide-react";
+import { useCompare } from "@/contexts/CompareContext";
+
 import { getProductBySlug } from "@/api/product";
 import { Product } from "../../../../../types/product";
-import Reccomendedproducts from "@/components/products/reccomendedproducts";
+import RecommendedProducts from "@/components/products/reccomendedproducts";
 import { getImageUrl } from "@/lib/imageUtils";
 import axios from "@/lib/axiosInstance";
 import SkeletonLoader from "@/components/common/skeletonloader";
@@ -19,8 +21,10 @@ export default function ProductDetails() {
   const [productData, setProductData] = useState<Product>({});
   const [loading, setLoading] = useState(true);
   const { slug } = useParams<{ slug: string }>();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
 
   const productId = productData.id;
+  const inCompare = productData.id ? isInCompare(productData.id) : false;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -31,9 +35,7 @@ export default function ProductDetails() {
         const data = await getProductBySlug(slug);
         setProductData(data);
         console.log(data);
-        toast.success("Product loaded successfully.");
       } catch (error) {
-        toast.error("Failed to fetch productData.");
         console.error("Error fetching product:", error);
       } finally {
         setLoading(false);
@@ -80,8 +82,17 @@ export default function ProductDetails() {
         window.open(whatsappURL, '_blank');
       }
     } catch (error) {
-      toast.error("Failed to place bulk order.");
       console.error("Failed to get WhatsApp URL", error);
+    }
+  };
+
+  const handleCompareClick = () => {
+    if (productData.id) {
+      if (inCompare) {
+        removeFromCompare(productData.id);
+      } else {
+        addToCompare(productData);
+      }
     }
   };
 
@@ -163,10 +174,31 @@ export default function ProductDetails() {
             ))}
 
 
-            <Button className="w-full bg-primary text-white py-3 mb-4" onClick={handleBuyInBulk}>
-              Buy in bulk
-            </Button>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="space-y-3">
+              <Button className="w-full bg-primary text-white py-3" onClick={handleBuyInBulk}>
+                Buy in bulk
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className={`w-full py-3 ${inCompare ? 'bg-green-50 border-green-300 text-green-700' : ''}`}
+                onClick={handleCompareClick}
+              >
+                {inCompare ? (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Added to Compare
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add to Compare
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-gray-600 mt-4">
               <span>You will be forwarded to a</span>
               <PiWhatsappLogoThin className="w-4 h-4" />
               <span>whatsapp chat with the selected product</span>
@@ -259,7 +291,7 @@ export default function ProductDetails() {
       </div>
 
       {/* Recommended Products */}
-      <Reccomendedproducts
+      <RecommendedProducts
         category={productData?.category}
         currentSlug={productData?.slug}
       />

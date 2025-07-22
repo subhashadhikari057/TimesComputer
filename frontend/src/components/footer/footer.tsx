@@ -12,7 +12,16 @@ import {
 } from "react-icons/fa";
 
 import { useRouter,usePathname } from "next/navigation";
-import { laptopCategories } from "@/lib/dummyData";
+
+// Footer categories - static for now, could be moved to fetch from API if needed
+const footerCategories = [
+  { label: "All Products", value: "products" },
+  { label: "Gaming Laptops", value: "gaming laptop" },
+  { label: "Business Laptops", value: "business laptop" },
+  { label: "Student Laptops", value: "student laptop" },
+  { label: "Everyday Laptops", value: "everyday laptop" },
+  { label: "Macbooks", value: "mac" },
+];
 
 const Footer: FC = () => {
   const year = new Date().getFullYear();
@@ -28,7 +37,7 @@ const Footer: FC = () => {
     }
     if (pathname.startsWith('/category/')) {
       const categoryFromUrl = decodeURIComponent(pathname.split('/').pop() || '');
-      const matchingCategory = laptopCategories.find(cat => cat.value === categoryFromUrl);
+      const matchingCategory = footerCategories.find(cat => cat.value === categoryFromUrl);
       return matchingCategory ? matchingCategory.value : undefined;
     }
     if (pathname.startsWith('/brand/')) {
@@ -70,7 +79,7 @@ const Footer: FC = () => {
               <div className="h-[2px] w-1/2 bg-primary mt-1"></div>
             </h3>
             <ul className="space-y-1 mt-2 text-sm">
-              {laptopCategories.map((category) => (
+              {footerCategories.map((category) => (
                 <li key={category.value}>
                   <Link
                     href={category.value === 'products' ? '/products' : `/category/${category.value}`}
