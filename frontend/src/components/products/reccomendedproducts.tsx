@@ -6,16 +6,29 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { ShimmerCard } from "@/components/common/shimmerEffect";
 
+interface CategoryObject {
+    name: string;
+}
+
 interface RecommendedProps {
-    category?: string | { name: string } | any,
+    category?: string | CategoryObject,
     currentSlug?: string
+}
+
+interface ProductWithViews extends Product {
+    views?: number;
+    viewCount?: number;
+}
+
+// Type predicate function
+function isCategoryObject(value: unknown): value is CategoryObject {
+    return typeof value === 'object' && value !== null && 'name' in value;
 }
 
 export default function RecommendedProducts({ currentSlug, category }: RecommendedProps) {
     const [recommended, setRecommended] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const isMobile = useMediaQuery("(max-width: 768px)");
-    const [api, setApi] = useState<any>();
 
     useEffect(() => {
         const fetchRecommendedProducts = async () => {
@@ -25,16 +38,16 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
                 const allProducts = Array.isArray(data) ? data : [];
 
                 // Filter out current product and only published products
-                let filtered = allProducts.filter((p: Product) => 
+                const filtered = allProducts.filter((p: Product) => 
                     p.slug !== currentSlug && p.isPublished
                 );
 
                 // Get category name properly
                 const categoryName = typeof category === 'string' 
                     ? category 
-                    : (category as any)?.name || category;
+                    : isCategoryObject(category) ? (category as CategoryObject).name : undefined;
 
-                let sameCategoryProducts: Product[] = [];
+                const sameCategoryProducts: Product[] = [];
                 let otherProducts: Product[] = [];
 
                 if (categoryName) {
@@ -42,7 +55,7 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
                     filtered.forEach((p: Product) => {
                         const productCategory = typeof p.category === 'string' 
                             ? p.category 
-                            : (p.category as any)?.name;
+                            : isCategoryObject(p.category) ? (p.category as CategoryObject).name : undefined;
                         
                         if (typeof productCategory === 'string' && typeof categoryName === 'string') {
                             if (productCategory.toLowerCase() === categoryName.toLowerCase()) {
@@ -62,8 +75,10 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
 
                 // Sort other products by views for fallback
                 otherProducts.sort((a: Product, b: Product) => {
-                    const viewsA = (a as any).views || (a as any).viewCount || 0;
-                    const viewsB = (b as any).views || (b as any).viewCount || 0;
+                    const productA = a as ProductWithViews;
+                    const productB = b as ProductWithViews;
+                    const viewsA = productA.views || productA.viewCount || 0;
+                    const viewsB = productB.views || productB.viewCount || 0;
                     return viewsB - viewsA;
                 });
 
@@ -74,8 +89,8 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
                 ].slice(0, 8);
 
                 setRecommended(recommendedProducts);
-            } catch (err) {
-                console.error("Failed to fetch recommended products", err);
+            } catch (error) {
+                console.error("Failed to fetch recommended products", error);
                 setRecommended([]);
             } finally {
                 setLoading(false);
@@ -105,7 +120,7 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
     // Get category name for display
     const categoryName = typeof category === 'string' 
         ? category 
-        : (category as any)?.name || category;
+        : isCategoryObject(category) ? (category as CategoryObject).name : undefined;
 
     const sectionTitle = categoryName 
         ? `More in ${categoryName}` 
@@ -126,7 +141,6 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
             {/* Desktop/Tablet Carousel */}
             <div className="hidden sm:block">
                 <Carousel
-                    setApi={setApi}
                     opts={{
                         align: "start",
                         slidesToScroll: isMobile ? 1 : 2,
@@ -169,8 +183,10 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
                         Found {recommended.filter(p => {
                             const productCategory = typeof p.category === 'string' 
                                 ? p.category 
-                                : (p.category as any)?.name;
-                            return productCategory?.toLowerCase() === categoryName.toLowerCase();
+                                : isCategoryObject(p.category) ? (p.category as CategoryObject).name : undefined;
+                            return typeof productCategory === 'string' && typeof categoryName === 'string'
+                                ? productCategory.toLowerCase() === categoryName.toLowerCase()
+                                : productCategory === categoryName;
                         }).length} products in <span className="font-semibold text-gray-900">{categoryName}</span> category
                     </p>
                 </div>

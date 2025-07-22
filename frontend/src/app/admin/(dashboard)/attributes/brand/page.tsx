@@ -2,6 +2,7 @@
 
 import { Plus, Award, Search, Download, Calendar, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import StatCard from "@/components/admin/dashboard/Statcards";
 
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
@@ -15,7 +16,7 @@ import ExportPopup from "@/components/form/table/exportModal";
 import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 // Brand interface
-interface Brand {
+interface Brand extends Record<string, unknown> {
   id: number;
   name: string;
   createdAt: string;
@@ -44,7 +45,8 @@ export default function BrandManagementPage() {
     try {
       const res = await getAllBrands();
       setBrandData(res.data || res);
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to fetch brands:', error);
       toast.error("Failed to fetch brands.");
     } finally {
       setLoading(false);
@@ -69,9 +71,11 @@ export default function BrandManagementPage() {
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
               {brand.image ? (
-                <img
+                <Image
                   src={imageUrl}
                   alt={brand.name}
+                  width={48}
+                  height={48}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -121,15 +125,15 @@ export default function BrandManagementPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any) => {
-    setEditingBrand(row);
+  const handleEdit = (row: Record<string, unknown>) => {
+    setEditingBrand(row as unknown as Brand);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
-      brand: row,
+      brand: row as unknown as Brand,
     });
   };
 
@@ -143,8 +147,9 @@ export default function BrandManagementPage() {
       setBrandData((prev) =>
         prev.filter((brand) => brand.id !== deleteModal.brand!.id)
       );
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete Brand");
+    } catch (error) {
+      console.error('Failed to delete brand:', error);
+      toast.error("Failed to delete Brand");
     } finally {
       setDeleteModal({ isOpen: false, brand: null });
     }
@@ -172,11 +177,6 @@ export default function BrandManagementPage() {
   };
 
   const totalBrands = brandData.length;
-  const activeBrands = "5"; // optional: update dynamically
-  // const totalProducts = brandData.reduce(
-  //   (sum, brand) => sum + brand.productCount,
-  //   0
-  // );
 
   return (
     <div className="p-6 space-y-6">

@@ -9,6 +9,15 @@ import { Banner } from "../../../../types/banner";
 import { getAllAds } from "@/api/ads";
 import { getImageUrl } from "@/lib/imageUtils";
 
+interface Ad {
+  id: number;
+  placement: string;
+  isActive: boolean;
+  images: string[];
+  title?: string;
+  link?: string;
+}
+
 export default function BannerSection() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [sliderBanners, setSliderBanners] = useState<Banner[]>([]);
@@ -23,15 +32,15 @@ export default function BannerSection() {
         const adsData = response.data || [];
         
         // Filter ads by placement and active status
-        const sliderAds = adsData.filter((ad: any) => ad.placement === 'slider' && ad.isActive);
-        const boxAds = adsData.filter((ad: any) => 
+        const sliderAds = adsData.filter((ad: Ad) => ad.placement === 'slider' && ad.isActive);
+        const boxAds = adsData.filter((ad: Ad) => 
           ['box1', 'box2', 'box3'].includes(ad.placement) && ad.isActive
         );
         
         // Convert slider ads to banner format
         const convertedSliderBanners: Banner[] = sliderAds
           .slice(0, 4) // Max 4 slider banners
-          .map((ad: any, index: number) => ({
+          .map((ad: Ad, index: number) => ({
             id: ad.id.toString(),
             imageUrl: ad.images[0] ? getImageUrl(ad.images[0]) : "",
             alt: ad.title || `Slider Banner ${index + 1}`,
@@ -39,14 +48,14 @@ export default function BannerSection() {
           }));
 
         // Sort box ads by placement order and convert to banner format
-        const sortedBoxAds = boxAds.sort((a: any, b: any) => {
+        const sortedBoxAds = boxAds.sort((a: Ad, b: Ad) => {
           const order = ['box1', 'box2', 'box3'];
           return order.indexOf(a.placement) - order.indexOf(b.placement);
         });
         
         const convertedBoxBanners: Banner[] = sortedBoxAds
           .slice(0, 3) // Max 3 box banners
-          .map((ad: any, index: number) => ({
+          .map((ad: Ad, index: number) => ({
             id: ad.id.toString(),
             imageUrl: ad.images[0] ? getImageUrl(ad.images[0]) : "",
             alt: ad.title || `Box Banner ${index + 1}`,

@@ -23,7 +23,6 @@ export default function ProductDetails() {
   const { slug } = useParams<{ slug: string }>();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
 
-  const productId = productData.id;
   const inCompare = productData.id ? isInCompare(productData.id) : false;
 
   useEffect(() => {
@@ -204,7 +203,7 @@ export default function ProductDetails() {
             <div className="flex items-center gap-2 text-sm text-gray-600 mt-4">
               <span>You will be forwarded to a</span>
               <PiWhatsappLogoThin className="w-4 h-4" />
-              <span>whatsapp chat with the selected product</span>
+              <span>WhatsApp chat with the selected product</span>
             </div>
           </div>
 

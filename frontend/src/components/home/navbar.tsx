@@ -3,10 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "../form/form-elements/dropdown";
-import { Input } from "../ui/input";
 import { Twitter, Facebook, Search, MapPin } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import MobileSidebar from "../responsive/mobileSidebar";
 import { FaWhatsapp } from "react-icons/fa";
 import SearchBar from "./searchbar";
@@ -22,18 +21,28 @@ const navLinks = [
 import { getAllCategories } from "@/api/category";
 import { getImageUrl } from "@/lib/imageUtils";
 
+interface Category {
+  id: number;
+  name: string;
+  icon: string;
+}
+
+interface DropdownOption {
+  label: string;
+  value: string;
+  icon: string;
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categories, setCategories] = useState<DropdownOption[]>([]);
 
   // Transform backend categories to dropdown format
-  const transformCategories = (backendCategories: any[]) => {
+  const transformCategories = (backendCategories: Category[]): DropdownOption[] => {
     // Create a simple SVG for "All Products" 
     const allProductsIcon = 'data:image/svg+xml;base64,' + btoa(`
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -53,9 +62,8 @@ export default function Navbar() {
   };
 
   // Fetch categories from backend
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
-      setIsLoadingCategories(true);
       const response = await getAllCategories();
       const categoriesData = response.data || [];
       const transformedCategories = transformCategories(categoriesData);
@@ -69,14 +77,12 @@ export default function Navbar() {
         </svg>
       `);
       setCategories([{ label: "All Products", value: "products", icon: fallbackIcon }]);
-    } finally {
-      setIsLoadingCategories(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [fetchCategories]);
 
   // Refresh categories when window gets focus (user comes back after adding categories)
   useEffect(() => {
@@ -97,14 +103,14 @@ export default function Navbar() {
       window.removeEventListener('focus', handleWindowFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [fetchCategories]);
 
   const getCurrentCategory = () => {
     if (pathname === "/") return undefined;
     if (pathname === "/products") return "products";
     if (pathname.startsWith("/category/")) {
       const categoryFromUrl = decodeURIComponent(pathname.split("/").pop() || "");
-      const matchingCategory = categories.find((cat: any) => cat.value === categoryFromUrl);
+      const matchingCategory = categories.find((cat: DropdownOption) => cat.value === categoryFromUrl);
       return matchingCategory ? matchingCategory.value : undefined;
     }
     return undefined;

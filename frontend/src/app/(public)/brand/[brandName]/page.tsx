@@ -24,6 +24,38 @@ interface BrandPageProps {
   searchParams?: SearchParams;
 }
 
+interface Product {
+  id: string | number;
+  title: string;
+  price: number;
+  brand?: {
+    name: string;
+  } | string;
+  specs?: Record<string, string>;
+  processor?: string;
+  memory?: string;
+  connectivity?: string;
+  switchType?: string;
+  graphics?: string;
+  screenSize?: string;
+  resolution?: string;
+  tag?: string;
+  popular?: boolean;
+}
+
+interface AppliedFilters {
+  brand?: string[];
+  processor?: string[];
+  memory?: string[];
+  connectivity?: string[];
+  switchType?: string[];
+  graphics?: string[];
+  screenSize?: string[];
+  resolution?: string[];
+  priceRange?: [number, number];
+  [key: string]: string[] | [number, number] | undefined;
+}
+
 function normalize(str: string) {
   return str?.toLowerCase().trim();
 }
@@ -40,10 +72,10 @@ export default function BrandPage({ params }: BrandPageProps) {
   const brandSlug = normalize(resolvedParams.brandName);
   const brandName = brandSlug.charAt(0).toUpperCase() + brandSlug.slice(1);
 
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState<any>({ brand: [brandName] });
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({ brand: [brandName] });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   useEffect(() => {
@@ -53,8 +85,8 @@ export default function BrandPage({ params }: BrandPageProps) {
         const allProducts = await getAllProducts();
         setProducts(allProducts);
         setAppliedFilters({ brand: [brandName] });
-      } catch (err) {
-        console.error('Failed to fetch products', err);
+      } catch (error) {
+        console.error('Failed to fetch products', error);
         toast.error('Error fetching brand products.');
         setProducts([]);
       } finally {
@@ -63,44 +95,66 @@ export default function BrandPage({ params }: BrandPageProps) {
     };
 
     fetchProducts();
-  }, [brandSlug]);
+  }, [brandSlug, brandName]);
 
   useEffect(() => {
     let count = 0;
     for (const key in appliedFilters) {
-      if (Array.isArray(appliedFilters[key]) && appliedFilters[key].length > 0) {
-        count += appliedFilters[key].length;
+      const filterKey = key as keyof AppliedFilters;
+      const filterValue = appliedFilters[filterKey];
+      if (Array.isArray(filterValue) && filterValue.length > 0) {
+        count += filterValue.length;
       }
       if (key === 'priceRange') count += 1;
     }
     setActiveFiltersCount(count);
   }, [appliedFilters]);
 
-  const handleApplyFilters = (filters: any) => {
+  const handleApplyFilters = (filters: AppliedFilters) => {
     setAppliedFilters(filters);
     if (page !== 1) goToPage(1);
   };
 
-  const filteredProducts = products.filter((product: any) => {
+  const filteredProducts = products.filter((product: Product) => {
     const specs = product.specs || {};
-    const match = (key: string, source: any) => {
-      const filter = appliedFilters[key];
-      return !filter || filter.length === 0 || filter.includes(source);
-    };
+    
+    const brandValue = typeof product.brand === 'object' ? product.brand?.name : product.brand;
+    const brandFilter = appliedFilters.brand;
+    const brandMatch = !brandFilter || brandFilter.length === 0 || brandFilter.includes(brandValue || '');
 
-    return (
-      match('brand', product.brand?.name || product.brand) &&
-      match('processor', product.processor || specs.Processor) &&
-      match('memory', product.memory || specs.Memory) &&
-      match('connectivity', product.connectivity || specs.Connectivity) &&
-      match('switchType', product.switchType || specs.SwitchType) &&
-      match('graphics', product.graphics || specs.Graphics) &&
-      match('screenSize', product.screenSize || specs['Screen Size']) &&
-      match('resolution', product.resolution || specs.Resolution) &&
-      (!appliedFilters.priceRange ||
-        (product.price >= appliedFilters.priceRange[0] &&
-         product.price <= appliedFilters.priceRange[1]))
-    );
+    const processorValue = product.processor || specs.Processor;
+    const processorFilter = appliedFilters.processor;
+    const processorMatch = !processorFilter || processorFilter.length === 0 || processorFilter.includes(processorValue || '');
+
+    const memoryValue = product.memory || specs.Memory;
+    const memoryFilter = appliedFilters.memory;
+    const memoryMatch = !memoryFilter || memoryFilter.length === 0 || memoryFilter.includes(memoryValue || '');
+
+    const connectivityValue = product.connectivity || specs.Connectivity;
+    const connectivityFilter = appliedFilters.connectivity;
+    const connectivityMatch = !connectivityFilter || connectivityFilter.length === 0 || connectivityFilter.includes(connectivityValue || '');
+
+    const switchTypeValue = product.switchType || specs.SwitchType;
+    const switchTypeFilter = appliedFilters.switchType;
+    const switchTypeMatch = !switchTypeFilter || switchTypeFilter.length === 0 || switchTypeFilter.includes(switchTypeValue || '');
+
+    const graphicsValue = product.graphics || specs.Graphics;
+    const graphicsFilter = appliedFilters.graphics;
+    const graphicsMatch = !graphicsFilter || graphicsFilter.length === 0 || graphicsFilter.includes(graphicsValue || '');
+
+    const screenSizeValue = product.screenSize || specs['Screen Size'];
+    const screenSizeFilter = appliedFilters.screenSize;
+    const screenSizeMatch = !screenSizeFilter || screenSizeFilter.length === 0 || screenSizeFilter.includes(screenSizeValue || '');
+
+    const resolutionValue = product.resolution || specs.Resolution;
+    const resolutionFilter = appliedFilters.resolution;
+    const resolutionMatch = !resolutionFilter || resolutionFilter.length === 0 || resolutionFilter.includes(resolutionValue || '');
+
+    const priceMatch = !appliedFilters.priceRange ||
+      (product.price >= appliedFilters.priceRange[0] && product.price <= appliedFilters.priceRange[1]);
+
+    return brandMatch && processorMatch && memoryMatch && connectivityMatch && 
+           switchTypeMatch && graphicsMatch && screenSizeMatch && resolutionMatch && priceMatch;
   });
 
   const sortedProducts = [...filteredProducts];
@@ -216,13 +270,13 @@ export default function BrandPage({ params }: BrandPageProps) {
                 <div className="grid grid-cols-2 gap-4 lg:hidden">
                   {paginatedProducts.map((product) => (
                     <div key={product.id} className="aspect-square">
-                      <ProductCard product={product} compact />
+                      <ProductCard product={product as any} compact />
                     </div>
                   ))}
                 </div>
                 <div className="hidden lg:grid grid-cols-3 gap-6">
                   {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product as any} />
                   ))}
                 </div>
               </>

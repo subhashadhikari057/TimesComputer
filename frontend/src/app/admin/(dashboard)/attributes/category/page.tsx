@@ -2,6 +2,7 @@
 
 import { Plus, Tag, Search, Download, Calendar, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
@@ -14,7 +15,7 @@ import { DeleteConfirmation } from "@/components/common/helper_function";
 import ExportPopup from "@/components/form/table/exportModal";
 import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
-interface Category {
+interface Category extends Record<string, unknown> {
   id: number;
   name: string;
   image: string;
@@ -44,7 +45,8 @@ export default function CategoryManagementPage() {
     try {
       const res = await getAllCategories();
       setCategoryData(res.data);
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
       toast.error("Failed to fetch categories.");
     } finally {
       setLoading(false);
@@ -68,9 +70,11 @@ export default function CategoryManagementPage() {
         return (
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden">
-              <img
+              <Image
                 src={iconUrl}
                 alt={category.name}
+                width={48}
+                height={48}
                 className="h-full w-full object-cover"
               />
             </div>
@@ -115,15 +119,15 @@ export default function CategoryManagementPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any) => {
-    setEditingCategory(row);
+  const handleEdit = (row: Record<string, unknown>) => {
+    setEditingCategory(row as unknown as Category);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
-      category: row,
+      category: row as unknown as Category,
     });
   };
 
@@ -137,8 +141,9 @@ export default function CategoryManagementPage() {
       setCategoryData((prev) =>
         prev.filter((category) => category.id !== deleteModal.category!.id)
       );
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete Category");
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      toast.error("Failed to delete Category");
     } finally {
       setDeleteModal({ isOpen: false, category: null });
     }

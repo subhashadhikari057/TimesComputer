@@ -7,6 +7,15 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { getImageUrl } from '@/lib/imageUtils';
 
+// Type definitions for category and brand objects
+interface CategoryObject {
+  name: string;
+}
+
+interface BrandObject {
+  name: string;
+}
+
 export default function ComparePage() {
   const { compareProducts, removeFromCompare, clearCompare } = useCompare();
 
@@ -141,7 +150,7 @@ export default function ComparePage() {
                 <td key={product.id} className="p-4 text-center text-sm text-gray-700">
                   {typeof product.category === 'string' 
                     ? product.category 
-                    : (product.category as any)?.name || '-'}
+                    : (product.category as unknown as CategoryObject)?.name || '-'}
                 </td>
               ))}
             </tr>
@@ -154,7 +163,7 @@ export default function ComparePage() {
                 <td key={product.id} className="p-4 text-center text-sm text-gray-700">
                   {typeof product.brand === 'string' 
                     ? product.brand 
-                    : (product.brand as any)?.name || '-'}
+                    : (product.brand as unknown as BrandObject)?.name || '-'}
                 </td>
               ))}
             </tr>

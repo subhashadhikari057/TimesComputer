@@ -24,16 +24,35 @@ import ExportPopup from "@/components/form/table/exportModal";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
+// Product interface
+interface Product extends Record<string, unknown> {
+  id: string | number;
+  name: string;
+  images?: string[];
+  category?: {
+    name: string;
+  } | string;
+  brand?: {
+    name: string;
+  } | string;
+  price: string | number;
+  stock: number;
+  isPublished: boolean;
+  isFeature: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 // Main Component
 export default function ViewProductsPage() {
   const router = useRouter();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
-    product: any | null;
+    product: Product | null;
   }>({
     isOpen: false,
     product: null,
@@ -45,7 +64,8 @@ export default function ViewProductsPage() {
     try {
       const data = await getAllProducts();
       setProducts(Array.isArray(data) ? data : data.products || []);
-    } catch (err: any) {
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
       setError("Failed to fetch products");
     } finally {
       setLoading(false);
@@ -65,7 +85,7 @@ export default function ViewProductsPage() {
       searchable: false,
 
       widthClass: "w-16 lg:w-20",
-      render: (product: any) => {
+      render: (product: Product) => {
         const imageUrl = product.images?.[0]
           ? getImageUrl(product.images[0])
           : null;
@@ -95,7 +115,7 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: true,
       widthClass: "w-48 lg:w-1/4",
-      render: (product: any) => {
+      render: (product: Product) => {
         return (
           <div className="min-w-0">
             <div className="text-sm font-medium text-gray-900 break-words leading-tight max-w-xs">
@@ -112,14 +132,19 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-28 lg:w-32",
-      render: (product: any) => (
-        <div
-          className="text-sm text-gray-900 truncate"
-          title={product.category?.name || product.category || "No Category"}
-        >
-          {product.category?.name || product.category || "No Category"}
-        </div>
-      ),
+      render: (product: Product) => {
+        const categoryName = typeof product.category === 'object' 
+          ? product.category?.name 
+          : product.category || "No Category";
+        return (
+          <div
+            className="text-sm text-gray-900 truncate"
+            title={categoryName}
+          >
+            {categoryName}
+          </div>
+        );
+      },
     },
     {
       id: "brand",
@@ -128,14 +153,19 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-28 lg:w-32",
-      render: (product: any) => (
-        <div
-          className="text-sm font-medium text-gray-900 truncate"
-          title={product.brand?.name || product.brand || "No Brand"}
-        >
-          {product.brand?.name || product.brand || "No Brand"}
-        </div>
-      ),
+      render: (product: Product) => {
+        const brandName = typeof product.brand === 'object' 
+          ? product.brand?.name 
+          : product.brand || "No Brand";
+        return (
+          <div
+            className="text-sm font-medium text-gray-900 truncate"
+            title={brandName}
+          >
+            {brandName}
+          </div>
+        );
+      },
     },
     {
       id: "price",
@@ -144,7 +174,7 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: false,
       widthClass: "w-24 lg:w-28",
-      render: (product: any) => {
+      render: (product: Product) => {
         const price =
           typeof product.price === "string"
             ? parseFloat(product.price.replace("$", ""))
@@ -164,7 +194,7 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: false,
       widthClass: "w-16 lg:w-20",
-      render: (product: any) => (
+      render: (product: Product) => (
         <div
           className={`text-sm font-medium break-words leading-tight line-clamp-2 ${
             product.stock === 0
@@ -185,7 +215,7 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-28 lg:w-32",
-      render: (product: any) => {
+      render: (product: Product) => {
         return (
           <span
             className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
@@ -207,7 +237,7 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-24 lg:w-28",
-      render: (product: any) => {
+      render: (product: Product) => {
         return (
           <span
             className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
@@ -229,7 +259,7 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: false,
       widthClass: "w-32 lg:w-36",
-      render: (product: any) => (
+      render: (product: Product) => (
         <div className="flex items-center text-sm text-gray-600 whitespace-nowrap">
           <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
           {new Date(product.createdAt).toLocaleDateString()}
@@ -259,14 +289,15 @@ export default function ViewProductsPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any) => {
-    router.push(`/admin/product/${row.id}/edit`);
+  const handleEdit = (row: Record<string, unknown>) => {
+    const product = row as unknown as Product;
+    router.push(`/admin/product/${product.id}/edit`);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
-      product: row,
+      product: row as unknown as Product,
     });
   };
 
@@ -274,14 +305,19 @@ export default function ViewProductsPage() {
     if (!deleteModal.product) return;
 
     try {
-      await deleteProduct(deleteModal.product.id);
+      // Ensure id is converted to number if deleteProduct expects a number
+      const productId = typeof deleteModal.product.id === 'string' 
+        ? parseInt(deleteModal.product.id) 
+        : deleteModal.product.id;
+      await deleteProduct(productId);
       toast.success("Product deleted successfully");
 
       setProducts((prev) =>
         prev.filter((product) => product.id !== deleteModal.product!.id)
       );
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete Product");
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+      toast.error("Failed to delete Product");
     } finally {
       setDeleteModal({ isOpen: false, product: null });
     }
@@ -385,7 +421,7 @@ export default function ViewProductsPage() {
                 <div className="flex-1">
                   <FilterComponent
                     filters={filters}
-                    filterConfigs={filterConfigs}
+                    filterConfigs={filterConfigs as never}
                     onFilterChange={handleFilterChange}
                     onResetFilters={handleResetFilters}
                   />

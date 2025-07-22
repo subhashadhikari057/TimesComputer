@@ -1,5 +1,5 @@
 // Custom hook for managing product data from API
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Product, ProductQuery, ApiResponse } from '@/types/api';
 import { ProductService } from '@/services/productService';
 
@@ -40,6 +40,9 @@ export function useProducts({
     totalPages: number;
   } | null>(null);
   const [currentQuery, setCurrentQuery] = useState<ProductQuery>(initialQuery);
+  
+  // Use ref to store the initial query to avoid recreating it on every render
+  const initialQueryRef = useRef(initialQuery);
 
   const fetchProducts = useCallback(async (query: ProductQuery = {}) => {
     setLoading(true);
@@ -82,9 +85,9 @@ export function useProducts({
 
   useEffect(() => {
     if (autoFetch) {
-      fetchProducts(initialQuery);
+      fetchProducts(initialQueryRef.current);
     }
-  }, [brandName, categoryName, autoFetch]); // Don't include fetchProducts to avoid infinite loops
+  }, [brandName, categoryName, autoFetch, fetchProducts]);
 
   return {
     products,

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Upload, Link as LinkIcon, Trash2, Image as ImageIcon } from "lucide-react";
+import { X, Upload, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 import { createAd, updateAd } from "@/api/ads";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
-import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
 
 interface AdPopupProps {
@@ -121,7 +121,7 @@ export default function AdPopup({
     const newPreviews: string[] = [];
     const newImages: File[] = [];
 
-    files.forEach((file, index) => {
+    files.forEach((file) => {
       newImages.push(file);
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -203,9 +203,14 @@ export default function AdPopup({
       }
 
       onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Submit error:", error);
-      const errorMessage = error.response?.data?.error || "Failed to save ad";
+      const errorMessage = error instanceof Error && 'response' in error && 
+        error.response && typeof error.response === 'object' && 
+        'data' in error.response && error.response.data && 
+        typeof error.response.data === 'object' && 'error' in error.response.data
+        ? String(error.response.data.error)
+        : "Failed to save ad";
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -331,10 +336,11 @@ export default function AdPopup({
                   {imagePreviews.map((preview, index) => (
                     <div key={index} className="relative group">
                       <div className="aspect-video bg-gray-100 rounded border overflow-hidden">
-                        <img
+                        <Image
                           src={preview}
                           alt={`Preview ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       </div>
                       <button

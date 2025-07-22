@@ -8,9 +8,9 @@ export interface SortConfig {
   direction: SortDirection;
 }
 
-export interface SortableColumn {
+export interface SortableColumn<T = unknown> {
   key: string;
-  getValue: (item: any) => any;
+  getValue: (item: T) => unknown;
   type?: 'string' | 'number' | 'date' | 'boolean';
 }
 
@@ -18,7 +18,7 @@ export interface SortableColumn {
 export function sortData<T>(
   data: T[],
   sortConfig: SortConfig,
-  sortableColumns: Record<string, SortableColumn>
+  sortableColumns: Record<string, SortableColumn<T>>
 ): T[] {
   if (!sortConfig.column || !sortConfig.direction) {
     return data;
@@ -49,7 +49,7 @@ export function sortData<T>(
         comparison = Number(aValue) - Number(bValue);
         break;
       case 'date':
-        comparison = new Date(aValue).getTime() - new Date(bValue).getTime();
+        comparison = new Date(aValue as string | Date).getTime() - new Date(bValue as string | Date).getTime();
         break;
       case 'boolean':
         comparison = (aValue ? 1 : 0) - (bValue ? 1 : 0);
@@ -74,7 +74,7 @@ export function sortData<T>(
 // Custom hook for sorting
 export function useSort<T>(
   data: T[],
-  sortableColumns: Record<string, SortableColumn>,
+  sortableColumns: Record<string, SortableColumn<T>>,
   initialSort?: SortConfig
 ) {
   const [sortConfig, setSortConfig] = useState<SortConfig>(
@@ -112,41 +112,41 @@ export function useSort<T>(
 }
 
 // Helper function to create sortable column definitions
-export function createSortableColumn(
+export function createSortableColumn<T>(
   key: string,
-  getValue: (item: any) => any,
+  getValue: (item: T) => unknown,
   type?: 'string' | 'number' | 'date' | 'boolean'
-): SortableColumn {
+): SortableColumn<T> {
   return { key, getValue, type };
 }
 
 // Utility function for common sorting scenarios
 export const commonSortColumns = {
   // String columns
-  name: (getValue: (item: any) => string) => 
+  name: <T>(getValue: (item: T) => string) => 
     createSortableColumn('name', getValue, 'string'),
   
-  title: (getValue: (item: any) => string) => 
+  title: <T>(getValue: (item: T) => string) => 
     createSortableColumn('title', getValue, 'string'),
   
   // Number columns
-  count: (getValue: (item: any) => number) => 
+  count: <T>(getValue: (item: T) => number) => 
     createSortableColumn('count', getValue, 'number'),
   
-  price: (getValue: (item: any) => number) => 
+  price: <T>(getValue: (item: T) => number) => 
     createSortableColumn('price', getValue, 'number'),
   
   // Date columns
-  createdAt: (getValue: (item: any) => string | Date) => 
+  createdAt: <T>(getValue: (item: T) => string | Date) => 
     createSortableColumn('createdAt', getValue, 'date'),
   
-  updatedAt: (getValue: (item: any) => string | Date) => 
+  updatedAt: <T>(getValue: (item: T) => string | Date) => 
     createSortableColumn('updatedAt', getValue, 'date'),
   
   // Boolean columns
-  isActive: (getValue: (item: any) => boolean) => 
+  isActive: <T>(getValue: (item: T) => boolean) => 
     createSortableColumn('isActive', getValue, 'boolean'),
   
-  isPublished: (getValue: (item: any) => boolean) => 
+  isPublished: <T>(getValue: (item: T) => boolean) => 
     createSortableColumn('isPublished', getValue, 'boolean'),
 };

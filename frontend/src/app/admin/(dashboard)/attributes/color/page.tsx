@@ -13,7 +13,7 @@ import { DeleteConfirmation } from "@/components/common/helper_function";
 import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 // Color interface
-interface Color {
+interface Color extends Record<string, unknown> {
   id: number;
   name: string;
   hexCode: string;
@@ -43,6 +43,7 @@ export default function ColorManagementPage() {
       const res = await getAllColors();
       setColorData(res.data);
     } catch (error) {
+      console.error('Failed to fetch colors:', error);
       toast.error("Failed to fetch colors.");
     } finally {
       setLoading(false);
@@ -101,14 +102,10 @@ export default function ColorManagementPage() {
   // Use custom hook for table data management (same as product page)
   const {
     searchTerm,
-    filters,
     sortConfig,
     selectedItems,
     processedData,
-    filterConfigs,
     handleSearchChange,
-    handleFilterChange,
-    handleResetFilters,
     handleSort,
     handleSelectAll,
     handleSelectItem,
@@ -119,15 +116,15 @@ export default function ColorManagementPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any) => {
-    setEditingColor(row);
+  const handleEdit = (row: Record<string, unknown>) => {
+    setEditingColor(row as unknown as Color);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
-      color: row,
+      color: row as unknown as Color,
     });
   };
 
@@ -141,8 +138,9 @@ export default function ColorManagementPage() {
       setColorData((prev) =>
         prev.filter((color) => color.id !== deleteModal.color!.id)
       );
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete Color");
+    } catch (error) {
+      console.error('Failed to delete color:', error);
+      toast.error("Failed to delete Color");
     } finally {
       setDeleteModal({ isOpen: false, color: null });
     }
@@ -167,11 +165,6 @@ export default function ColorManagementPage() {
 
   // Calculate stats
   const totalColors = colorData.length;
-  // const colorsWithProducts = colorData.filter((c) => c.productCount > 0).length;
-  // const totalProducts = colorData.reduce(
-  //   (sum, color) => sum + color.productCount,
-  //   0
-  // );
 
   return (
     <div className="p-6 space-y-6">

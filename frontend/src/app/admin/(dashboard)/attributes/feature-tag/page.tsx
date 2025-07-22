@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Tag, Search, Download, Trash2 } from "lucide-react";
+import { Plus, Tag, Search, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 
@@ -12,7 +12,7 @@ import { deleteFeatureTag, getAllFeatureTags } from "@/api/featureTag";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
-interface FeatureTag {
+interface FeatureTag extends Record<string, unknown> {
   id: number;
   name: string;
   createdAt: string;
@@ -39,7 +39,8 @@ export default function FeatureTagPage() {
     try {
       const res = await getAllFeatureTags();
       setFeatureTagData(res.data);
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to fetch feature tags:', error);
       toast.error("Failed to fetch feature Tags.");
     } finally {
       setLoading(false);
@@ -72,14 +73,10 @@ export default function FeatureTagPage() {
 
   const {
     searchTerm,
-    filters,
     sortConfig,
     selectedItems,
     processedData,
-    filterConfigs,
     handleSearchChange,
-    handleFilterChange,
-    handleResetFilters,
     handleSort,
     handleSelectAll,
     handleSelectItem,
@@ -90,15 +87,15 @@ export default function FeatureTagPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any) => {
-    setEditingFeatureTag(row);
+  const handleEdit = (row: Record<string, unknown>) => {
+    setEditingFeatureTag(row as unknown as FeatureTag);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
-      featureTag: row,
+      featureTag: row as unknown as FeatureTag,
     });
   };
 
@@ -114,10 +111,9 @@ export default function FeatureTagPage() {
           (featureTag) => featureTag.id !== deleteModal.featureTag!.id
         )
       );
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.error || "Failed to delete Feature Tag"
-      );
+    } catch (error) {
+      console.error('Failed to delete feature tag:', error);
+      toast.error("Failed to delete Feature Tag");
     } finally {
       setDeleteModal({ isOpen: false, featureTag: null });
     }
@@ -141,11 +137,6 @@ export default function FeatureTagPage() {
   };
 
   const totalFeatureTags = featureTagData.length;
-  const activeFeatureTags = "5"; // Optional: Replace with actual logic
-  // const totalProducts = featureTagData.reduce(
-  //   (sum, cat) => sum + cat.productCount,
-  //   0
-  // );
 
   return (
     <div className="p-6 space-y-6">
