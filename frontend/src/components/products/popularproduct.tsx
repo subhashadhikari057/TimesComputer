@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { getAllProducts } from "@/api/product";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import SkeletonLoader from "../common/skeletonloader";
 
 function PopularProductsSection() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,14 +28,14 @@ function PopularProductsSection() {
         const data = await getAllProducts();
         // Filter only published products
         const publishedProducts = Array.isArray(data) ? data.filter((product: any) => product.isPublished) : [];
-        
+
         // Sort products by view count (most viewed first)
         const sortedByViews = publishedProducts.sort((a: any, b: any) => {
           const viewsA = a.views || a.viewCount || 0;
           const viewsB = b.views || b.viewCount || 0;
           return viewsB - viewsA; // Descending order (highest views first)
         });
-        
+
         setProducts(sortedByViews);
       } catch (err) {
         console.error("Failed to fetch products:", err);
@@ -68,10 +69,15 @@ function PopularProductsSection() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 md:py-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Popular Products</h2>
-        <div className="flex justify-center items-center py-8">
-          <LoadingSpinner />
-        </div>
+        {/* Product Card Skeletons */}
+         <h2 className="text-2xl font-semibold text-gray-900 mb-8">Popular Products</h2>
+        <main className=" grid gap-y-4
+        gap-x-0
+        grid-cols-2
+        sm:grid-cols-2
+        md:grid-cols-4">
+          <SkeletonLoader type="card" count={8} />
+        </main>
       </div>
     );
   }
@@ -113,8 +119,8 @@ function PopularProductsSection() {
       >
         {products.slice(0, visibleCount).map((product) => (
           <div key={product.id} className="w-full">
-          <ProductCard product={product} />
-        </div>
+            <ProductCard product={product} />
+          </div>
         ))}
       </div>
 

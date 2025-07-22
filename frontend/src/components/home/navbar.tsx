@@ -151,9 +151,9 @@ export default function Navbar() {
           {/* Right Contact Info - Desktop only */}
           <div className="hidden md:flex flex-col text-right text-primary text-sm leading-tight">
             <span className="font-bold">Have Questions?</span>
-            <a href="tel:9808113344" className="text-lg font-bold hover:underline">
+            <Link href="tel:+9779808113344" className="text-lg font-bold hover:underline">
               9808113344
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -215,15 +215,21 @@ export default function Navbar() {
 
             {/* Desktop Icons */}
             <div className="hidden md:flex items-center gap-6">
-              <Twitter onClick = {() => window.open('https://twitter.com/times_computer')} className="cursor-pointer w-6 h-6" />
-              <Facebook onClick = {() => window.open('https://www.facebook.com/timescomputers')} className="cursor-pointer w-6 h-6" />
-              <FaWhatsapp onClick = {() => window.open('https://api.whatsapp.com/send?phone=9808113344')} className="cursor-pointer w-6 h-6" />
+              <Link target="_blank" href="https://twitter.com/times_computer" rel="noopener noreferrer">
+              <Twitter  className="cursor-pointer w-6 h-6" />
+              </Link>
+              <Link target="_blank" href="https://www.facebook.com/timescomputers" rel="noopener noreferrer">
+              <Facebook className="cursor-pointer w-6 h-6" />
+              </Link>
+              <Link target="_blank" href="https://api.whatsapp.com/send?phone=9779808113344" rel="noopener noreferrer">
+              <FaWhatsapp className="cursor-pointer w-6 h-6" />
+              </Link>
             </div>
 
             {/* Mobile Icons */}
-            <div className="md:hidden">
-              <FaWhatsapp onClick = {() => window.open('https://api.whatsapp.com/send?phone=9808113344')} className="w-6 h-6" />
-            </div>
+            <Link target="_blank" className="md:hidden" href="https://api.whatsapp.com/send?phone=9779808113344" rel="noopener noreferrer">
+              <FaWhatsapp className="w-6 h-6" />
+            </Link>
           </div>
 
           {/* Mobile Search Input */}

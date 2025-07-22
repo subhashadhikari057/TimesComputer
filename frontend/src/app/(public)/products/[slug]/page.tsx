@@ -12,6 +12,7 @@ import { Product } from "../../../../../types/product";
 import Reccomendedproducts from "@/components/products/reccomendedproducts";
 import { getImageUrl } from "@/lib/imageUtils";
 import axios from "@/lib/axiosInstance";
+import SkeletonLoader from "@/components/common/skeletonloader";
 
 export default function ProductDetails() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -46,14 +47,9 @@ export default function ProductDetails() {
   const [activeTab, setActiveTab] = useState("specifications");
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto mt-2 p-6 bg-white">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
-        </div>
-      </div>
-    );
-  }
+  return <SkeletonLoader type="product-card" />;
+}
+
 
   if (!productData || Object.keys(productData).length === 0) {
     return (

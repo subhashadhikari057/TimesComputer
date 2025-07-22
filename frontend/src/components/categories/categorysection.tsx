@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getAllCategories } from "@/api/category";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { getImageUrl } from "@/lib/imageUtils";
+import SkeletonLoader from "../common/skeletonloader";
 
 interface Category {
   id: number;
@@ -64,12 +65,12 @@ const TopCategories = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-3 md:px-4 md:pb-2">
-        <div className="mb-4 flex justify-between items-center">
+      <div className=" max-w-7xl mx-auto">
+       <div className="mb-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-900">Top Categories</h2>
         </div>
-        <div className="flex justify-center items-center py-8">
-          <LoadingSpinner />
+        <div className="flex py-8">
+          <SkeletonLoader type="category-pill" count={4} className="mr-4" />
         </div>
       </div>
     );
