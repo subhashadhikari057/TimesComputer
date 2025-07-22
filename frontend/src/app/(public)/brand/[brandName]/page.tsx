@@ -26,9 +26,13 @@ interface BrandPageProps {
 
 interface Product {
   id: string | number;
-  title: string;
+  title?: string;
+  name?: string;
   price: number;
   brand?: {
+    name: string;
+  } | string;
+  category?: {
     name: string;
   } | string;
   specs?: Record<string, string>;
@@ -41,6 +45,11 @@ interface Product {
   resolution?: string;
   tag?: string;
   popular?: boolean;
+  images?: string[];
+  slug?: string;
+  stock?: number;
+  description?: string;
+  isPublished?: boolean;
 }
 
 interface AppliedFilters {
@@ -160,8 +169,8 @@ export default function BrandPage({ params }: BrandPageProps) {
   const sortedProducts = [...filteredProducts];
   if (sort === 'price-low-high') sortedProducts.sort((a, b) => a.price - b.price);
   else if (sort === 'price-high-low') sortedProducts.sort((a, b) => b.price - a.price);
-  else if (sort === 'product-name-a-z') sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
-  else if (sort === 'product-name-z-a') sortedProducts.sort((a, b) => b.title.localeCompare(a.title));
+  else if (sort === 'product-name-a-z') sortedProducts.sort((a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''));
+  else if (sort === 'product-name-z-a') sortedProducts.sort((a, b) => (b.title || b.name || '').localeCompare(a.title || a.name || ''));
   else if (sort === 'featured') sortedProducts.sort((a, b) => {
     const aFeatured = a.tag?.toLowerCase() === 'featured' || a.popular ? 1 : 0;
     const bFeatured = b.tag?.toLowerCase() === 'featured' || b.popular ? 1 : 0;
@@ -183,7 +192,6 @@ export default function BrandPage({ params }: BrandPageProps) {
   const filterSidebar = (
     <FilterSidebar
       onApplyFilters={handleApplyFilters}
-      brandName={brandSlug}
       products={products}
       defaultFilters={appliedFilters}
     />
@@ -270,13 +278,13 @@ export default function BrandPage({ params }: BrandPageProps) {
                 <div className="grid grid-cols-2 gap-4 lg:hidden">
                   {paginatedProducts.map((product) => (
                     <div key={product.id} className="aspect-square">
-                      <ProductCard product={product as any} compact />
+                      <ProductCard product={product as unknown as import('@/../types/product').Product} compact />
                     </div>
                   ))}
                 </div>
                 <div className="hidden lg:grid grid-cols-3 gap-6">
                   {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product as any} />
+                    <ProductCard key={product.id} product={product as unknown as import('@/../types/product').Product} />
                   ))}
                 </div>
               </>

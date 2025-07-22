@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Tag, CheckCircle, Search, Download, Trash2 } from "lucide-react";
+import { Plus, Tag, Search, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
@@ -11,7 +11,7 @@ import { deleteMarketingTag, getAllMarketingTags } from "@/api/marketingTag"; //
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
-interface MarketingTag {
+interface MarketingTag extends Record<string, unknown> {
   id: number;
   name: string;
   createdAt: string;
@@ -38,7 +38,8 @@ export default function MarketingTagManagementPage() {
     try {
       const res = await getAllMarketingTags();
       setMarketingTagData(res.data);
-    } catch (err) {
+    } catch (error) {
+      console.error('Failed to fetch marketing tags:', error);
       toast.error("Failed to fetch marketingTags.");
     } finally {
       setLoading(false);
@@ -85,15 +86,15 @@ export default function MarketingTagManagementPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any) => {
-    setEditingMarketingTag(row);
+  const handleEdit = (row: Record<string, unknown>) => {
+    setEditingMarketingTag(row as unknown as MarketingTag);
     setShowEditPopup(true);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
-      marketingTag: row,
+      marketingTag: row as unknown as MarketingTag,
     });
   };
 
@@ -109,9 +110,10 @@ export default function MarketingTagManagementPage() {
           (marketingTag) => marketingTag.id !== deleteModal.marketingTag!.id
         )
       );
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as { response?: { data?: { error?: string } } };
       toast.error(
-        error.response?.data?.error || "Failed to delete Marketing Tag"
+        err.response?.data?.error || "Failed to delete Marketing Tag"
       );
     } finally {
       setDeleteModal({ isOpen: false, marketingTag: null });

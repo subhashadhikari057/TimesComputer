@@ -254,13 +254,13 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <div className="grid grid-cols-2 gap-4 lg:hidden">
                   {paginatedProducts.map((product) => (
                     <div key={product.id} className="aspect-square">
-                      <ProductCard product={product as any} compact />
+                      <ProductCard product={product as unknown as import('@/../types/product').Product} compact />
                     </div>
                   ))}
                 </div>
                 <div className="hidden lg:grid grid-cols-3 gap-6">
                   {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product as any} />
+                    <ProductCard key={product.id} product={product as unknown as import('@/../types/product').Product} />
                   ))}
                 </div>
               </>

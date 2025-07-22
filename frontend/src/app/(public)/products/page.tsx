@@ -67,14 +67,14 @@ export default function AllProductsPage() {
 
     if (appliedFilters.brand && appliedFilters.brand.length > 0) {
       const brand = typeof product.brand === 'object' && product.brand !== null 
-        ? (product.brand as any).name 
+        ? (product.brand as { name: string }).name 
         : product.brand || specs.Brand;
       if (!brand || !appliedFilters.brand.includes(brand)) return false;
     }
 
     if (appliedFilters.category && appliedFilters.category.length > 0) {
       const category = typeof product.category === 'object' && product.category !== null 
-        ? (product.category as any).name 
+        ? (product.category as { name: string }).name 
         : product.category || specs.Category;
       if (!category || !appliedFilters.category.includes(category)) return false;
     }

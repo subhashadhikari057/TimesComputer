@@ -71,7 +71,7 @@ export default function SearchPage() {
 
     const matchesQuery =
       !query ||
-      [product.name, product.title, typeof product.brand === 'object' && product.brand !== null ? (product.brand as any).name : product.brand, specs.Brand]
+      [product.name, product.title, typeof product.brand === 'object' && product.brand !== null ? (product.brand as { name: string }).name : product.brand, specs.Brand]
         .filter(Boolean)
         .some(field => {
           const f = String(field).toLowerCase();
@@ -83,7 +83,7 @@ export default function SearchPage() {
     const filterMatch = (key: string, paths: string[]) => {
       const filterArray = appliedFilters[key] as string[] | undefined;
       if (!filterArray || filterArray.length === 0) return true;
-      const value = paths.map(p => specs[p] || (product as any)[p]).find(Boolean);
+      const value = paths.map(p => specs[p] || (product as Record<string, unknown>)[p]).find(v => Boolean(v) && typeof v === 'string') as string;
       return value && filterArray.includes(value);
     };
 

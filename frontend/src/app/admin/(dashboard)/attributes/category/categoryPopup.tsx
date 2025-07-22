@@ -65,7 +65,7 @@ export default function CategoryPopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
@@ -112,9 +112,10 @@ export default function CategoryPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { response?: { data?: { error?: string; message?: string } }; message?: string };
       const errorMessage =
-        err.response?.data?.message || err.response?.data?.error || err.message;
+        error.response?.data?.message || error.response?.data?.error || error.message || "Unknown error occurred";
 
       if (
         errorMessage.includes("already exists") ||
