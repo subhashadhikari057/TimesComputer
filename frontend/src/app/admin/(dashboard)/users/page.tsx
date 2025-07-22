@@ -17,9 +17,10 @@ import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import { getAllAdmins, deleteAdminUser } from "@/api/adminUser";
 import { DeleteConfirmation } from "@/components/common/helper_function";
-import { useRouter } from "next/navigation";
+
 import UserPopup from "./userPopup";
 import ResetPasswordPopup from "./resetPasswordPopup";
+import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 // User interface
 interface User {
@@ -38,14 +39,16 @@ export default function UsersPage() {
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [showResetPopup, setShowResetPopup] = useState(false);
   const [editingUser, setEditingUser] = useState<User | undefined>(undefined);
-  const [resettingPasswordUser, setResettingPasswordUser] = useState<User | undefined>(undefined);
+  const [resettingPasswordUser, setResettingPasswordUser] = useState<
+    User | undefined
+  >(undefined);
   const [deleteModal, setDeleteModal] = useState<{
-      isOpen: boolean;
-      user: User | null;
-    }>({
-      isOpen: false,
-      user: null
-    });
+    isOpen: boolean;
+    user: User | null;
+  }>({
+    isOpen: false,
+    user: null,
+  });
 
   async function fetchUsers() {
     setLoading(true);
@@ -109,9 +112,9 @@ export default function UsersPage() {
     sortConfig,
     selectedItems,
     processedData,
-  
+
     handleSearchChange,
-  
+
     handleSort,
     handleSelectAll,
     handleSelectItem,
@@ -124,45 +127,43 @@ export default function UsersPage() {
 
   // Event handlers
   const handleEdit = (row: any) => {
-     setEditingUser(row);
+    setEditingUser(row);
     setShowEditPopup(true);
   };
 
   const handleResetPassword = (row: any) => {
-     setResettingPasswordUser(row);
+    setResettingPasswordUser(row);
     setShowResetPopup(true);
   };
 
   const handleDelete = (row: any) => {
-      setDeleteModal({
-        isOpen: true,
-        user: row
-      });
-    };
+    setDeleteModal({
+      isOpen: true,
+      user: row,
+    });
+  };
 
-    
-  
-    const confirmDelete = async () => {
-      if (!deleteModal.user) return;
-      
-      try {
-        await deleteAdminUser(deleteModal.user.id);
-        toast.success("User deleted successfully");
+  const confirmDelete = async () => {
+    if (!deleteModal.user) return;
 
-        // Update userData by filtering out the deleted user
-        setUserData(prev => prev.filter(user => user.id !== deleteModal.user!.id));
+    try {
+      await deleteAdminUser(deleteModal.user.id);
+      toast.success("User deleted successfully");
 
-      } catch (error: any) {
-        toast.error(error.response?.data?.error || "Failed to delete user");
-      } finally {
-        setDeleteModal({ isOpen: false, user: null });
-      }
-    };
-  
-    const cancelDelete = () => {
+      // Update userData by filtering out the deleted user
+      setUserData((prev) =>
+        prev.filter((user) => user.id !== deleteModal.user!.id)
+      );
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete user");
+    } finally {
       setDeleteModal({ isOpen: false, user: null });
-    };
+    }
+  };
 
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, user: null });
+  };
 
   const handleExport = () => {
     console.log("Export users");
@@ -173,7 +174,7 @@ export default function UsersPage() {
     setShowAddPopup(true);
   };
 
-   const handleCloseAddPopup = () => {
+  const handleCloseAddPopup = () => {
     setShowAddPopup(false);
   };
 
@@ -182,13 +183,10 @@ export default function UsersPage() {
     setEditingUser(undefined);
   };
 
-   const handleCloseResetPopup = () => {
+  const handleCloseResetPopup = () => {
     setShowResetPopup(false);
     setResettingPasswordUser(undefined);
   };
-
-  
-
 
   // Calculate stats
   const totalUsers = userData.length;
@@ -216,47 +214,33 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <UserPopup 
-            isOpen={showAddPopup} 
-            onClose={handleCloseAddPopup} 
-            onSuccess={fetchUsers}
-            />
-            <UserPopup
-              isOpen={showEditPopup}
-              onClose={handleCloseEditPopup}
-              onSuccess={fetchUsers}
-              initialData={editingUser}
-            />
+      <UserPopup
+        isOpen={showAddPopup}
+        onClose={handleCloseAddPopup}
+        onSuccess={fetchUsers}
+      />
+      <UserPopup
+        isOpen={showEditPopup}
+        onClose={handleCloseEditPopup}
+        onSuccess={fetchUsers}
+        initialData={editingUser}
+      />
 
-            <ResetPasswordPopup
-            user={resettingPasswordUser}
-              isOpen={showResetPopup}
-            onClose={handleCloseResetPopup}
-              onSuccess={fetchUsers}
-            />
+      <ResetPasswordPopup
+        user={resettingPasswordUser}
+        isOpen={showResetPopup}
+        onClose={handleCloseResetPopup}
+        onSuccess={fetchUsers}
+      />
 
       {/* Statistics  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title="Total Users"
           value={totalUsers.toString()}
-          change="+12% from last month"
           Icon={Users}
-          color="text-indigo-600"
-        />
-        <StatCard
-          title="Active Users"
-          value={activeUsers.toString()}
-          change={`${Math.round(totalUsers * 100)}% active`}
-          Icon={UserCheck}
-          color="text-green-600"
-        />
-        <StatCard
-          title="Verified Users"
-          value={verifiedUsers.toString()}
-          change={`${Math.round(totalUsers * 100)}% verified`}
-          Icon={Mail}
-          color="text-blue-600"
+          loading={loading}
+          gradient="red"
         />
       </div>
 
@@ -297,15 +281,6 @@ export default function UsersPage() {
                   <Download className="h-4 w-4 mr-1" />
                   Export
                 </button>
-
-                {/* <div className="flex-1">
-                  <FilterComponent
-                    filters={filters}
-                    filterConfigs={filterConfigs}
-                    onFilterChange={handleFilterChange}
-                    onResetFilters={handleResetFilters}
-                  />
-                </div> */}
               </div>
             </div>
           </div>
@@ -313,7 +288,7 @@ export default function UsersPage() {
 
         {/* Table -  */}
         {loading ? (
-          <div className="text-center py-8">Loading users...</div>
+          <FullHeightShimmerTable cols={2} />
         ) : error ? (
           <div className="text-center py-8 text-red-500">{error}</div>
         ) : (
@@ -332,14 +307,14 @@ export default function UsersPage() {
         )}
       </div>
 
-       {/* Delete Confirmation Modal */}
-            <DeleteConfirmation
-              isOpen={deleteModal.isOpen}
-              onClose={cancelDelete}
-              onConfirm={confirmDelete}
-              title="Delete User"
-              itemName={deleteModal.user?.name}
-            />
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmation
+        isOpen={deleteModal.isOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete User"
+        itemName={deleteModal.user?.name}
+      />
     </div>
   );
 }

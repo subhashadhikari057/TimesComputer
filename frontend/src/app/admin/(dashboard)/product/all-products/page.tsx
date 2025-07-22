@@ -6,7 +6,6 @@ import {
   Package,
   Search,
   Download,
- 
   Calendar,
   Trash2,
   Grid,
@@ -23,6 +22,7 @@ import { getImageUrl } from "@/lib/imageUtils";
 import Image from "next/image";
 import ExportPopup from "@/components/form/table/exportModal";
 import { DeleteConfirmation } from "@/components/common/helper_function";
+import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 // Main Component
 export default function ViewProductsPage() {
@@ -57,186 +57,186 @@ export default function ViewProductsPage() {
   }, []);
 
   const newColumns: Column[] = [
-  {
-    id: "images",
-    label: "Product Images",
-    sortable: false,
-    filterable: false,
-    searchable: false,
+    {
+      id: "images",
+      label: "Product Images",
+      sortable: false,
+      filterable: false,
+      searchable: false,
 
-    widthClass: "w-16 lg:w-20",
-    render: (product: any) => {
-      const imageUrl = product.images?.[0]
-        ? getImageUrl(product.images[0])
-        : null;
-      return (
-        <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              width={40}
-              height={40}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="h-10 w-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-              <Package className="h-5 w-5 text-blue-600" />
-            </div>
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    id: "name",
-    label: "Product Name",
-    sortable: false,
-    filterable: false,
-    searchable: true,
-    widthClass: "w-48 lg:w-1/4",
-    render: (product: any) => {
-      return (
-        <div className="min-w-0">
-          <div className="text-sm font-medium text-gray-900 break-words leading-tight max-w-xs">
-            {product.name}
+      widthClass: "w-16 lg:w-20",
+      render: (product: any) => {
+        const imageUrl = product.images?.[0]
+          ? getImageUrl(product.images[0])
+          : null;
+        return (
+          <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0">
+            {imageUrl ? (
+              <Image
+                src={imageUrl}
+                alt={product.name}
+                width={40}
+                height={40}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-10 w-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                <Package className="h-5 w-5 text-blue-600" />
+              </div>
+            )}
           </div>
-        </div>
-      );
+        );
+      },
     },
-  },
-  {
-    id: "category",
-    label: "Category",
-    sortable: true,
-    filterable: true,
-    searchable: true,
-    widthClass: "w-28 lg:w-32",
-    render: (product: any) => (
-      <div
-        className="text-sm text-gray-900 truncate"
-        title={product.category?.name || product.category || "No Category"}
-      >
-        {product.category?.name || product.category || "No Category"}
-      </div>
-    ),
-  },
-  {
-    id: "brand",
-    label: "Brand",
-    sortable: true,
-    filterable: true,
-    searchable: true,
-    widthClass: "w-28 lg:w-32",
-    render: (product: any) => (
-      <div
-        className="text-sm font-medium text-gray-900 truncate"
-        title={product.brand?.name || product.brand || "No Brand"}
-      >
-        {product.brand?.name || product.brand || "No Brand"}
-      </div>
-    ),
-  },
-  {
-    id: "price",
-    label: "Price (Rs.)",
-    sortable: true,
-    filterable: false,
-    searchable: false,
-    widthClass: "w-24 lg:w-28",
-    render: (product: any) => {
-      const price =
-        typeof product.price === "string"
-          ? parseFloat(product.price.replace("$", ""))
-          : product.price;
+    {
+      id: "name",
+      label: "Product Name",
+      sortable: false,
+      filterable: false,
+      searchable: true,
+      widthClass: "w-48 lg:w-1/4",
+      render: (product: any) => {
+        return (
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-gray-900 break-words leading-tight max-w-xs">
+              {product.name}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      id: "category",
+      label: "Category",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      widthClass: "w-28 lg:w-32",
+      render: (product: any) => (
+        <div
+          className="text-sm text-gray-900 truncate"
+          title={product.category?.name || product.category || "No Category"}
+        >
+          {product.category?.name || product.category || "No Category"}
+        </div>
+      ),
+    },
+    {
+      id: "brand",
+      label: "Brand",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      widthClass: "w-28 lg:w-32",
+      render: (product: any) => (
+        <div
+          className="text-sm font-medium text-gray-900 truncate"
+          title={product.brand?.name || product.brand || "No Brand"}
+        >
+          {product.brand?.name || product.brand || "No Brand"}
+        </div>
+      ),
+    },
+    {
+      id: "price",
+      label: "Price (Rs.)",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      widthClass: "w-24 lg:w-28",
+      render: (product: any) => {
+        const price =
+          typeof product.price === "string"
+            ? parseFloat(product.price.replace("$", ""))
+            : product.price;
 
-      return (
-        <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
-          Rs.{price}
+        return (
+          <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
+            Rs.{price}
+          </div>
+        );
+      },
+    },
+    {
+      id: "stock",
+      label: "Stock",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      widthClass: "w-16 lg:w-20",
+      render: (product: any) => (
+        <div
+          className={`text-sm font-medium break-words leading-tight line-clamp-2 ${
+            product.stock === 0
+              ? "text-red-600"
+              : product.stock < 10
+              ? "text-yellow-600"
+              : "text-gray-900"
+          }`}
+        >
+          {product.stock} units
         </div>
-      );
+      ),
     },
-  },
-  {
-    id: "stock",
-    label: "Stock",
-    sortable: true,
-    filterable: false,
-    searchable: false,
-    widthClass: "w-16 lg:w-20",
-    render: (product: any) => (
-      <div
-        className={`text-sm font-medium break-words leading-tight line-clamp-2 ${
-          product.stock === 0
-            ? "text-red-600"
-            : product.stock < 10
-            ? "text-yellow-600"
-            : "text-gray-900"
-        }`}
-      >
-        {product.stock} units
-      </div>
-    ),
-  },
-  {
-    id: "isPublished",
-    label: "Status",
-    sortable: true,
-    filterable: true,
-    searchable: true,
-    widthClass: "w-28 lg:w-32",
-    render: (product: any) => {
-      return (
-        <span
-          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
-            product.isPublished
-              ? "bg-green-100 text-green-800"
-              : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-          {product.isPublished ? "Published" : "Draft"}
-        </span>
-      );
+    {
+      id: "isPublished",
+      label: "Status",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      widthClass: "w-28 lg:w-32",
+      render: (product: any) => {
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+              product.isPublished
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            {product.isPublished ? "Published" : "Draft"}
+          </span>
+        );
+      },
     },
-  },
-  {
-    id: "isFeature",
-    label: "Featured",
-    sortable: true,
-    filterable: true,
-    searchable: true,
-    widthClass: "w-24 lg:w-28",
-    render: (product: any) => {
-      return (
-        <span
-          className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
-            product.isFeature
-              ? "bg-green-100 text-green-800"
-              : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-          {product.isFeature ? "Yes" : "No"}
-        </span>
-      );
+    {
+      id: "isFeature",
+      label: "Featured",
+      sortable: true,
+      filterable: true,
+      searchable: true,
+      widthClass: "w-24 lg:w-28",
+      render: (product: any) => {
+        return (
+          <span
+            className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
+              product.isFeature
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
+            {product.isFeature ? "Yes" : "No"}
+          </span>
+        );
+      },
     },
-  },
-  {
-    id: "createdAt",
-    label: "Created Date",
-    sortable: true,
-    filterable: false,
-    searchable: false,
-    widthClass: "w-32 lg:w-36",
-    render: (product: any) => (
-      <div className="flex items-center text-sm text-gray-600 whitespace-nowrap">
-        <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
-        {new Date(product.createdAt).toLocaleDateString()}
-      </div>
-    ),
-  },
-];
+    {
+      id: "createdAt",
+      label: "Created Date",
+      sortable: true,
+      filterable: false,
+      searchable: false,
+      widthClass: "w-32 lg:w-36",
+      render: (product: any) => (
+        <div className="flex items-center text-sm text-gray-600 whitespace-nowrap">
+          <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
+          {new Date(product.createdAt).toLocaleDateString()}
+        </div>
+      ),
+    },
+  ];
 
   // Use custom hook for table data management
   const {
@@ -325,23 +325,23 @@ export default function ViewProductsPage() {
         <StatCard
           title="Total Products"
           value={products.length.toString()}
-          change="+12% from last month"
           Icon={Grid}
-          color="text-blue-600"
+          gradient="emerald"
+          loading={loading}
         />
         <StatCard
           title="Published Products"
           value={products.filter((p) => p.isPublished).length.toString()}
-          change="100%"
           Icon={CheckCircle}
-          color="text-green-600"
+          gradient="purple"
+          loading={loading}
         />
         <StatCard
           title="Out of Stock"
           value={products.filter((p) => p.stock === 0).length.toString()}
-          change=""
           Icon={Package}
-          color="text-purple-600"
+          gradient="cyan"
+          loading={loading}
         />
       </div>
 
@@ -396,7 +396,7 @@ export default function ViewProductsPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-8">Loading products...</div>
+          <FullHeightShimmerTable cols={10} />
         ) : error ? (
           <div className="text-center py-8 text-red-500">{error}</div>
         ) : (

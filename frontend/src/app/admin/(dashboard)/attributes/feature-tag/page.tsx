@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Plus,
-  Tag,
-  Search,
-  Download,
- 
-  Trash2,
-} from "lucide-react";
+import { Plus, Tag, Search, Download, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 
@@ -15,8 +8,9 @@ import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import FeatureTagPopup from "./featureTagPopup";
-import { deleteFeatureTag, getAllFeatureTags } from "@/api/featureTag"; 
+import { deleteFeatureTag, getAllFeatureTags } from "@/api/featureTag";
 import { DeleteConfirmation } from "@/components/common/helper_function";
+import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 interface FeatureTag {
   id: number;
@@ -30,8 +24,10 @@ export default function FeatureTagPage() {
   const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingFeatureTag, setEditingFeatureTag] = useState<FeatureTag | undefined>(undefined);
-const [deleteModal, setDeleteModal] = useState<{
+  const [editingFeatureTag, setEditingFeatureTag] = useState<
+    FeatureTag | undefined
+  >(undefined);
+  const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean;
     featureTag: FeatureTag | null;
   }>({
@@ -40,15 +36,15 @@ const [deleteModal, setDeleteModal] = useState<{
   });
 
   const fetchFeatureTags = async () => {
-      try {
-        const res = await getAllFeatureTags();
-        setFeatureTagData(res.data);
-      } catch (err) {
-        toast.error("Failed to fetch feature Tags.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      const res = await getAllFeatureTags();
+      setFeatureTagData(res.data);
+    } catch (err) {
+      toast.error("Failed to fetch feature Tags.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchFeatureTags();
@@ -61,7 +57,7 @@ const [deleteModal, setDeleteModal] = useState<{
       sortable: false,
       filterable: true,
       searchable: true,
-    
+
       render: (featureTag: FeatureTag) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
@@ -72,7 +68,6 @@ const [deleteModal, setDeleteModal] = useState<{
         </div>
       ),
     },
-   
   ];
 
   const {
@@ -101,32 +96,36 @@ const [deleteModal, setDeleteModal] = useState<{
   };
 
   const handleDelete = (row: any) => {
-      setDeleteModal({
-        isOpen: true,
-        featureTag: row,
-      });
-    };
-  
-    const confirmDelete = async () => {
-      if (!deleteModal.featureTag) return;
-  
-      try {
-        await deleteFeatureTag(deleteModal.featureTag.id);
-        toast.success("Feature tag deleted successfully");
+    setDeleteModal({
+      isOpen: true,
+      featureTag: row,
+    });
+  };
 
-        setFeatureTagData((prev) =>
-          prev.filter((featureTag) => featureTag.id !== deleteModal.featureTag!.id)
-        );
-      } catch (error: any) {
-        toast.error(error.response?.data?.error || "Failed to delete Feature Tag");
-      } finally {
-        setDeleteModal({ isOpen: false, featureTag: null });
-      }
-    };
-  
-    const cancelDelete = () => {
+  const confirmDelete = async () => {
+    if (!deleteModal.featureTag) return;
+
+    try {
+      await deleteFeatureTag(deleteModal.featureTag.id);
+      toast.success("Feature tag deleted successfully");
+
+      setFeatureTagData((prev) =>
+        prev.filter(
+          (featureTag) => featureTag.id !== deleteModal.featureTag!.id
+        )
+      );
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.error || "Failed to delete Feature Tag"
+      );
+    } finally {
       setDeleteModal({ isOpen: false, featureTag: null });
-    };
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, featureTag: null });
+  };
 
   const handleAddFeatureTag = () => {
     setShowAddPopup(true);
@@ -148,13 +147,13 @@ const [deleteModal, setDeleteModal] = useState<{
   //   0
   // );
 
-  
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Feature Tags</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Feature Tags
+          </h1>
           <p className="text-gray-600">
             Manage your product Feature Tags and organize your catalog
           </p>
@@ -170,10 +169,10 @@ const [deleteModal, setDeleteModal] = useState<{
         </div>
       </div>
 
-      <FeatureTagPopup 
-      isOpen={showAddPopup} 
-      onClose={handleCloseAddPopup} 
-      onSuccess={fetchFeatureTags}
+      <FeatureTagPopup
+        isOpen={showAddPopup}
+        onClose={handleCloseAddPopup}
+        onSuccess={fetchFeatureTags}
       />
       <FeatureTagPopup
         isOpen={showEditPopup}
@@ -186,11 +185,10 @@ const [deleteModal, setDeleteModal] = useState<{
         <StatCard
           title="Total Feature Tags"
           value={totalFeatureTags.toString()}
-          change=""
           Icon={Tag}
-          color="text-purple-600"
+          loading={loading}
+          gradient="cyan"
         />
-        
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
@@ -221,28 +219,30 @@ const [deleteModal, setDeleteModal] = useState<{
           </div>
         </div>
 
-        {loading ? <div className="p-6">Loading feature Tags...</div> : <DefaultTable
-          selectedItems={selectedItems}
-          onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
-          columns={featureTagColumns}
-          data={processedData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-        /> }
+        {loading ? (
+          <FullHeightShimmerTable cols={2} />
+        ) : (
+          <DefaultTable
+            selectedItems={selectedItems}
+            onSelectAll={handleSelectAll}
+            onSelectItem={handleSelectItem}
+            columns={featureTagColumns}
+            data={processedData}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+        )}
 
         {/* Delete Confirmation Modal */}
-                <DeleteConfirmation
-                  isOpen={deleteModal.isOpen}
-                  onClose={cancelDelete}
-                  onConfirm={confirmDelete}
-                  title="Delete Feature Tag"
-                  itemName={deleteModal.featureTag?.name}
-                />
-
-        
+        <DeleteConfirmation
+          isOpen={deleteModal.isOpen}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Delete Feature Tag"
+          itemName={deleteModal.featureTag?.name}
+        />
       </div>
     </div>
   );

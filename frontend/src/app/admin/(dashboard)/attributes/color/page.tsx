@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Plus,
-  Palette,
-  Search,
-  Download,
-  Calendar,
-  Trash2,
-} from "lucide-react";
+import { Plus, Palette, Search, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 
@@ -17,6 +10,7 @@ import { toast } from "sonner";
 import ColorPopup from "./colorPopup";
 import { deleteColor, getAllColors } from "@/api/color";
 import { DeleteConfirmation } from "@/components/common/helper_function";
+import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 // Color interface
 interface Color {
@@ -66,7 +60,7 @@ export default function ColorManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-     
+
       render: (color: Color) => (
         <div className="flex items-center space-x-4">
           <div className="h-12 w-12 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden">
@@ -93,7 +87,7 @@ export default function ColorManagementPage() {
       sortable: true,
       filterable: true,
       searchable: true,
-  
+
       render: (color: Color) => (
         <div className="flex items-center space-x-2">
           <span className="text-sm font-mono text-gray-900">
@@ -102,7 +96,6 @@ export default function ColorManagementPage() {
         </div>
       ),
     },
-    
   ];
 
   // Use custom hook for table data management (same as product page)
@@ -221,11 +214,9 @@ export default function ColorManagementPage() {
         <StatCard
           title="Total Colors"
           value={totalColors.toString()}
-          change=""
           Icon={Palette}
-          color="text-purple-600"
+          gradient="emerald"
         />
-        
       </div>
 
       {/* Table Container - Same structure as product page */}
@@ -256,13 +247,12 @@ export default function ColorManagementPage() {
                   Delete ({selectedItems.length})
                 </button>
               )}
-
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="p-6 text-center">Loading colors...</div>
+          <FullHeightShimmerTable cols={2} />
         ) : (
           <DefaultTable
             selectedItems={selectedItems}

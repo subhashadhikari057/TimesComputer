@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Plus,
-  Tag,
-  CheckCircle,
-  Search,
-  Download,
-
-  Trash2,
-} from "lucide-react";
+import { Plus, Tag, CheckCircle, Search, Download, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
@@ -17,6 +9,7 @@ import { toast } from "sonner";
 import MarketingTagPopup from "./marketingTagPopup";
 import { deleteMarketingTag, getAllMarketingTags } from "@/api/marketingTag"; // ✅ API import
 import { DeleteConfirmation } from "@/components/common/helper_function";
+import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 interface MarketingTag {
   id: number;
@@ -30,25 +23,27 @@ export default function MarketingTagManagementPage() {
   const [loading, setLoading] = useState(true);
   const [showAddPopup, setShowAddPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editingMarketingTag, setEditingMarketingTag] = useState<MarketingTag | undefined>(undefined);
+  const [editingMarketingTag, setEditingMarketingTag] = useState<
+    MarketingTag | undefined
+  >(undefined);
   const [deleteModal, setDeleteModal] = useState<{
-      isOpen: boolean;
-      marketingTag: MarketingTag | null;
-    }>({
-      isOpen: false,
-      marketingTag: null,
-    });
+    isOpen: boolean;
+    marketingTag: MarketingTag | null;
+  }>({
+    isOpen: false,
+    marketingTag: null,
+  });
 
   const fetchMarketingTags = async () => {
-      try {
-        const res = await getAllMarketingTags();
-        setMarketingTagData(res.data);
-      } catch (err) {
-        toast.error("Failed to fetch marketingTags.");
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      const res = await getAllMarketingTags();
+      setMarketingTagData(res.data);
+    } catch (err) {
+      toast.error("Failed to fetch marketingTags.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchMarketingTags();
@@ -61,7 +56,7 @@ export default function MarketingTagManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-      
+
       render: (marketingTag: MarketingTag) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
@@ -96,32 +91,36 @@ export default function MarketingTagManagementPage() {
   };
 
   const handleDelete = (row: any) => {
-      setDeleteModal({
-        isOpen: true,
-        marketingTag: row,
-      });
-    };
-  
-    const confirmDelete = async () => {
-      if (!deleteModal.marketingTag) return;
-  
-      try {
-        await deleteMarketingTag(deleteModal.marketingTag.id);
-        toast.success("Marketing Tag deleted successfully");
+    setDeleteModal({
+      isOpen: true,
+      marketingTag: row,
+    });
+  };
 
-        setMarketingTagData((prev) =>
-          prev.filter((marketingTag) => marketingTag.id !== deleteModal.marketingTag!.id)
-        );
-      } catch (error: any) {
-        toast.error(error.response?.data?.error || "Failed to delete Marketing Tag");
-      } finally {
-        setDeleteModal({ isOpen: false, marketingTag: null });
-      }
-    };
-  
-    const cancelDelete = () => {
+  const confirmDelete = async () => {
+    if (!deleteModal.marketingTag) return;
+
+    try {
+      await deleteMarketingTag(deleteModal.marketingTag.id);
+      toast.success("Marketing Tag deleted successfully");
+
+      setMarketingTagData((prev) =>
+        prev.filter(
+          (marketingTag) => marketingTag.id !== deleteModal.marketingTag!.id
+        )
+      );
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.error || "Failed to delete Marketing Tag"
+      );
+    } finally {
       setDeleteModal({ isOpen: false, marketingTag: null });
-    };
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({ isOpen: false, marketingTag: null });
+  };
 
   const handleAddMarketingTag = () => {
     setShowAddPopup(true);
@@ -137,19 +136,14 @@ export default function MarketingTagManagementPage() {
   };
 
   const totalMarketingTags = marketingTagData.length;
-  const activeMarketingTags = "5"; // Optional: Replace with actual logic
-  // const totalProducts = marketingTagData.reduce(
-  //   (sum, cat) => sum + cat.productCount,
-  //   0
-  // );
-
-
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Marketing Tags</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Marketing Tags
+          </h1>
           <p className="text-gray-600">
             Manage your product Marketing Tags and organize your catalog
           </p>
@@ -165,11 +159,11 @@ export default function MarketingTagManagementPage() {
         </div>
       </div>
 
-      <MarketingTagPopup 
-      isOpen={showAddPopup}
-       onClose={handleCloseAddPopup}
-       onSuccess={fetchMarketingTags}
-        />
+      <MarketingTagPopup
+        isOpen={showAddPopup}
+        onClose={handleCloseAddPopup}
+        onSuccess={fetchMarketingTags}
+      />
       <MarketingTagPopup
         isOpen={showEditPopup}
         onClose={handleCloseEditPopup}
@@ -181,11 +175,9 @@ export default function MarketingTagManagementPage() {
         <StatCard
           title="Total Marketing Tags"
           value={totalMarketingTags.toString()}
-          change=""
           Icon={Tag}
-          color="text-purple-600"
+          gradient="purple"
         />
-        
       </div>
 
       <div className="bg-white border border-gray-300 rounded-lg transition-shadow">
@@ -216,28 +208,30 @@ export default function MarketingTagManagementPage() {
           </div>
         </div>
 
-        {loading ? <div className="p-6">Loading feature Tags...</div> : <DefaultTable
-          selectedItems={selectedItems}
-          onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
-          columns={marketingTagColumns}
-          data={processedData}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          sortConfig={sortConfig}
-          onSort={handleSort}
-        /> }
+        {loading ? (
+         <FullHeightShimmerTable cols={2} />
+        ) : (
+          <DefaultTable
+            selectedItems={selectedItems}
+            onSelectAll={handleSelectAll}
+            onSelectItem={handleSelectItem}
+            columns={marketingTagColumns}
+            data={processedData}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
+        )}
 
         {/* Delete Confirmation Modal */}
-                <DeleteConfirmation
-                  isOpen={deleteModal.isOpen}
-                  onClose={cancelDelete}
-                  onConfirm={confirmDelete}
-                  title="Delete Marketing Tag"
-                  itemName={deleteModal.marketingTag?.name}
-                />
-
-        
+        <DeleteConfirmation
+          isOpen={deleteModal.isOpen}
+          onClose={cancelDelete}
+          onConfirm={confirmDelete}
+          title="Delete Marketing Tag"
+          itemName={deleteModal.marketingTag?.name}
+        />
       </div>
     </div>
   );

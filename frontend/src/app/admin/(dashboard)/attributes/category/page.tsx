@@ -1,26 +1,18 @@
 "use client";
 
-import {
-  Plus,
-  Tag,
-  CheckCircle,
-  Package,
-  Search,
-  Download,
-  Calendar,
-  Trash2,
-} from "lucide-react";
+import { Plus, Tag, Search, Download, Calendar, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
 import { toast } from "sonner";
 import CategoryPopup from "./categoryPopup";
-import { deleteCategory, getAllCategories } from "@/api/category"; 
+import { deleteCategory, getAllCategories } from "@/api/category";
 
 import { getImageUrl } from "@/lib/imageUtils";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import ExportPopup from "@/components/form/table/exportModal";
+import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 interface Category {
   id: number;
@@ -70,7 +62,7 @@ export default function CategoryManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-   
+
       render: (category: Category) => {
         const iconUrl = getImageUrl(category.icon);
         return (
@@ -92,35 +84,12 @@ export default function CategoryManagementPage() {
       },
     },
     {
-      id: "productCount",
-      label: "Products",
-      sortable: true,
-      filterable: false,
-      searchable: false,
-   
-      render: (category: Category) => (
-        <div className="flex items-center space-x-1">
-          <Package className="w-4 h-4 text-gray-400" />
-          {/* <span
-            className={`text-sm font-medium ${category.productCount === 0
-                ? "text-red-600"
-                : category.productCount < 10
-                  ? "text-yellow-600"
-                  : "text-gray-900"
-              }`}
-          >
-            {category.productCount} items
-          </span> */}
-        </div>
-      ),
-    },
-    {
       id: "createdAt",
       label: "Created At",
       sortable: true,
       filterable: false,
       searchable: false,
-    
+
       render: (category: Category) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
@@ -198,11 +167,6 @@ export default function CategoryManagementPage() {
   };
 
   const totalCategories = categoryData.length;
-  const activeCategories = "5"; // Optional: Replace with actual logic
-  // const totalProducts = categoryData.reduce(
-  //   (sum, cat) => sum + cat.productCount,
-  //   0
-  // );
 
   return (
     <div className="p-6 space-y-6">
@@ -240,9 +204,9 @@ export default function CategoryManagementPage() {
         <StatCard
           title="Total Categories"
           value={totalCategories.toString()}
-          change=""
           Icon={Tag}
-          color="text-purple-600"
+          loading={loading}
+          gradient="pink"
         />
       </div>
 
@@ -279,22 +243,13 @@ export default function CategoryManagementPage() {
                   <Download className="h-4 w-4 mr-1" />
                   Export
                 </button>
-
-                {/* <div className="flex-1">
-                  <FilterComponent
-                    filters={filters}
-                    filterConfigs={filterConfigs}
-                    onFilterChange={handleFilterChange}
-                    onResetFilters={handleResetFilters}
-                  />
-                </div> */}
               </div>
             </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="p-6">Loading Category...</div>
+          <FullHeightShimmerTable cols={2} />
         ) : (
           <DefaultTable
             selectedItems={selectedItems}
@@ -319,13 +274,13 @@ export default function CategoryManagementPage() {
         />
 
         <ExportPopup
-                  isOpen={isExportModalOpen}
-                  onClose={() => setIsExportModalOpen(false)}
-                  data={processedData}
-                  columns={categoryColumns}
-                  title="Products"
-                  filename="Brand_Details"
-                />
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          data={processedData}
+          columns={categoryColumns}
+          title="Products"
+          filename="Brand_Details"
+        />
       </div>
     </div>
   );
