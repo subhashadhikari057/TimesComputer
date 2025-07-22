@@ -30,6 +30,26 @@ export const getProductBySlugService = (slug: string) => {
   });
 };
 
+export const incrementProductViewService = async (slug: string) => {
+  const product = await prisma.product.findUnique({ where: { slug } });
+  
+  if (!product) {
+    const error = new Error("Product not found.");
+    (error as any).statusCode = 404;
+    throw error;
+  }
+
+  return prisma.product.update({
+    where: { slug },
+    data: {
+      views: {
+        increment: 1
+      }
+    },
+    include: productIncludes,
+  });
+};
+
 export const createProductService = async (data: any) => {
   const {
     name, slug, description, price, stock, isPublished,

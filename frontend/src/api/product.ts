@@ -18,6 +18,18 @@ export async function getProductBySlug(slug: string) {
     return response.data;
 }
 
+// POST /product/view/:slug → increment product view count
+export async function incrementProductView(slug: string) {
+    try {
+        const response = await axios.post(`/product/view/${slug}`);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to increment view count:', error);
+        // Don't throw error to avoid breaking the page if view tracking fails
+        return null;
+    }
+}
+
 // POST /product → create a new product (with images via FormData)
 export async function createProduct(formData: FormData) {
     const response = await axios.post("/product", formData, {

@@ -13,12 +13,10 @@ import {
   TrendingUp,
   Star,
   MoreHorizontal,
-  ChevronRight,
   Award,
   RefreshCw,
   Calendar,
   Clock,
-  Zap,
 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { getAuditLogs, getLoginLogs, getAllAdmins } from "@/api/adminUser";
@@ -75,12 +73,10 @@ interface AuditLog {
 interface Product {
   id: number;
   name: string;
-  slug: string;
-  price?: number;
+  price: number;
+  images: string[];
   views?: number;
   viewCount?: number;
-  images?: string[];
-  isPublished: boolean;
 }
 
 export default function DashboardPage() {
@@ -109,8 +105,6 @@ export default function DashboardPage() {
       id: product.id,
     }));
   }, [topProducts]);
-
-  // No longer needed - we'll display logs separately
 
   // Fetch functions with better error handling
   const fetchLogs = useCallback(async () => {
@@ -195,8 +189,6 @@ export default function DashboardPage() {
     }
   };
 
-
-
   const formatTimeAgo = (dateString: string) => {
     const now = new Date();
     const date = new Date(dateString);
@@ -238,10 +230,6 @@ export default function DashboardPage() {
                   day: 'numeric' 
                 })}
               </div>
-              <div className="flex items-center text-sm">
-                <Clock className="w-4 h-4 mr-1" />
-                Last updated: {formatTimeAgo(lastRefresh.toISOString())}
-              </div>
             </div>
           </div>
           
@@ -260,8 +248,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats Cards - Updated to 5 cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        {/* Stats Cards - Only 3 cards (removed Login Logs and Audit Logs stat cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Total Users"
             value={statsLoading ? "" : totalUsers.toLocaleString()}
@@ -288,27 +276,9 @@ export default function DashboardPage() {
             loading={productsLoading}
             subtitle="Product engagement"
           />
-
-          <StatCard
-            title="Login Logs"
-            value={loading ? "" : loginLogs.length.toLocaleString()}
-            Icon={CheckCircle}
-            gradient="purple"
-            loading={loading}
-            subtitle="Recent login attempts"
-          />
-
-          <StatCard
-            title="Audit Logs"
-            value={loading ? "" : auditLogs.length.toLocaleString()}
-            Icon={Activity}
-            gradient="indigo"
-            loading={loading}
-            subtitle="System activities"
-          />
         </div>
 
-        {/* First Row - Login Logs and Audit Logs */}
+        {/* First Row - Login Logs and Audit Logs Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           
           {/* Login Logs - Takes 1 column */}

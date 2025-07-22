@@ -7,6 +7,7 @@ import {
     getProductByIdService,
     getProductBySlugService,
     updateProductService,
+    incrementProductViewService,
 } from '../services/product.service';
 import { CreateProductSchema, UpdateProductSchema } from '../validations/product.schema';
 import prisma from '../prisma/client';
@@ -176,6 +177,22 @@ export const deleteProduct = async (req: Request, res: Response) => {
         }
 
         res.status(200).json(result);
+    } catch (error) {
+        handleError(res, error);
+    }
+};
+
+export const incrementProductView = async (req: Request, res: Response) => {
+    try {
+        const { slug } = req.params;
+        if (!slug) return res.status(400).json({ error: 'Product slug is required.' });
+
+        const product = await incrementProductViewService(slug);
+        res.status(200).json({ 
+            success: true, 
+            message: 'View count incremented successfully',
+            views: product.views 
+        });
     } catch (error) {
         handleError(res, error);
     }

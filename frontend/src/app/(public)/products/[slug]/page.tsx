@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 import { Plus, Check } from "lucide-react";
 import { useCompare } from "@/contexts/CompareContext";
 
-import { getProductBySlug } from "@/api/product";
+import { getProductBySlug, incrementProductView } from "@/api/product";
 import { Product } from "../../../../../types/product";
 import RecommendedProducts from "@/components/products/reccomendedproducts";
 import { getImageUrl } from "@/lib/imageUtils";
@@ -35,6 +35,9 @@ export default function ProductDetails() {
         const data = await getProductBySlug(slug);
         setProductData(data);
         console.log(data);
+        
+        // Increment view count (don't await to avoid blocking page load)
+        incrementProductView(slug);
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
