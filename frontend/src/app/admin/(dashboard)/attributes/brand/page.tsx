@@ -12,6 +12,7 @@ import { deleteBrand, getAllBrands } from "@/api/brand";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import { getImageUrl } from "@/lib/imageUtils";
 import ExportPopup from "@/components/form/table/exportModal";
+import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
 
 // Brand interface
 interface Brand {
@@ -61,7 +62,7 @@ export default function BrandManagementPage() {
       sortable: false,
       filterable: true,
       searchable: true,
-     
+
       render: (brand: Brand) => {
         const imageUrl = getImageUrl(brand.image);
         return (
@@ -92,7 +93,7 @@ export default function BrandManagementPage() {
       sortable: true,
       filterable: false,
       searchable: false,
-    
+
       render: (brand: Brand) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
@@ -213,9 +214,9 @@ export default function BrandManagementPage() {
         <StatCard
           title="Total Brands"
           value={totalBrands.toString()}
-          change=""
           Icon={Award}
-          color="text-blue-600"
+          loading={loading}
+          gradient="orange"
         />
       </div>
 
@@ -258,7 +259,7 @@ export default function BrandManagementPage() {
         </div>
 
         {loading ? (
-          <div className="p-6">Loading brands...</div>
+          <FullHeightShimmerTable cols={2} />
         ) : (
           <DefaultTable
             selectedItems={selectedItems}

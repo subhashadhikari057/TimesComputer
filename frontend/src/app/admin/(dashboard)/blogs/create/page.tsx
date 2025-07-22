@@ -10,11 +10,12 @@ import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import PhotoUpload from "@/components/admin/product/photoUpload";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
 import { createBlog } from "@/api/blog";
+import { ShimmerCard } from "@/components/common/shimmerEffect";
 
 // Dynamic import for RichTextEditor to avoid SSR issues
 const RichTextEditor = dynamic(() => import('@/components/form/form-elements/RichTextEditor'), { 
   ssr: false,
-  loading: () => <div className="h-[300px] bg-gray-50 rounded border flex items-center justify-center">Loading editor...</div>
+  loading: () => <ShimmerCard  />
 });
 
 // Define the RichTextEditorHandle type
