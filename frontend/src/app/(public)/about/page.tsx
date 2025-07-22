@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import BrandCarousel from '@/components/home/BrandScroller';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
+import BrandCarousel from "@/components/home/BrandScroller";
 
-export default function Page() {
+export default function AboutPage() {
   return (
     <div>
       {/* Hero Section */}
@@ -19,12 +19,14 @@ export default function Page() {
         <div className="absolute inset-0 bg-blue-900/70" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white px-4">
           <h1 className="text-4xl font-bold">About us</h1>
-          <p className="mt-2 text-lg sm:text-xl font-medium">Nepal&apos;s rising tech destination</p>
+          <p className="mt-2 text-lg sm:text-xl font-medium">
+            Nepal&apos;s rising tech destination
+          </p>
         </div>
       </div>
 
+      {/* Who We Are Section */}
       <section className="px-4 sm:px-8 lg:px-16 py-12 space-y-16">
-        {/* Who are We Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="w-full">
             <Image
@@ -35,27 +37,33 @@ export default function Page() {
               className="rounded shadow-md"
             />
           </div>
-           <div>
-          <h2 className="text-2xl font-bold mb-4">Who are We</h2>
-          <div className="h-1 w-20 bg-secondary mb-4" />
-          <p className="text-gray-700 text-base leading-relaxed">
-            At Times Computer Automation, we&apos;re more than just a laptop store. We focus on providing the latest, high-performance laptops for work, study, or play – all at prices that suit your budget. Whether you&apos;re in Kathmandu or Kanchanpur, our goal is to put the perfect laptop in your hands with fast, reliable delivery nationwide. Explore our growing collection and upgrade your tech game today!
-          </p>
-        </div>
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Who are We</h2>
+            <div className="h-1 w-20 bg-secondary mb-4" />
+            <p className="text-gray-700 text-base leading-relaxed">
+              At Times Computer Automation, we&apos;re more than just a laptop store.
+              We focus on providing the latest, high-performance laptops for work,
+              study, or play – all at prices that suit your budget. Whether
+              you&apos;re in Kathmandu or Kanchanpur, our goal is to put the perfect
+              laptop in your hands with fast, reliable delivery nationwide.
+              Explore our growing collection and upgrade your tech game today!
+            </p>
+          </div>
         </div>
 
-        {/* Why Us + Stats Side by Side */}
+        {/* Why Us + Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
           {/* Why Us */}
-         <div  className="pr-4 lg:pr-16">
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Why us?</h2>
-          <div className="h-1 w-20 bg-secondary mb-4" />
-          <p className="text-gray-700 text-base leading-relaxed text-justify">
-            At <span className="font-medium text-primary">Times Computer Automation</span>, we offer what others don&apos;t: bulk laptop purchases at unbeatable retail prices. Whether you&apos;re buying one or one hundred, you get the same great value. Perfect for offices, schools, or resellers, with fast nationwide delivery you can count on.
-          </p>
-        </div>
-      </div>
+          <div className="pr-4 lg:pr-16">
+            <h2 className="text-2xl font-bold mb-4">Why us?</h2>
+            <div className="h-1 w-20 bg-secondary mb-4" />
+            <p className="text-gray-700 text-base leading-relaxed text-justify">
+              At <span className="font-medium text-primary">Times Computer Automation</span>,
+              we offer what others don&apos;t: bulk laptop purchases at unbeatable retail prices.
+              Whether you&apos;re buying one or one hundred, you get the same great value.
+              Perfect for offices, schools, or resellers, with fast nationwide delivery you can count on.
+            </p>
+          </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
@@ -70,14 +78,14 @@ export default function Page() {
               <h3 className="text-2xl font-bold text-primary">50+</h3>
               <p className="font-medium mt-2">Tech Brands</p>
               <p className="text-sm text-gray-500 mt-1">
-                With over 700+ laptops and accessories to choose from.
+                Supporting all major laptop and accessory brands.
               </p>
             </div>
             <div className="p-6 border-border rounded-lg shadow hover:shadow-lg transition">
               <h3 className="text-2xl font-bold text-primary">1500+</h3>
               <p className="font-medium mt-2">Happy Customers</p>
               <p className="text-sm text-gray-500 mt-1">
-                With over 700+ laptops and accessories to choose from.
+                Trusted by over 1500 customers across Nepal.
               </p>
             </div>
           </div>

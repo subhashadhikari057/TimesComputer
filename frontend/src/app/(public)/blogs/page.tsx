@@ -14,7 +14,10 @@ interface Blog {
   images: string[];
   author: string;
   slug: string;
-  metadata: any;
+  metadata: {
+    tags?: string[] | string;
+    category?: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -32,14 +35,15 @@ export default function BlogsPage() {
         setError(null);
         const response = await getAllBlogs();
         const blogsData = response.data || [];
-        
+
         // Sort blogs by creation date (latest first)
-        const sortedBlogs = blogsData.sort((a: Blog, b: Blog) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        const sortedBlogs = blogsData.sort(
+          (a: Blog, b: Blog) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        
+
         setBlogs(sortedBlogs);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Failed to fetch blogs:", err);
         setError("Failed to load blogs");
         setBlogs([]);
@@ -51,11 +55,11 @@ export default function BlogsPage() {
     fetchBlogs();
   }, []);
 
-  // Extract description from content (first 100 characters)
   const extractDescription = (content: string) => {
-    // Remove HTML tags and get first 100 characters
-    const textContent = content.replace(/<[^>]*>/g, '');
-    return textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+    const textContent = content.replace(/<[^>]*>/g, "");
+    return textContent.length > 100
+      ? textContent.substring(0, 100) + "..."
+      : textContent;
   };
 
   if (loading) {
@@ -76,9 +80,7 @@ export default function BlogsPage() {
       <div>
         <HeroSection />
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="text-center py-16 text-gray-500">
-            {error}
-          </div>
+          <div className="text-center py-16 text-gray-500">{error}</div>
         </div>
       </div>
     );
@@ -87,10 +89,8 @@ export default function BlogsPage() {
   return (
     <div>
       <HeroSection />
-      
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold mb-8">Latest Blogs</h2>
-        
         {blogs.length === 0 ? (
           <div className="text-center py-16 text-gray-500">
             No blogs available
@@ -101,7 +101,11 @@ export default function BlogsPage() {
               <BlogCard
                 key={blog.id}
                 id={blog.id.toString()}
-                image={blog.images?.[0] ? getImageUrl(blog.images[0]) : "/products/Frame_68.png"}
+                image={
+                  blog.images?.[0]
+                    ? getImageUrl(blog.images[0])
+                    : "/products/Frame_68.png"
+                }
                 title={blog.title}
                 description={extractDescription(blog.content)}
               />

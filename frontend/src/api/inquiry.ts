@@ -1,31 +1,32 @@
 import axios from "@/lib/axiosInstance";
+import type { InquiryInput } from "@/types/api";
 
 // GET /inquiry → fetch all inquiries
 export async function getAllInquiries() {
-    const response = await axios.get("/inquiry");
-    return response.data;
+  const response = await axios.get("/inquiry");
+  return response.data;
 }
 
 // GET /inquiry/:id → fetch a single inquiry
 export async function getInquiryById(id: number) {
-    const response = await axios.get(`/inquiry/${id}`);
-    return response.data;
+  const response = await axios.get(`/inquiry/${id}`);
+  return response.data;
 }
 
 // POST /inquiry → create a new inquiry
-export async function createInquiry(data: any) {
-    const response = await axios.post("/inquiry", data);
-    return response.data;
+export async function createInquiry(data: InquiryInput) {
+  const response = await axios.post("/inquiry", data);
+  return response.data;
 }
 
 // PATCH /inquiry/:id → update an inquiry
-export async function updateInquiry(id: number, data: any) {
-    const response = await axios.patch(`/inquiry/${id}`, data);
-    return response.data;
+export async function updateInquiry(id: number, data: Partial<InquiryInput>) {
+  const response = await axios.patch(`/inquiry/${id}`, data);
+  return response.data;
 }
 
 // DELETE /inquiry/:id → delete an inquiry
 export async function deleteInquiry(id: number) {
-    const response = await axios.delete(`/inquiry/${id}`);
-    return response.data;
-} 
+  const response = await axios.delete(`/inquiry/${id}`);
+  return response.data;
+}
