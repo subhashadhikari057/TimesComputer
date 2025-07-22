@@ -136,10 +136,10 @@ export default function Navbar() {
         <div className="w-full max-w-screen-xl mx-auto px-4 flex items-center justify-between">
           {/* Logo */}
           <Image
-            src="/logos/logo.png"
+            src="/logos/logo.svg"
             alt="Brand Logo"
-            width={56}
-            height={56}
+            width={120}
+            height={90}
             priority
           />
 

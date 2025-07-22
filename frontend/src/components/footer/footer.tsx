@@ -54,13 +54,13 @@ const Footer: FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {/* Logo + Description */}
           <div className="flex flex-col items-start">
-            <Image
-              src="/logos/logo.png"
-              width={90}
-              height={70}
-              alt="Logo"
-              className="mb-2"
-            />
+          <Image
+            src="/logos/logo.svg"
+            alt="Brand Logo"
+            width={120}
+            height={90}
+            priority
+          />
             <p className="text-sm leading-relaxed">
               Built on a simple idea — buying a laptop shouldn&apos;t be complicated.
             </p>
