@@ -243,8 +243,8 @@ export default function Sidebar({
           <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 pt-4 border-b border-gray-100 clean-header">
             {isExpanded ? (
               <>
-                <span className="text-xl font-bold text-gray-800 clean-text">
-                  Times Computer
+                <span className="text-md font-bold text-gray-800 clean-text">
+                  Times Computer Automation
                 </span>
                 <button
                   onClick={() => setSidebarOpen(false)}
@@ -256,7 +256,7 @@ export default function Sidebar({
               </>
             ) : (
               <div className="w-full flex justify-center clean-element">
-                <span className="text-lg font-bold text-gray-800 clean-text">T</span>
+                <span className="text-lg font-bold text-gray-800 clean-text">TCA</span>
               </div>
             )}
           </div>

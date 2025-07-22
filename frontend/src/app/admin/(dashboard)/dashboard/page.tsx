@@ -110,57 +110,7 @@ export default function DashboardPage() {
     }));
   }, [topProducts]);
 
-  // Combined activity logs (login + audit)
-  type Activity =
-    | {
-        id: string;
-        type: 'login';
-        success: boolean;
-        email: string;
-        createdAt: string;
-        deviceName: string;
-      }
-    | {
-        id: string;
-        type: 'audit';
-        action: string;
-        actorName: string;
-        message: string | null;
-        createdAt: string;
-      };
-
-  const combinedActivity = useMemo(() => {
-    const activities: Activity[] = [];
-    
-    // Add login logs
-    loginLogs.forEach(log => {
-      activities.push({
-        id: log.id,
-        type: 'login',
-        success: log.success,
-        email: log.email,
-        createdAt: log.createdAt,
-        deviceName: log.deviceName,
-      });
-    });
-    
-    // Add audit logs
-    auditLogs.forEach(log => {
-      activities.push({
-        id: log.id,
-        type: 'audit',
-        action: log.action,
-        actorName: log.actor.name,
-        message: log.message,
-        createdAt: log.createdAt,
-      });
-    });
-    
-    // Sort by most recent
-    return activities
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 10);
-  }, [loginLogs, auditLogs]);
+  // No longer needed - we'll display logs separately
 
   // Fetch functions with better error handling
   const fetchLogs = useCallback(async () => {
@@ -310,8 +260,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats Cards - Horizontal Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Stats Cards - Updated to 5 cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <StatCard
             title="Total Users"
             value={statsLoading ? "" : totalUsers.toLocaleString()}
@@ -338,25 +288,43 @@ export default function DashboardPage() {
             loading={productsLoading}
             subtitle="Product engagement"
           />
+
+          <StatCard
+            title="Login Logs"
+            value={loading ? "" : loginLogs.length.toLocaleString()}
+            Icon={CheckCircle}
+            gradient="purple"
+            loading={loading}
+            subtitle="Recent login attempts"
+          />
+
+          <StatCard
+            title="Audit Logs"
+            value={loading ? "" : auditLogs.length.toLocaleString()}
+            Icon={Activity}
+            gradient="indigo"
+            loading={loading}
+            subtitle="System activities"
+          />
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* First Row - Login Logs and Audit Logs */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           
-          {/* Recent Activity - Takes 1 column */}
+          {/* Login Logs - Takes 1 column */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 h-full">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg mr-3">
-                    <Activity className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 bg-purple-100 rounded-lg mr-3">
+                    <CheckCircle className="w-5 h-5 text-purple-600" />
                   </div>
-                  Recent Activity
+                  Login Logs
                 </h3>
                 <div className="flex items-center space-x-2">
                   {loading && (
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <RefreshCw className="w-4 h-4 text-blue-600 animate-spin" />
+                    <div className="p-2 bg-purple-50 rounded-lg">
+                      <RefreshCw className="w-4 h-4 text-purple-600 animate-spin" />
                     </div>
                   )}
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
@@ -376,54 +344,117 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   ))
-                ) : combinedActivity.length > 0 ? (
-                  combinedActivity.map((activity: any) => (
-                    <div key={activity.id} className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors group">
+                ) : loginLogs.length > 0 ? (
+                  loginLogs.map((log) => (
+                    <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                       <div className="flex items-center space-x-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          activity.type === 'login' 
-                            ? activity.success 
-                              ? 'bg-emerald-100 text-emerald-600' 
-                              : 'bg-red-100 text-red-600'
-                            : getActionColor(activity.action)
+                          log.success 
+                            ? 'bg-emerald-100 text-emerald-600' 
+                            : 'bg-red-100 text-red-600'
                         }`}>
-                          {activity.type === 'login' ? (
-                            activity.success ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />
-                          ) : (
-                            <Settings className="w-5 h-5" />
-                          )}
+                          {log.success ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
                         </div>
                         <div>
                           <p className="font-medium text-gray-900 text-sm">
-                            {activity.type === 'login' 
-                              ? (activity.success ? 'Successful Login' : 'Login Failed')
-                              : formatActionText(activity.action)
-                            }
+                            {log.success ? 'Login Success' : 'Login Failed'}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {activity.type === 'login' 
-                              ? activity.email?.split('@')[0] + '***'
-                              : activity.actorName
-                            }
+                            {log.email?.split('@')[0] + '***'}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {log.deviceName || 'Unknown Device'} • {log.formattedIp}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-xs text-gray-500">{formatTimeAgo(activity.createdAt)}</p>
-                        <ChevronRight className="w-4 h-4 text-gray-400 ml-auto" />
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">{formatTimeAgo(log.createdAt)}</p>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-8">
-                    <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500">No recent activity</p>
+                    <CheckCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No login logs</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
+          {/* Audit Logs - Takes 1 column */}
+          <div className="lg:col-span-1">
+            <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 h-full">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <div className="p-2 bg-indigo-100 rounded-lg mr-3">
+                    <Activity className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  Audit Logs
+                </h3>
+                <div className="flex items-center space-x-2">
+                  {loading && (
+                    <div className="p-2 bg-indigo-50 rounded-lg">
+                      <RefreshCw className="w-4 h-4 text-indigo-600 animate-spin" />
+                    </div>
+                  )}
+                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center space-x-3 p-3">
+                      <ShimmerCard className="w-10 h-10 rounded-full" />
+                      <div className="flex-1">
+                        <ShimmerText className="h-4 w-3/4 mb-2" />
+                        <ShimmerText className="h-3 w-1/2" />
+                      </div>
+                    </div>
+                  ))
+                ) : auditLogs.length > 0 ? (
+                  auditLogs.slice(0, 10).map((log) => (
+                    <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getActionColor(log.action)}`}>
+                          <Settings className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">
+                            {formatActionText(log.action)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {log.actor.name}
+                          </p>
+                          {log.message && (
+                            <p className="text-xs text-gray-500 mt-1 truncate max-w-32">
+                              {log.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">{formatTimeAgo(log.createdAt)}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500">No audit logs</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Second Row - Top 5 Products and Most Popular Product */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          
           {/* Top 5 Products - Takes 1 column */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 h-full">
