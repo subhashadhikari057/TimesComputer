@@ -1,9 +1,10 @@
 import axios from "@/lib/axiosInstance";
 
 // GET /ads → fetch all ads
-export async function getAllAds() {
-    const response = await axios.get("/ads");
-    return response.data;
+export async function getAllAds(placement?: string) {
+  const params = placement ? { placement } : {};
+  const response = await axios.get("/ads", { params });
+  return response.data;
 }
 
 // GET /ads/:id → fetch a single ad

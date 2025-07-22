@@ -53,7 +53,7 @@ export const menuItems: MenuItem[] = [
     label: "Ads",
     icon: Megaphone,
     hasSubmenu: false,
-   
+    href: "/admin/ads",
   },
   {
     id: "blogs",

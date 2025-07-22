@@ -22,6 +22,11 @@ export default function Carousel({
   const [isDragging, setIsDragging] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
+  // Return null if no slides are provided
+  if (!slides || slides.length === 0) {
+    return null;
+  }
+
   // Navigate to previous slide
   const prev = () =>
     setCurr((curr) => (curr === 0 ? slides.length - 1 : curr - 1));
@@ -32,12 +37,12 @@ export default function Carousel({
     [slides.length]
   );
 
-  // Auto slide logic
+  // Auto slide logic - only auto-slide if there are multiple slides
   useEffect(() => {
-    if (!autoSlide) return;
+    if (!autoSlide || slides.length <= 1) return;
     const slideInterval = setInterval(next, autoSlideInterval);
     return () => clearInterval(slideInterval);
-  }, [autoSlide, autoSlideInterval, next]);
+  }, [autoSlide, autoSlideInterval, next, slides.length]);
 
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -127,20 +132,22 @@ export default function Carousel({
         </button> */}
       </div>
 
-      {/* Slide indicators (bottom center) */}
-      <div className="absolute bottom-4 left-0 right-0 pointer-events-none">
-        <div className="flex items-center justify-center gap-2">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              className={`transition-all w-3 h-3 bg-white rounded-full ${curr === i ? "p-2" : "bg-opacity-50"
-                } pointer-events-auto`}
-              onClick={() => setCurr(i)}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
+      {/* Slide indicators (bottom center) - only show if multiple slides */}
+      {slides.length > 1 && (
+        <div className="absolute bottom-4 left-0 right-0 pointer-events-none">
+          <div className="flex items-center justify-center gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                className={`transition-all w-3 h-3 bg-white rounded-full ${curr === i ? "p-2" : "bg-opacity-50"
+                  } pointer-events-auto`}
+                onClick={() => setCurr(i)}
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

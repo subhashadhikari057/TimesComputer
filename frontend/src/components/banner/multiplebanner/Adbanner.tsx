@@ -5,12 +5,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Banner } from "../../../../types/banner";
+import AdPlaceholder from "../AdPlaceholder";
 
 interface AdbannerProps {
   banner: Banner;
 }
 
 export default function Adbanner({ banner }: AdbannerProps) {
+  // If no valid image URL, show placeholder
+  if (!banner.imageUrl || banner.imageUrl.trim() === "") {
+    return <AdPlaceholder placement="box" />;
+  }
+
   return (
     // ✅ Full clickable container that fully fills grid cell
     <div className="relative w-full h-full">

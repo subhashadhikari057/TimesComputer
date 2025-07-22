@@ -128,9 +128,13 @@ model ProductColor {
 
 model AdBanner {
   id        Int      @id @default(autoincrement())
+  title     String?
   images    String[]
+  link      String   @default("/")
+  placement String   @default("slider") // "slider", "box1", "box2", "box3", "upper-banner", "lower-banner"
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
-  link      String?
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 model Blog {
