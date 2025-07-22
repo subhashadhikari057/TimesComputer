@@ -9,6 +9,8 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { getAllProducts } from '@/api/product';
 import { toast } from 'sonner';
+import SkeletonLoader from '@/components/common/skeletonloader';
+
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -122,14 +124,28 @@ export default function AllProductsPage() {
   }, []);
 
   const filterSidebar = (
-    <FilterSidebar
-      onApplyFilters={handleApplyFilters}
-      products={products}
-      defaultFilters={appliedFilters}
-    />
+      <FilterSidebar
+  onApplyFilters={handleApplyFilters}
+  products={products}
+  defaultFilters={appliedFilters}
+/>
   );
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
+      {/* Sidebar Skeleton for large screens */}
+      <aside className="hidden lg:block w-full lg:w-1/4">
+        <SkeletonLoader type="filter-sidebar" />
+      </aside>
+
+      {/* Product Card Skeletons */}
+      <main className="w-full lg:w-3/4 grid grid-cols-2 md:grid-cols-3 gap-4">
+        <SkeletonLoader type="card" count={12} />
+      </main>
+    </div>
+  );
+}
 
   return (
     <>

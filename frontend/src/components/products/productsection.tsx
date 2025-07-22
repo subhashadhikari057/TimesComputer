@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getAllProducts } from "@/api/product";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import SkeletonLoader from "../common/skeletonloader";
 
 function FeaturedProductsSection() {
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -69,16 +70,17 @@ function FeaturedProductsSection() {
     };
   }, [api]);
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Featured Products</h2>
-        <div className="flex justify-center items-center py-16">
-          <LoadingSpinner />
-        </div>
-      </div>
-    );
-  }
+   if (loading) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Product Card Skeletons */}
+       <h2 className="text-2xl font-semibold text-gray-900 mb-8">Featured Products</h2>
+      <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <SkeletonLoader type="card" count={5}/>
+      </main>
+    </div>
+  );
+}
 
   if (error) {
     return (

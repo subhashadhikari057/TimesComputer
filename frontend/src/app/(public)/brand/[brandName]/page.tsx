@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import SortSelect from '@/components/common/sortselect';
 import ProductCard from '@/components/products/productcard';
 import FilterSidebar from '@/components/sidebar/sidebar';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getAllProducts } from '@/api/product';
+import SkeletonLoader from '@/components/common/skeletonloader';
 
 interface BrandParams {
   brandName: string;
@@ -128,22 +128,38 @@ export default function BrandPage({ params }: BrandPageProps) {
 
   const filterSidebar = (
     <FilterSidebar
-  onApplyFilters={handleApplyFilters}
-  brandName={brandSlug}
-  products={products}
-  defaultFilters={appliedFilters}
-/>
-
+      onApplyFilters={handleApplyFilters}
+      brandName={brandSlug}
+      products={products}
+      defaultFilters={appliedFilters}
+    />
   );
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) {
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
+      {/* Sidebar Skeleton for large screens */}
+      <aside className="hidden lg:block w-full lg:w-1/4">
+        <SkeletonLoader type="filter-sidebar" />
+      </aside>
+
+      {/* Product Card Skeletons */}
+      <main className="w-full lg:w-3/4 grid grid-cols-2 md:grid-cols-3 gap-4">
+        <SkeletonLoader type="card" count={12} />
+      </main>
+    </div>
+  );
+} 
 
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Mobile Top Header */}
         <div className="lg:hidden flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold">
-            {filteredProducts.length > 0
+            {loading
+              ? 'Loading products...'
+              : filteredProducts.length > 0
               ? `${brandName} Products (${filteredProducts.length})`
               : 'No Products Found'}
           </h1>
@@ -161,12 +177,18 @@ export default function BrandPage({ params }: BrandPageProps) {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          <aside className="hidden lg:block w-full lg:w-1/4">{filterSidebar}</aside>
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:block w-full lg:w-1/4">
+            {loading ? <SkeletonLoader type="filter-sidebar" /> : filterSidebar}
+          </aside>
+
+          {/* Main Section */}
           <main className="w-full lg:w-3/4">
-            {/* Sort and Product Grid */}
             <div className="hidden lg:flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold pl-5">
-                {filteredProducts.length > 0
+                {loading
+                  ? 'Loading...'
+                  : filteredProducts.length > 0
                   ? `${brandName} Products (${filteredProducts.length})`
                   : 'No Products Found'}
               </h1>
@@ -177,7 +199,12 @@ export default function BrandPage({ params }: BrandPageProps) {
               <SortSelect sort={sort} />
             </div>
 
-            {filteredProducts.length === 0 ? (
+            {/* Product Grid */}
+            {loading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                <SkeletonLoader type="card" count={6} dynamicHeight />
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">No products match your selected filters.</p>
                 <Button className="mt-4" onClick={() => setAppliedFilters({ brand: [brandName] })}>
@@ -201,7 +228,8 @@ export default function BrandPage({ params }: BrandPageProps) {
               </>
             )}
 
-            {totalPages > 1 && (
+            {/* Pagination */}
+            {!loading && totalPages > 1 && (
               <div className="flex justify-center gap-4 mt-8">
                 <Button variant="outline" onClick={() => goToPage(page - 1)} disabled={page <= 1}>
                   Previous
@@ -218,7 +246,7 @@ export default function BrandPage({ params }: BrandPageProps) {
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar Drawer */}
       {isMobileFilterOpen && (
         <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300" onClick={closeMobileFilter} />
       )}
@@ -233,7 +261,9 @@ export default function BrandPage({ params }: BrandPageProps) {
             ✕
           </button>
         </div>
-        <div className="p-4 overflow-y-auto h-[calc(100vh-64px)]">{filterSidebar}</div>
+        <div className="p-4 overflow-y-auto h-[calc(100vh-64px)]">
+          {loading ? <SkeletonLoader type="filter-sidebar" /> : filterSidebar}
+        </div>
       </aside>
     </>
   );

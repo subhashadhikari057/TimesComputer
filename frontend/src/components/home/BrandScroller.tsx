@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { getAllBrands } from '@/api/brand';
 import { getImageUrl } from '@/lib/imageUtils';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
+import SkeletonLoader from '../common/skeletonloader';
 
 interface Brand {
   id: number;
@@ -105,18 +106,20 @@ export default function BrandCarousel({
   const handleMouseEnter = () => setIsPaused(true);
   const handleMouseLeave = () => setIsPaused(false);
 
-  if (loading) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
-          {title}
-        </h2>
-        <div className="flex justify-center items-center py-16">
-          <LoadingSpinner />
-        </div>
+ if (loading) {
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
+        {title}
+      </h2>
+      <div className="flex gap-6 overflow-hidden">
+        {[...Array(10)].map((_, i) => (
+          <SkeletonLoader key={i} type="brand" />
+        ))}
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   if (error) {
     return (

@@ -59,11 +59,37 @@ const [selectCategory, setSelectCategory] = useState<string[]>(
 
 
   const brands = [
-    ...new Set(products.map((p) => p.brand?.name || p.brand).filter(Boolean)),
-  ];
-  const categories = [
-    ...new Set(products.map((p) => p.category?.name || p.category).filter(Boolean)),
-  ];
+  ...new Set(
+    Array.isArray(products)
+      ? products
+          .map((p) =>
+            typeof p.brand === 'object' && p.brand !== null
+              ? p.brand.name
+              : typeof p.brand === 'string'
+              ? p.brand
+              : null
+          )
+          .filter(Boolean)
+      : []
+  ),
+];
+
+const categories = [
+  ...new Set(
+    Array.isArray(products)
+      ? products
+          .map((p) =>
+            typeof p.category === 'object' && p.category !== null
+              ? p.category.name
+              : typeof p.category === 'string'
+              ? p.category
+              : null
+          )
+          .filter(Boolean)
+      : []
+  ),
+];
+
 
   const toggleSelection = (
     arr: string[],

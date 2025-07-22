@@ -12,6 +12,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { getAllBlogs } from "@/api/blog";
 import { getImageUrl } from "@/lib/imageUtils";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import SkeletonLoader from "../common/skeletonloader";
 
 interface Blog {
   id: number;
@@ -60,17 +61,16 @@ const Blog: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <section className="relative py-12 px-4 max-w-7xl mx-auto">
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Blogs</h2>
-        </div>
-        <div className="flex justify-center items-center py-16">
-          <LoadingSpinner />
-        </div>
-      </section>
-    );
-  }
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Product Card Skeletons */}
+       <h2 className="text-2xl font-semibold text-gray-900 mb-8">Featured Products</h2>
+      <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <SkeletonLoader type="card" count={5}/>
+      </main>
+    </div>
+  );
+}
 
   if (error) {
     return (
@@ -97,6 +97,7 @@ const Blog: React.FC = () => {
       </section>
     );
   }
+
 
   return (
     <section className="relative py-12 px-4 max-w-7xl mx-auto">
