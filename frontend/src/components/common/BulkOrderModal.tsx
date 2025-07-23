@@ -195,7 +195,7 @@ export default function BulkOrderModal({ isOpen, onClose, product, onSubmit }: B
           {/* Contact Info */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
             <p className="text-sm text-green-800">
-              <span className="font-medium">Note:</span> You'll be redirected to WhatsApp to discuss pricing, delivery, and finalize your bulk order with our sales team.
+              <span className="font-medium">Note:</span> You&apos;ll be redirected to WhatsApp to discuss pricing, delivery, and finalize your bulk order with our sales team.
             </p>
           </div>
         </div>
