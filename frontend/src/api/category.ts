@@ -1,39 +1,29 @@
 import axios from "@/lib/axiosInstance";
+import { apiRequest } from "@/lib/axiosInstance";
 
-// GET /category → fetch all categories
+// GET /category → fetch all categories (no auth)
 export async function getAllCategories() {
   const response = await axios.get("/category");
   return response.data;
 }
 
-// GET /category/:id → fetch a single category
+// GET /category/:id → fetch a single category (no auth)
 export async function getCategoryById(id: number) {
   const response = await axios.get(`/category/${id}`);
   return response.data;
 }
 
-// POST /category → create a new category (with image/icon via FormData)
+// POST /category → create a new category (auth)
 export async function createCategory(formData: FormData) {
-  const response = await axios.post("/category", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response.data;
+  return await apiRequest("POST", "/category", formData);
 }
 
-// PATCH /category/:id → update an existing category (with image/icon via FormData)
+// PATCH /category/:id → update an existing category (auth)
 export async function updateCategory(id: number, formData: FormData) {
-  const response = await axios.patch(`/category/${id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response.data;
+  return await apiRequest("PATCH", `/category/${id}`, formData);
 }
 
-// DELETE /category/:id → delete a category
+// DELETE /category/:id → delete a category (auth)
 export async function deleteCategory(id: number) {
-  const response = await axios.delete(`/category/${id}`);
-  return response.data;
+  return await apiRequest("DELETE", `/category/${id}`);
 }

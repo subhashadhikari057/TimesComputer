@@ -1,39 +1,29 @@
 import axios from "@/lib/axiosInstance";
+import { apiRequest } from "@/lib/axiosInstance";
 
-// GET /brand → fetch all brands
+// GET /brand → fetch all brands (no auth)
 export async function getAllBrands() {
-    const response = await axios.get("/brand");
-    return response.data;
+  const response = await axios.get("/brand");
+  return response.data;
 }
 
-// GET /brand/:id → fetch a single brand
+// GET /brand/:id → fetch a single brand (no auth)
 export async function getBrandById(id: number) {
-    const response = await axios.get(`/brand/${id}`);
-    return response.data;
+  const response = await axios.get(`/brand/${id}`);
+  return response.data;
 }
 
-// POST /brand → create a new brand (with image/icon via FormData)
+// POST /brand → create a new brand (auth)
 export async function createBrand(formData: FormData) {
-    const response = await axios.post("/brand", formData, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-    });
-    return response.data;
+  return await apiRequest("POST", "/brand", formData);
 }
 
-// PATCH /brand/:id → update an existing brand (with image/icon via FormData)
+// PATCH /brand/:id → update an existing brand (auth)
 export async function updateBrand(id: number, formData: FormData) {
-    const response = await axios.patch(`/brand/${id}`, formData, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-    });
-    return response.data;
+  return await apiRequest("PATCH", `/brand/${id}`, formData);
 }
 
-// DELETE /brand/:id → delete a brand
+// DELETE /brand/:id → delete a brand (auth)
 export async function deleteBrand(id: number) {
-    const response = await axios.delete(`/brand/${id}`);
-    return response.data;
+  return await apiRequest("DELETE", `/brand/${id}`);
 }
