@@ -13,12 +13,17 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getAllProducts } from "@/api/product";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 import SkeletonLoader from "../common/skeletonloader";
+import type { CarouselApi } from "@/components/ui/carousel";
+
+interface FeaturedProduct extends Product {
+  isFeature?: boolean;
+  isPublished?: boolean;
+}
 
 function FeaturedProductsSection() {
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [api, setApi] = useState<any>();
+  const [api, setApi] = useState<CarouselApi>();
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
@@ -32,16 +37,16 @@ function FeaturedProductsSection() {
         setLoading(true);
         setError(null);
         const data = await getAllProducts();
-        const allProducts = Array.isArray(data) ? data.filter((product: any) => product.isPublished) : [];
+        const allProducts = Array.isArray(data) ? data.filter((product: FeaturedProduct) => product.isPublished) : [];
         
         // Filter for featured products (products with isFeature: true)
-        const featuredProducts = allProducts.filter((product: any) => {
+        const featuredProducts = allProducts.filter((product: FeaturedProduct) => {
           return product.isFeature === true;
         });
         
         setProducts(featuredProducts.slice(0, 12)); // Limit to 12 featured products
-      } catch (err) {
-        console.error("Failed to fetch featured products:", err);
+      } catch (error) {
+        console.error("Failed to fetch featured products:", error);
         setError("Failed to load featured products");
         setProducts([]);
       } finally {
@@ -146,7 +151,7 @@ function FeaturedProductsSection() {
                 className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-8 w-8 rounded-full flex items-center justify-center pointer-events-auto transition-opacity duration-200 ${
                   canScrollPrev ? "opacity-100" : "opacity-0"
                 }`}
-                onClick={() => api.scrollPrev()}
+                onClick={() => api?.scrollPrev()}
                 disabled={!canScrollPrev}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -155,7 +160,7 @@ function FeaturedProductsSection() {
                 className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-8 w-8 rounded-full flex items-center justify-center pointer-events-auto transition-opacity duration-200 ${
                   canScrollNext ? "opacity-100" : "opacity-0"
                 }`}
-                onClick={() => api.scrollNext()}
+                onClick={() => api?.scrollNext()}
                 disabled={!canScrollNext}
               >
                 <ChevronRight className="h-4 w-4" />

@@ -175,12 +175,3 @@ export const FullHeightShimmerTable = ({
     </div>
   </div>
 );
-
-// CSS for full height table (add to your globals.css)
-const tableStyles = `
-  .h-screen-table {
-    min-height: calc(100vh - 300px); /* Adjust based on your header height */
-    display: flex;
-    flex-direction: column;
-  }
-`;    

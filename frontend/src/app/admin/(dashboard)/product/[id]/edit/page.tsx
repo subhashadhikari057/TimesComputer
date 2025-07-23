@@ -263,11 +263,11 @@ export default function EditProduct() {
       await updateProduct(Number(id), formData);
       toast.success("Product updated successfully!");
       router.push("/admin/product/all-products");
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage =
-        error.response?.data?.errors ||
-        error.response?.data?.message ||
-        error.message ||
+        (error as { response?: { data?: { errors?: string; message?: string } }; message?: string })?.response?.data?.errors ||
+        (error as { response?: { data?: { errors?: string; message?: string } }; message?: string })?.response?.data?.message ||
+        (error as { message?: string })?.message ||
         "An unexpected error occurred";
       
       toast.error(`Failed to update product: ${typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage)}`);

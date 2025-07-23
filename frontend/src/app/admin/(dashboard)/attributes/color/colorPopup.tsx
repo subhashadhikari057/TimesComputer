@@ -29,14 +29,7 @@ const INITIAL_FORM_DATA: ColorFormData = {
   hexCode: "#000000",
 };
 
-// Helper function to capitalize first letter of each word
-const capitalizeWords = (str: string) => {
-  return str
-    .toLowerCase()
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
+
 
 export default function ColorPopup({
   isOpen,
@@ -46,7 +39,6 @@ export default function ColorPopup({
 }: ColorPopupProps) {
   const [form, setForm] = useState<ColorFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
 
   const isEditMode = Boolean(initialData?.id);
@@ -87,14 +79,12 @@ export default function ColorPopup({
         setForm(INITIAL_FORM_DATA);
       }
       setShowValidation(false);
-      setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
     setShowValidation(false);
-    setError(null);
   };
 
   const handleCancel = () => {
@@ -124,7 +114,6 @@ export default function ColorPopup({
 
     try {
       setLoading(true);
-      setError(null);
 
       const formData = new FormData();
       formData.append("name", form.name);
@@ -143,9 +132,10 @@ export default function ColorPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { response?: { data?: { error?: string; message?: string } }; message?: string };
       const errorMessage =
-        err.response?.data?.message || err.response?.data?.error || err.message;
+        error.response?.data?.message || error.response?.data?.error || error.message || "Unknown error occurred";
 
       // Handle specific duplicate errors
       if (
@@ -159,7 +149,7 @@ export default function ColorPopup({
         toast.error(`Failed to ${isEditMode ? "update" : "create"} color`);
       }
 
-      setError(errorMessage);
+
     } finally {
       setLoading(false);
     }

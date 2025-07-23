@@ -9,9 +9,9 @@ import {
   Download,
   Calendar,
   Trash2,
-  Image,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import DefaultTable, { Column } from "@/components/form/table/defaultTable";
 import { useTableData } from "@/hooks/useTableState";
@@ -28,9 +28,10 @@ interface Blog {
   author: string;
   slug: string;
   images: string[];
-  metadata: any;
+  metadata: unknown;
   createdAt: string;
   updatedAt: string;
+  [key: string]: unknown;
 }
 
 export default function BlogsPage() {
@@ -49,7 +50,7 @@ export default function BlogsPage() {
     try {
       const res = await getAllBlogs();
       setBlogData(res.data || []);
-    } catch (err) {
+    } catch {
       toast.error("Failed to fetch blogs.");
     } finally {
       setLoading(false);
@@ -74,16 +75,18 @@ export default function BlogsPage() {
       filterable: true,
       searchable: true,
       width: "300px",
-      render: (blog: Blog) => {
-
-        const imageUrl = getImageUrl(blog.images[0]);
+      render: (blog: Record<string, unknown>) => {
+        const blogData = blog as Blog;
+        const imageUrl = getImageUrl(blogData.images[0]);
         return (
           <div className="flex items-center space-x-4">
           <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
-            {blog.images && blog.images.length > 0 ? (
-              <img
+            {blogData.images && blogData.images.length > 0 ? (
+              <Image
                 src={imageUrl}
-                alt={blog.title}
+                alt={blogData.title}
+                width={48}
+                height={48}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -92,10 +95,10 @@ export default function BlogsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {blog.title}
+              {blogData.title}
             </div>
             <div className="text-xs text-gray-500 truncate">
-              {blog.slug}
+              {blogData.slug}
             </div>
           </div>
         </div>
@@ -109,11 +112,11 @@ export default function BlogsPage() {
       filterable: true,
       searchable: true,
       width: "150px",
-      render: (blog: Blog) => (
+      render: (blog: Record<string, unknown>) => (
         <div className="flex items-center space-x-1">
           <Users className="w-4 h-4 text-gray-400" />
           <span className="text-sm text-gray-900">
-            {blog.author}
+            {(blog as Blog).author}
           </span>
         </div>
       ),
@@ -125,9 +128,9 @@ export default function BlogsPage() {
       filterable: false,
       searchable: true,
       width: "200px",
-      render: (blog: Blog) => (
+      render: (blog: Record<string, unknown>) => (
         <div className="text-sm text-gray-500 max-w-xs">
-          {truncateContent(blog.content)}
+          {truncateContent((blog as Blog).content)}
         </div>
       ),
     },
@@ -138,10 +141,10 @@ export default function BlogsPage() {
       filterable: false,
       searchable: false,
       width: "120px",
-      render: (blog: Blog) => (
+      render: (blog: Record<string, unknown>) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
-          {new Date(blog.createdAt).toLocaleDateString()}
+          {new Date((blog as Blog).createdAt).toLocaleDateString()}
         </div>
       ),
     },
@@ -163,14 +166,15 @@ export default function BlogsPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: any) => {
-    router.push(`/admin/blogs/${row.id}/edit`);
+  const handleEdit = (row: Record<string, unknown>) => {
+    const blog = row as Blog;
+    router.push(`/admin/blogs/${blog.id}/edit`);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
-      blog: row
+      blog: row as Blog
     });
   };
 
@@ -184,8 +188,8 @@ export default function BlogsPage() {
       // Update blogData by filtering out the deleted blog
       setBlogData(prev => prev.filter(blog => blog.id !== deleteModal.blog!.id));
       
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete blog");
+    } catch (error: unknown) {
+      toast.error((error as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to delete blog");
     } finally {
       setDeleteModal({ isOpen: false, blog: null });
     }
@@ -228,23 +232,23 @@ export default function BlogsPage() {
         <StatCard
           title="Total Blogs"
           value={totalBlogs.toString()}
-          change="+8% from last month"
           Icon={BookOpen}
-          color="text-blue-600"
+          loading={loading}
+          gradient="blue"
         />
         <StatCard
           title="Published Blogs"
           value={publishedBlogs.toString()}
-          change={`${totalBlogs > 0 ? Math.round((publishedBlogs / totalBlogs) * 100) : 0}% published`}
           Icon={Edit2}
-          color="text-green-600"
+          loading={loading}
+          gradient="green"
         />
         <StatCard
           title="Authors"
           value={totalAuthors.toString()}
-          change={`Active contributors`}
           Icon={Users}
-          color="text-purple-600"
+          loading={loading}
+          gradient="purple"
         />
       </div>
 

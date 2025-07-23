@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SortSelect from "@/components/common/sortselect";
 import { getAllProducts } from "@/api/product"; // 🔁 API Call
 import ProductCard from "@/components/products/productcard";
 import FilterSidebar from "@/components/sidebar/sidebar";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import SkeletonLoader from "@/components/common/skeletonloader";
+import { Product } from "../../../../types/product";
+import { Filters } from "../../../../types/filtewr";
 
 const PRODUCTS_PER_PAGE = 12;
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
@@ -21,9 +22,9 @@ export default function SearchPage() {
   const query = searchParams.get("query")?.toLowerCase().trim() || "";
   const page = pageParam ? Math.max(1, parseInt(pageParam)) : 1;
 
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [appliedFilters, setAppliedFilters] = useState<any>({});
+  const [appliedFilters, setAppliedFilters] = useState<Filters>({});
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -33,7 +34,7 @@ export default function SearchPage() {
         setLoading(true);
         const data = await getAllProducts();
         setProducts(data);
-      } catch (err) {
+      } catch {
       
         toast.error("Failed to fetch products.");
       } finally {
@@ -45,14 +46,14 @@ export default function SearchPage() {
 
   useEffect(() => {
     let count = 0;
-    Object.entries(appliedFilters).forEach(([key, value]) => {
+    Object.entries(appliedFilters).forEach(([, value]) => {
       if (Array.isArray(value)) count += value.length;
       else if (value) count += 1;
     });
     setActiveFiltersCount(count);
   }, [appliedFilters]);
 
-  const handleApplyFilters = (filters: any) => {
+  const handleApplyFilters = (filters: Filters) => {
     setAppliedFilters(filters);
     if (page !== 1) goToPage(1);
   };
@@ -70,7 +71,7 @@ export default function SearchPage() {
 
     const matchesQuery =
       !query ||
-      [product.name, product.title, product.brand?.name, specs.Brand]
+      [product.name, product.title, typeof product.brand === 'object' && product.brand !== null ? (product.brand as { name: string }).name : product.brand, specs.Brand]
         .filter(Boolean)
         .some(field => {
           const f = String(field).toLowerCase();
@@ -80,9 +81,10 @@ export default function SearchPage() {
     if (!matchesQuery) return false;
 
     const filterMatch = (key: string, paths: string[]) => {
-      if (!appliedFilters[key] || appliedFilters[key].length === 0) return true;
-      const value = paths.map(p => specs[p] || product[p]).find(Boolean);
-      return value && appliedFilters[key].includes(value);
+      const filterArray = appliedFilters[key] as string[] | undefined;
+      if (!filterArray || filterArray.length === 0) return true;
+      const value = paths.map(p => specs[p] || (product as Record<string, unknown>)[p]).find(v => Boolean(v) && typeof v === 'string') as string;
+      return value && filterArray.includes(value);
     };
 
     if (
@@ -282,5 +284,13 @@ export default function SearchPage() {
         <div className="p-4 overflow-y-auto h-[calc(100vh-64px)]">{filterSidebar}</div>
       </aside>
     </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SkeletonLoader type="product-card" />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

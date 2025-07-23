@@ -32,7 +32,7 @@ export interface Product {
   images: string[];
   brand: Brand;
   category: Category;
-  specifications?: Record<string, any>;
+  specifications?: Record<string, unknown>;
   features?: string[];
   isActive: boolean;
   inStock: boolean;
@@ -97,4 +97,27 @@ export interface SearchResult {
   brands: Brand[];
   categories: Category[];
   total: number;
+}
+// src/types/api.ts
+
+export interface AdminUserInput {
+  name: string;
+  email: string;
+  phone?: string;
+  role: 'ADMIN' | 'SUPERADMIN';
+  isActive?: boolean;
+}
+
+export interface AdminPasswordReset {
+  password: string;
+}
+
+// src/types/api.ts
+
+export interface InquiryInput {
+  name: string;
+  email: string;
+  message: string;
+  phone?: string;
+  productId?: string;
 }

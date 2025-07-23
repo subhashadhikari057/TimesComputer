@@ -76,7 +76,11 @@ export default function ResetPasswordPopup({
       setLoading(true);
       setError(null);
 
-      const data = await resetAdminPassword(user?.id!, form);
+      if (user?.id) {
+        await resetAdminPassword(user.id, {
+          password: form.newPassword
+        });
+      }
       
       toast.success(`Password reset successfully for ${user?.name}!`);
 
@@ -85,10 +89,10 @@ export default function ResetPasswordPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
+        (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
+        (err as { message?: string })?.message ||
         "Failed to reset password";
 
       setError(errorMessage);

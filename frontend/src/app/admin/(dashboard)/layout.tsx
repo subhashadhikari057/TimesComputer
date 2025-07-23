@@ -12,7 +12,7 @@ interface LayoutProps {
 }
 
 export default function DashboardLayout({ children }: LayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to true for desktop
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Start closed to avoid hydration issues
   const [activeMenus, setActiveMenus] = useState<string[]>(["dashboard"]);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
         // Try to make an authenticated request to verify token
         await apiRequest("GET", "/auth/verify");
         setIsAuthenticated(true);
-      } catch (error) {
+      } catch {
         toast.error("Please login to access admin dashboard");
         router.push("/admin/login");
       } finally {
@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0 relative">
         {/* Header */}
         <Header
           sidebarOpen={sidebarOpen}
@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden bg-gray-50 min-w-0 w-full">
           <div className="h-full overflow-y-auto overflow-x-hidden w-full min-w-0">
-            <div className="w-full min-w-0 max-w-none">{children}</div>
+            <div className="w-full min-w-0 max-w-none px-4 py-6 sm:px-6 lg:px-8">{children}</div>
           </div>
         </main>
       </div>

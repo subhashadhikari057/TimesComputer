@@ -27,14 +27,7 @@ const INITIAL_FORM_DATA: FeatureTagFormData = {
   name: "",
 };
 
-// Helper function to capitalize first letter of each word
-const capitalizeWords = (str: string) => {
-  return str
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
+
 
 export default function FeatureTagPopup({
   isOpen,
@@ -62,7 +55,7 @@ export default function FeatureTagPopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
@@ -106,9 +99,10 @@ export default function FeatureTagPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { response?: { data?: { error?: string; message?: string } }; message?: string };
       const errorMessage =
-        err.response?.data?.message || err.response?.data?.error || err.message;
+        error.response?.data?.message || error.response?.data?.error || error.message || "Unknown error occurred";
 
       if (
         errorMessage.includes("already exists") ||

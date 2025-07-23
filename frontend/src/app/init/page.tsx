@@ -17,7 +17,7 @@ export default function SuperAdminInit() {
         const res = await axios.get('/init');
         const data = res.data.message;
         setSuperAdminExists(data);
-      } catch (err) {
+      } catch {
         toast.error("Failed to fetch data. Try again later.");
       } finally {
         setLoading(false);
@@ -72,8 +72,8 @@ function SignUpForm() {
       setConfirmPassword("");
       toast.success("Signup successful.");
       router.push('/admin/login');
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Signup failed");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Signup failed");
     } finally {
       setIsSubmitting(false);
     }

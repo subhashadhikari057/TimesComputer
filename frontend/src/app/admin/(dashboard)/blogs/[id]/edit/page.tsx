@@ -37,7 +37,7 @@ interface BlogFormData {
   images: { file: File; preview: string }[];
   slug: string;
   metadata: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -113,8 +113,7 @@ export default function EditBlog() {
             editorRef.current.setContent(data.content);
           }
         }, 100);
-      } catch (err) {
-        console.error("Error loading blog:", err); // Debug log
+      } catch {
         setError("Failed to load blog data");
         toast.error("Failed to load blog data");
       } finally {
@@ -199,7 +198,7 @@ export default function EditBlog() {
         const parsedMetadata = JSON.parse(metadataInput);
         setForm((prev) => ({ ...prev, metadata: parsedMetadata }));
         toast.success("Metadata updated successfully");
-      } catch (error) {
+      } catch {
         toast.error("Invalid JSON format");
       }
     }
@@ -240,7 +239,7 @@ export default function EditBlog() {
       await updateBlog(Number(id), formData);
       toast.success("Blog post updated successfully!");
       router.push("/admin/blogs");
-    } catch (error) {
+    } catch {
       toast.error("Failed to update blog post. Please try again.");
     } finally {
       setIsSubmitting(false);

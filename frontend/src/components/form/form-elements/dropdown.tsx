@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import Image from "next/image";
 interface DropdownOption {
   label: string;
   value: string;
@@ -29,9 +30,11 @@ function renderIcon(iconUrl?: string, className = "h-4 w-4 mr-2") {
   
   // Render as image only
   return (
-    <img 
+    <Image 
       src={iconUrl} 
       alt="Category icon" 
+      width={20}
+      height={20}
       className={className}
       style={{ filter: 'brightness(0) saturate(100%) invert(20%) sepia(18%) saturate(1952%) hue-rotate(200deg) brightness(95%) contrast(95%)' }}
     />

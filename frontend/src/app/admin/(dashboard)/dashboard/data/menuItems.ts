@@ -1,7 +1,6 @@
 import {
   LayoutDashboard,
   Lock,
-  Tags,
   Package,
   Megaphone,
   FileText,
@@ -11,7 +10,7 @@ import {
 export interface MenuItem {
   id: string;
   label: string;
-  icon: any;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   hasSubmenu: boolean;
   href?: string;
   subItems?: { label: string; href: string }[];

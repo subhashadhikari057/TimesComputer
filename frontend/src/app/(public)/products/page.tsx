@@ -1,20 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SortSelect from '@/components/common/sortselect';
 import ProductCard from '@/components/products/productcard';
 import FilterSidebar from '@/components/sidebar/sidebar';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
 import { getAllProducts } from '@/api/product';
+import { Product } from '../../../../types/product';
+import { Filters } from '../../../../types/filtewr';
 
 import SkeletonLoader from '@/components/common/skeletonloader';
 
 
 const PRODUCTS_PER_PAGE = 12;
 
-export default function AllProductsPage() {
+function AllProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get('page');
@@ -22,8 +23,8 @@ export default function AllProductsPage() {
   const sort = searchParams.get('sort') || undefined;
 
   const [loading, setLoading] = useState(true);
-  const [products, setProducts] = useState<any[]>([]);
-  const [appliedFilters, setAppliedFilters] = useState<any>({});
+  const [products, setProducts] = useState<Product[]>([]);
+  const [appliedFilters, setAppliedFilters] = useState<Filters>({});
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
@@ -56,7 +57,7 @@ export default function AllProductsPage() {
     setActiveFiltersCount(count);
   }, [appliedFilters]);
 
-  const handleApplyFilters = (filters: any) => {
+  const handleApplyFilters = (filters: Filters) => {
     setAppliedFilters(filters);
     if (page !== 1) goToPage(1);
   };
@@ -65,12 +66,16 @@ export default function AllProductsPage() {
     const specs = product.specs || {};
 
     if (appliedFilters.brand && appliedFilters.brand.length > 0) {
-      const brand = product.brand?.name || product.brand || specs.Brand;
+      const brand = typeof product.brand === 'object' && product.brand !== null 
+        ? (product.brand as { name: string }).name 
+        : product.brand || specs.Brand;
       if (!brand || !appliedFilters.brand.includes(brand)) return false;
     }
 
     if (appliedFilters.category && appliedFilters.category.length > 0) {
-      const category = product.category?.name || product.category || specs.Category;
+      const category = typeof product.category === 'object' && product.category !== null 
+        ? (product.category as { name: string }).name 
+        : product.category || specs.Category;
       if (!category || !appliedFilters.category.includes(category)) return false;
     }
 
@@ -251,5 +256,13 @@ export default function AllProductsPage() {
         </div>
       </aside>
     </>
+  );
+}
+
+export default function AllProductsPage() {
+  return (
+    <Suspense fallback={<SkeletonLoader type="product-card" />}>
+      <AllProductsPageContent />
+    </Suspense>
   );
 }

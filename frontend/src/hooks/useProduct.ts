@@ -1,5 +1,5 @@
 // hooks/useProduct.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface ProductData {
   id: string;
@@ -17,13 +17,41 @@ interface ProductData {
   colorIds?: number[];
 }
 
+interface CreateProductData {
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  isPublished: boolean;
+  brochure: string;
+  images?: File[];
+  specs?: { key: string; value: string }[];
+  brandId?: number | null;
+  categoryId?: number | null;
+  colorIds?: number[];
+}
+
+interface UpdateProductData {
+  name?: string;
+  description?: string;
+  price?: number;
+  stock?: number;
+  isPublished?: boolean;
+  brochure?: string;
+  images?: File[];
+  specs?: { key: string; value: string }[];
+  brandId?: number | null;
+  categoryId?: number | null;
+  colorIds?: number[];
+}
+
 interface UseProductResult {
   product: ProductData | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
-  createProduct: (data: any) => Promise<void>;
-  updateProduct: (id: string, data: any) => Promise<void>;
+  createProduct: (data: CreateProductData) => Promise<void>;
+  updateProduct: (id: string, data: UpdateProductData) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
 }
 
@@ -57,7 +85,7 @@ const api = {
     };
   },
 
-  createProduct: async (data: any): Promise<ProductData> => {
+  createProduct: async (data: CreateProductData): Promise<ProductData> => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log('Creating product:', data);
     
@@ -68,14 +96,16 @@ const api = {
     };
   },
 
-  updateProduct: async (id: string, data: any): Promise<ProductData> => {
+  updateProduct: async (id: string, data: UpdateProductData): Promise<ProductData> => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     console.log('Updating product:', id, data);
     
-    // Return updated product
+    // Return updated product - merge with existing data
+    const existingProduct = await api.fetchProduct(id);
     return {
-      id,
-      ...data
+      ...existingProduct,
+      ...data,
+      id
     };
   },
 
@@ -90,7 +120,7 @@ export function useProduct(id?: string): UseProductResult {
   const [loading, setLoading] = useState(!!id);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProduct = async () => {
+  const fetchProduct = useCallback(async () => {
     if (!id) return;
     
     try {
@@ -104,15 +134,15 @@ export function useProduct(id?: string): UseProductResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     if (id) {
       fetchProduct();
     }
-  }, [id]);
+  }, [id, fetchProduct]);
 
-  const createProduct = async (data: any): Promise<void> => {
+  const createProduct = async (data: CreateProductData): Promise<void> => {
     try {
       await api.createProduct(data);
     } catch (err) {
@@ -120,7 +150,7 @@ export function useProduct(id?: string): UseProductResult {
     }
   };
 
-  const updateProduct = async (productId: string, data: any): Promise<void> => {
+  const updateProduct = async (productId: string, data: UpdateProductData): Promise<void> => {
     try {
       const updatedProduct = await api.updateProduct(productId, data);
       setProduct(updatedProduct);

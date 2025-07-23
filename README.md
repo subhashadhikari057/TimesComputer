@@ -13,6 +13,8 @@
 ## 🧩 Core Features
 
 - Laptop product listing with filters (brand, RAM, SSD, etc.)
+- **Bulk Order System** with quantity and color selection
+- **Smart WhatsApp Integration** - generates prefilled messages for bulk inquiries
 - "Buy Now" modal generates WhatsApp prefilled link
 - Admin panel for adding/editing/deleting products
 - Upload product images and optional brochure (PDF)
@@ -31,6 +33,12 @@ cd times-computer/backend
 ```env
 DATABASE_URL=postgresql://neondb_owner:<password>@<neon-host>/<dbname>?sslmode=require
 PORT=8080
+
+# WhatsApp Integration for Bulk Orders
+# Format: Country code + number (without + symbol)
+# Example: For +977 9808113344, use: 9779808113344
+SELLER_NO=9779808113344
+WHATSAPP_NUMBER=9779808113344
 ```
 
 ### 3. Install dependencies:

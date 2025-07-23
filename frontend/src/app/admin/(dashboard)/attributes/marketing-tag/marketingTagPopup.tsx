@@ -27,14 +27,7 @@ const INITIAL_FORM_DATA: MarketingTagFormData = {
   name: "",
 };
 
-// Helper function to capitalize first letter of each word
-const capitalizeWords = (str: string) => {
-  return str
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
+
 
 export default function MarketingTagPopup({
   isOpen,
@@ -44,7 +37,6 @@ export default function MarketingTagPopup({
 }: MarketingTagPopupProps) {
   const [form, setForm] = useState<MarketingTagFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
 
   const isEditMode = Boolean(initialData?.id);
@@ -60,14 +52,12 @@ export default function MarketingTagPopup({
         setForm(INITIAL_FORM_DATA);
       }
       setShowValidation(false);
-      setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
     setShowValidation(false);
-    setError(null);
   };
 
   const handleCancel = () => {
@@ -92,7 +82,6 @@ export default function MarketingTagPopup({
 
     try {
       setLoading(true);
-      setError(null);
 
       if (isEditMode) {
         await updateMarketingTag(form.id!, {name: form.name});
@@ -106,9 +95,10 @@ export default function MarketingTagPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as { response?: { data?: { error?: string; message?: string } }; message?: string };
       const errorMessage =
-        err.response?.data?.message || err.response?.data?.error || err.message;
+        error.response?.data?.message || error.response?.data?.error || error.message || "Unknown error occurred";
 
       if (
         errorMessage.includes("already exists") ||
@@ -121,7 +111,7 @@ export default function MarketingTagPopup({
         toast.error(`Failed to ${isEditMode ? "update" : "create"} tag`);
       }
 
-      setError(errorMessage);
+
     } finally {
       setLoading(false);
     }

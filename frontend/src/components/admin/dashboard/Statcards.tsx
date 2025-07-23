@@ -1,12 +1,11 @@
 import { ShimmerText } from "@/components/common/shimmerEffect";
-import { LucideIcon, ArrowUp, ArrowDown } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 
 interface StatCardProps {
   title: string;
   value: string;
   Icon: LucideIcon;
   gradient?: string;
-  changeDirection?: "up" | "down" | "neutral";
   subtitle?: string;
   loading?: boolean;
 }
@@ -28,7 +27,6 @@ export default function StatCard({
   value,
   Icon,
   gradient,
-  changeDirection = "up",
   subtitle,
   loading = false, // Default to false
 }: StatCardProps) {
@@ -38,32 +36,9 @@ export default function StatCard({
       ? gradientOptions[gradient as keyof typeof gradientOptions]
       : gradientOptions.blue;
 
-  // Determine change color and icon based on direction
-  const getChangeStyles = () => {
-    switch (changeDirection) {
-      case "up":
-        return {
-          color: "text-white/90",
-          icon: ArrowUp,
-          bg: "text-white/90",
-        };
-      case "down":
-        return {
-          color: "text-white/90",
-          icon: ArrowDown,
-          bg: "text-white/90",
-        };
-      default:
-        return {
-          color: "text-white/90",
-          icon: ArrowUp,
-          bg: "text-white/90",
-        };
-    }
-  };
 
-  const changeStyles = getChangeStyles();
-  const ChangeIcon = changeStyles.icon;
+
+
 
   return (
     <div

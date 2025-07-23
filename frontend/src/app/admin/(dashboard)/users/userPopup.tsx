@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import AddDetailsPopup from "@/components/common/popup";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
+import DefaultDropdown from "@/components/form/form-elements/DefaultDropdown";
 import { toast } from "sonner";
 import { createAdminUser, updateAdminUser } from "@/api/adminUser";
 
@@ -11,6 +12,7 @@ interface UserFormData {
   name: string;
   email: string;
   password: string;
+  role: 'ADMIN' | 'SUPERADMIN';
 }
 
 interface UserPopupProps {
@@ -22,6 +24,7 @@ interface UserPopupProps {
     name: string;
     email: string;
     password?: string;
+    role?: 'ADMIN' | 'SUPERADMIN';
   };
 }
 
@@ -29,6 +32,7 @@ const INITIAL_FORM_DATA: UserFormData = {
   name: "",
   email: "",
   password: "",
+  role: "ADMIN",
 };
 
 export default function UserPopup({
@@ -52,6 +56,7 @@ export default function UserPopup({
           name: initialData.name,
           email: initialData.email,
           password: initialData.password || "",
+          role: initialData.role || "ADMIN",
         });
       } else {
         setForm(INITIAL_FORM_DATA);
@@ -59,7 +64,7 @@ export default function UserPopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
@@ -94,10 +99,16 @@ export default function UserPopup({
       setError(null);
 
       if (isEditMode) {
-        await updateAdminUser(form.id!, form);
+        // For updates, exclude password and id from the data
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, password: _password, ...updateData } = form;
+        await updateAdminUser(form.id!, updateData);
         toast.success("Admin user updated successfully!");
       } else {
-        await createAdminUser(form);
+        // For creation, exclude id but include password
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id: _id, ...createData } = form;
+        await createAdminUser(createData);
         toast.success("Admin user created successfully!");
       }
 
@@ -106,7 +117,7 @@ export default function UserPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error("failed to save admin user");
       console.error(
         `Error ${isEditMode ? "updating" : "creating"} admin user:`,
@@ -191,6 +202,19 @@ export default function UserPopup({
             required
           />
         )}
+
+        <DefaultDropdown
+          label="Role"
+          name="role"
+          value={form.role}
+          onChange={(value) => handleInputChange("role", value as 'ADMIN' | 'SUPERADMIN')}
+          options={[
+            { value: "ADMIN", label: "Admin" },
+            { value: "SUPERADMIN", label: "Super Admin" },
+          ]}
+          placeholder="Select admin role"
+          required
+        />
 
         {!isFormValid() && showValidation && !loading && (
           <p className="text-sm text-red-600">{getValidationMessage()}</p>

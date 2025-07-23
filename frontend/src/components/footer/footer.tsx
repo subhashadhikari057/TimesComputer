@@ -11,7 +11,7 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 
-import { useRouter,usePathname } from "next/navigation";
+
 
 // Footer categories - static for now, could be moved to fetch from API if needed
 const footerCategories = [
@@ -25,28 +25,6 @@ const footerCategories = [
 
 const Footer: FC = () => {
   const year = new Date().getFullYear();
-  const router = useRouter();
-
-  const getCurrentCategory = () => {
-    const pathname = usePathname();
-    if (pathname === '/') {
-      return undefined;
-    }
-    if (pathname === '/products') {
-      return 'products';
-    }
-    if (pathname.startsWith('/category/')) {
-      const categoryFromUrl = decodeURIComponent(pathname.split('/').pop() || '');
-      const matchingCategory = footerCategories.find(cat => cat.value === categoryFromUrl);
-      return matchingCategory ? matchingCategory.value : undefined;
-    }
-    if (pathname.startsWith('/brand/')) {
-      return undefined;
-    }
-    return undefined;
-  };
-
-  const currentCategory = getCurrentCategory();
 
   return (
     <footer className="bg-muted-background w-full py-6 text-muted-foreground2 font-medium text-sm">

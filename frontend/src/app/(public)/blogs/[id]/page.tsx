@@ -15,7 +15,10 @@ interface Blog {
   images: string[];
   author: string;
   slug: string;
-  metadata: any;
+  metadata: {
+    tags?: string[] | string;
+    category?: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -33,7 +36,7 @@ const BlogDetailPage = () => {
       try {
         const response = await getBlogById(Number(id));
         setBlog(response.data);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("Failed to fetch blog:", err);
         setError("Failed to fetch blog");
       } finally {
@@ -43,17 +46,14 @@ const BlogDetailPage = () => {
     if (id) fetchBlog();
   }, [id]);
 
-  // Format date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
-
-
 
   if (loading) {
     return (
@@ -76,7 +76,7 @@ const BlogDetailPage = () => {
     return (
       <div className="text-center py-10">
         <h2 className="text-2xl font-bold mb-4">Blog not found</h2>
-        <p>The blog you're looking for doesn't exist.</p>
+        <p>The blog you&apos;re looking for doesn&apos;t exist.</p>
       </div>
     );
   }
@@ -89,7 +89,6 @@ const BlogDetailPage = () => {
           {blog.title}
         </h1>
 
-        {/* Author and Date Info - Blog Style */}
         <div className="flex flex-wrap items-center gap-4 mb-8 text-gray-600">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
@@ -106,7 +105,6 @@ const BlogDetailPage = () => {
           </div>
         </div>
 
-        {/* Blog Main Image */}
         {blog.images && blog.images.length > 0 && (
           <div className="w-full mb-8 rounded-2xl overflow-hidden">
             <Image
@@ -123,16 +121,17 @@ const BlogDetailPage = () => {
 
       {/* Blog Content */}
       <div className="prose prose-lg prose-gray max-w-none">
-        <div 
+        <div
           className="text-gray-800 leading-relaxed [&>h1]:text-3xl [&>h1]:font-bold [&>h1]:mb-6 [&>h1]:mt-8 [&>h1]:text-gray-900 [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:mb-4 [&>h2]:mt-6 [&>h2]:text-gray-900 [&>h3]:text-xl [&>h3]:font-medium [&>h3]:mb-3 [&>h3]:mt-5 [&>h3]:text-gray-900 [&>p]:mb-4 [&>p]:leading-7 [&>ul]:mb-4 [&>ol]:mb-4 [&>li]:mb-2 [&>blockquote]:border-l-4 [&>blockquote]:border-blue-500 [&>blockquote]:pl-6 [&>blockquote]:py-2 [&>blockquote]:bg-blue-50 [&>blockquote]:italic [&>blockquote]:text-gray-700"
           dangerouslySetInnerHTML={{ __html: blog.content }}
         />
       </div>
 
-      {/* Additional Images */}
       {blog.images && blog.images.length > 1 && (
         <div className="mt-16">
-          <h3 className="text-2xl font-semibold mb-6 text-gray-900">Additional Images</h3>
+          <h3 className="text-2xl font-semibold mb-6 text-gray-900">
+            Additional Images
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {blog.images.slice(1).map((image, index) => (
               <div key={index} className="rounded-xl overflow-hidden">
@@ -149,20 +148,21 @@ const BlogDetailPage = () => {
         </div>
       )}
 
-      {/* Blog Metadata */}
       {blog.metadata && Object.keys(blog.metadata).length > 0 && (
         <div className="mt-16 p-8 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-200">
-          <h3 className="text-xl font-semibold mb-4 text-gray-900">Tags & Categories</h3>
+          <h3 className="text-xl font-semibold mb-4 text-gray-900">
+            Tags & Categories
+          </h3>
           <div className="space-y-3">
             {blog.metadata.tags && (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium text-gray-700">Tags:</span>
                 <div className="flex flex-wrap gap-2">
-                  {(Array.isArray(blog.metadata.tags) 
-                    ? blog.metadata.tags 
+                  {(Array.isArray(blog.metadata.tags)
+                    ? blog.metadata.tags
                     : [blog.metadata.tags]
                   ).map((tag: string, index: number) => (
-                    <span 
+                    <span
                       key={index}
                       className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full"
                     >

@@ -22,11 +22,6 @@ export default function Carousel({
   const [isDragging, setIsDragging] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Return null if no slides are provided
-  if (!slides || slides.length === 0) {
-    return null;
-  }
-
   // Navigate to previous slide
   const prev = () =>
     setCurr((curr) => (curr === 0 ? slides.length - 1 : curr - 1));
@@ -43,6 +38,11 @@ export default function Carousel({
     const slideInterval = setInterval(next, autoSlideInterval);
     return () => clearInterval(slideInterval);
   }, [autoSlide, autoSlideInterval, next, slides.length]);
+
+  // Return null if no slides are provided
+  if (!slides || slides.length === 0) {
+    return null;
+  }
 
   // Touch event handlers
   const handleTouchStart = (e: React.TouchEvent) => {

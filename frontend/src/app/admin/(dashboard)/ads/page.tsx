@@ -2,6 +2,7 @@
 
 import { Plus, Image as ImageIcon, Search, Calendar, Trash2, Edit2, ExternalLink, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import StatCard from "@/components/admin/dashboard/Statcards";
 import { toast } from "sonner";
 import { getAllAds, deleteAd, updateAd } from "@/api/ads";
@@ -88,8 +89,9 @@ export default function AdsManagementPage() {
       setAdData(prev => prev.map(item => 
         item.id === ad.id ? { ...item, isActive: !item.isActive } : item
       ));
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to update ad status");
+    } catch (error) {
+      console.error('Failed to update ad status:', error);
+      toast.error("Failed to update ad status");
     }
   };
 
@@ -100,8 +102,9 @@ export default function AdsManagementPage() {
       await deleteAd(deleteModal.ad.id);
       toast.success("Ad deleted successfully");
       setAdData((prev) => prev.filter((ad) => ad.id !== deleteModal.ad!.id));
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete ad");
+    } catch (error) {
+      console.error('Failed to delete ad:', error);
+      toast.error("Failed to delete ad");
     } finally {
       setDeleteModal({ isOpen: false, ad: null });
     }
@@ -264,9 +267,11 @@ export default function AdsManagementPage() {
                     </div>
                   )}
                   {ad.images && ad.images.length > 0 ? (
-                    <img
+                    <Image
                       src={getImageUrl(ad.images[0])}
                       alt="Ad preview"
+                      width={400}
+                      height={225}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         console.error("Image failed to load:", ad.images[0]);

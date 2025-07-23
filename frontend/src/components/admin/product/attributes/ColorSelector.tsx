@@ -6,6 +6,12 @@ import { useRouter } from "next/navigation";
 import { getAllColors } from "@/api/color";
 import { MultiSelectDropdown } from "@/components/form/form-elements/DefaultDropdown";
 
+interface DropdownOption {
+  value: string | number;
+  label: string;
+  hexCode?: string; 
+}
+
 interface Color {
   id: number;
   name: string;
@@ -54,18 +60,18 @@ export default function ColorSelector({
   }));
 
   // Custom renderer for selected color tags
-  const renderSelectedColorTag = (option: any) => {
+  const renderSelectedColorTag = (option: DropdownOption) => {
     const handleRemoveTag = (e: React.MouseEvent) => {
       e.stopPropagation();
-      onColorsChange(selectedColorIds.filter(id => id !== option.value));
+      onColorsChange(selectedColorIds.filter(id => id !== Number(option.value)));
     };
 
     return (
       <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
         <div 
           className="w-3 h-3 rounded-full border border-gray-300 flex-shrink-0"
-          style={{ backgroundColor: option.hexCode }}
-          title={option.hexCode}
+          style={{ backgroundColor: option.hexCode || '#gray' }}
+          title={option.hexCode || ''}
         />
         <span className="truncate max-w-[80px]">{option.label}</span>
         <button
@@ -80,17 +86,17 @@ export default function ColorSelector({
   };
 
   // Custom renderer for dropdown options
-  const renderColorOption = (option: any, isSelected: boolean) => (
+  const renderColorOption = (option: DropdownOption, isSelected: boolean) => (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         <div 
           className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0"
-          style={{ backgroundColor: option.hexCode }}
-          title={option.hexCode}
+          style={{ backgroundColor: option.hexCode || '#gray' }}
+          title={option.hexCode || ''}
         />
         <div className="flex flex-col">
           <span className="font-medium">{option.label}</span>
-          <span className="text-xs text-gray-500 uppercase">{option.hexCode}</span>
+          <span className="text-xs text-gray-500 uppercase">{option.hexCode || ''}</span>
         </div>
       </div>
       {isSelected && (

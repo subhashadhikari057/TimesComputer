@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { getAllBrands, createBrand } from "@/api/brand";
+import { getAllBrands } from "@/api/brand";
 import Dropdown from "@/components/form/form-elements/DefaultDropdown";
 import { useRouter } from "next/navigation";
 
@@ -18,21 +18,7 @@ interface BrandSelectorProps {
   onBrandChange: (brandId: number | null) => void;
 }
 
-interface BrandFormData {
-  name: string;
-  image: File | null;
-  imagePreview: string;
-  icon: File | null;
-  iconPreview: string;
-}
 
-const INITIAL_BRAND_FORM: BrandFormData = {
-  name: "",
-  image: null,
-  imagePreview: "",
-  icon: null,
-  iconPreview: "",
-};
 
 export default function BrandSelector({
   selectedBrandId,
@@ -41,8 +27,6 @@ export default function BrandSelector({
   const router = useRouter();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(false);
-
-  const [form, setForm] = useState<BrandFormData>({ ...INITIAL_BRAND_FORM });
 
   useEffect(() => {
     loadBrands();

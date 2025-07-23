@@ -1,18 +1,18 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import BlogCard from "./blogCard";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import BlogCard from './blogCard';
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { getAllBlogs } from "@/api/blog";
-import { getImageUrl } from "@/lib/imageUtils";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
-import SkeletonLoader from "../common/skeletonloader";
+} from '@/components/ui/carousel';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { getAllBlogs } from '@/api/blog';
+import { getImageUrl } from '@/lib/imageUtils';
+import SkeletonLoader from '../common/skeletonloader';
 
 interface Blog {
   id: number;
@@ -21,13 +21,13 @@ interface Blog {
   images: string[];
   author: string;
   slug: string;
-  metadata: any;
+  metadata: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
 
 const Blog: React.FC = () => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +42,8 @@ const Blog: React.FC = () => {
         const blogsData = response.data || [];
         setBlogs(blogsData.slice(0, 8)); // Limit to 8 blogs for carousel
       } catch (err) {
-        console.error("Failed to fetch blogs:", err);
-        setError("Failed to load blogs");
+        console.error('Failed to fetch blogs:', err);
+        setError('Failed to load blogs');
         setBlogs([]);
       } finally {
         setLoading(false);
@@ -55,59 +55,38 @@ const Blog: React.FC = () => {
 
   // Extract description from content (first 100 characters)
   const extractDescription = (content: string) => {
-    // Remove HTML tags and get first 100 characters
     const textContent = content.replace(/<[^>]*>/g, '');
-    return textContent.length > 100 ? textContent.substring(0, 100) + '...' : textContent;
+    return textContent.length > 100 ? `${textContent.substring(0, 100)}...` : textContent;
   };
 
   if (loading) {
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Product Card Skeletons */}
-       <h2 className="text-2xl font-semibold text-gray-900 mb-8">Featured Products</h2>
-      <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <SkeletonLoader type="card" count={5}/>
-      </main>
-    </div>
-  );
-}
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-8">Featured Products</h2>
+        <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <SkeletonLoader type="card" count={5} />
+        </main>
+      </div>
+    );
+  }
 
-  if (error) {
+  if (error || blogs.length === 0) {
     return (
       <section className="relative py-12 px-4 max-w-7xl mx-auto">
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Blogs</h2>
-        </div>
+        <h2 className="text-2xl font-semibold mb-6">Blogs</h2>
         <div className="text-center py-16 text-gray-500">
-          {error}
+          {error || 'No blogs available'}
         </div>
       </section>
     );
   }
-
-  if (blogs.length === 0) {
-    return (
-      <section className="relative py-12 px-4 max-w-7xl mx-auto">
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Blogs</h2>
-        </div>
-        <div className="text-center py-16 text-gray-500">
-          No blogs available
-        </div>
-      </section>
-    );
-  }
-
 
   return (
     <section className="relative py-12 px-4 max-w-7xl mx-auto">
-      <div>
-        <h2 className="text-2xl font-semibold mb-6">Blogs</h2>
-      </div>
-
+      <h2 className="text-2xl font-semibold mb-6">Blogs</h2>
       <Carousel
         opts={{
-          align: "start",
+          align: 'start',
           slidesToScroll: isMobile ? 1 : 4,
         }}
         className="w-full"
@@ -115,14 +94,15 @@ const Blog: React.FC = () => {
         {blogs.length > 4 && (
           <CarouselPrevious className="hidden sm:flex md:left-[-20px] lg:absolute left-[-50px] top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white shadow-lg h-10 w-10" />
         )}
-        <CarouselContent className="">
+
+        <CarouselContent>
           {blogs.map((blog) => (
             <CarouselItem
               key={blog.id}
               className="p-2 gap-5 ml-2 sm:p-3 basis-1/2 sm:basis-1/2 md:basis-1/3 lg:basis-1/3 xl:basis-1/4 rounded-lg"
             >
-              <BlogCard 
-                image={blog.images?.[0] ? getImageUrl(blog.images[0]) : "/products/Frame_68.png"}
+              <BlogCard
+                image={blog.images?.[0] ? getImageUrl(blog.images[0]) : '/products/Frame_68.png'}
                 title={blog.title}
                 description={extractDescription(blog.content)}
                 id={blog.id.toString()}

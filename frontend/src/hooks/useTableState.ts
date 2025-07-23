@@ -1,5 +1,5 @@
 // hooks/useTableData.ts
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 // Types
 export interface SortConfig {
@@ -11,7 +11,7 @@ export interface FilterConfig {
   key: string;
   label: string;
   type: 'select' | 'text' | 'date' | 'number';
-  options?: Array<{ value: any; label: string }>;
+  options?: Array<{ value: unknown; label: string }>;
 }
 
 export interface UseTableDataProps<T> {
@@ -29,7 +29,7 @@ export interface UseTableDataProps<T> {
 export interface UseTableDataReturn<T> {
   // State
   searchTerm: string;
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   sortConfig: SortConfig | null;
   selectedItems: number[];
   
@@ -39,7 +39,7 @@ export interface UseTableDataReturn<T> {
   
   // Handlers
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleFilterChange: (key: string, value: any) => void;
+  handleFilterChange: (key: string, value: unknown) => void;
   handleResetFilters: () => void;
   handleSort: (columnId: string) => void;
   handleSelectAll: () => void;
@@ -47,10 +47,43 @@ export interface UseTableDataReturn<T> {
   handleBulkDelete: () => void;
   
   // Utilities
-  generateFilterOptions: (field: keyof T) => Array<{ value: any; label: string }>;
+  generateFilterOptions: (field: keyof T) => Array<{ value: unknown; label: string }>;
 }
 
-export function useTableData<T extends Record<string, any>>({
+// Helper functions moved outside component to avoid dependency issues
+function getDisplayValue<T extends Record<string, unknown>>(item: T, field: string): string {
+  const value = item[field];
+  
+  if (value === null || value === undefined) {
+    return 'No ' + field.charAt(0).toUpperCase() + field.slice(1);
+  }
+  
+  // Handle nested objects (like category.name, brand.name)
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, unknown>;
+    return String(obj.name || obj.label || obj.title || value);
+  }
+  
+  return String(value);
+}
+
+function getFilterValue<T extends Record<string, unknown>>(item: T, field: string): unknown {
+  const value = item[field];
+  
+  if (value === null || value === undefined) {
+    return null;
+  }
+  
+  // For nested objects, use the name property for comparison
+  if (typeof value === 'object' && value !== null) {
+    const obj = value as Record<string, unknown>;
+    return obj.name || obj.label || obj.title || obj.id || String(value);
+  }
+  
+  return value;
+}
+
+export function useTableData<T extends Record<string, unknown>>({
   data,
   columns,
   defaultSort
@@ -58,7 +91,7 @@ export function useTableData<T extends Record<string, any>>({
   // State
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
   const [sortConfig, setSortConfig] = useState<SortConfig | null>(defaultSort || null);
 
   // Extract searchable fields from columns
@@ -77,42 +110,10 @@ export function useTableData<T extends Record<string, any>>({
     [columns]
   );
 
-  // Helper function to extract display value from nested objects
-  const getDisplayValue = (item: any, field: string) => {
-    const value = item[field];
-    
-    if (value === null || value === undefined) {
-      return 'No ' + field.charAt(0).toUpperCase() + field.slice(1);
-    }
-    
-    // Handle nested objects (like category.name, brand.name)
-    if (typeof value === 'object' && value !== null) {
-      return value.name || value.label || value.title || String(value);
-    }
-    
-    return String(value);
-  };
-
-  // Helper function to extract filter value from nested objects
-  const getFilterValue = (item: any, field: string) => {
-    const value = item[field];
-    
-    if (value === null || value === undefined) {
-      return null;
-    }
-    
-    // For nested objects, use the name property for comparison
-    if (typeof value === 'object' && value !== null) {
-      return value.name || value.label || value.title || value.id || String(value);
-    }
-    
-    return value;
-  };
-
   // Generate filter options from data
-  const generateFilterOptions = (field: keyof T) => {
+  const generateFilterOptions = useCallback((field: keyof T) => {
     const uniqueValues = new Set();
-    const options: Array<{ value: any; label: string }> = [];
+    const options: Array<{ value: unknown; label: string }> = [];
     
     data.forEach(item => {
       const displayValue = getDisplayValue(item, field as string);
@@ -128,7 +129,7 @@ export function useTableData<T extends Record<string, any>>({
     });
     
     return options.sort((a, b) => a.label.localeCompare(b.label));
-  };
+  }, [data]);
 
   // Generate filter configurations
   const filterConfigs: FilterConfig[] = useMemo(() => {
@@ -138,7 +139,7 @@ export function useTableData<T extends Record<string, any>>({
       type: field.type || 'select',
       options: (field.type || 'select') === 'select' ? generateFilterOptions(field.key) : undefined
     }));
-  }, [data, filterableFields]);
+  }, [filterableFields, generateFilterOptions]);
 
   // Search handler
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,7 +147,7 @@ export function useTableData<T extends Record<string, any>>({
   };
 
   // Filter handlers
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: unknown) => {
     setFilters(prev => ({
       ...prev,
       [key]: value
@@ -189,7 +190,7 @@ export function useTableData<T extends Record<string, any>>({
   };
 
   const handleBulkDelete = () => {
-    const selectedData = selectedItems.map(index => processedData[index]);
+    // const selectedData = selectedItems.map(index => processedData[index]);
     // TODO: Implement actual bulk delete logic
     setSelectedItems([]);
   };
@@ -259,7 +260,7 @@ export function useTableData<T extends Record<string, any>>({
   // Clear selection when data changes
   useMemo(() => {
     setSelectedItems([]);
-  }, [filters, searchTerm]);
+  }, []);
 
   return {
     // State

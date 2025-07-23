@@ -14,14 +14,34 @@ interface CategoryParams {
   categoryName: string;
 }
 
-interface SearchParams {
-  sort?: string;
-  page?: string;
-}
+
 
 interface CategoryPageProps {
   params: Promise<CategoryParams>;
-  searchParams?: SearchParams;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+interface Product {
+  id: string | number;
+  title: string;
+  price: number;
+  createdAt: string;
+  category?: {
+    name: string;
+  } | string;
+  brand?: {
+    name: string;
+  } | string;
+  specs?: Record<string, string>;
+  tag?: string;
+  popular?: boolean;
+}
+
+interface AppliedFilters {
+  category?: string[];
+  brand?: string[];
+  priceRange?: [number, number];
+  [key: string]: string[] | [number, number] | undefined;
 }
 
 function normalize(str: string) {
@@ -44,10 +64,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const categorySlug = normalize(resolvedParams.categoryName);
   const categoryName = capitalize(categorySlug);
 
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [appliedFilters, setAppliedFilters] = useState<any>({ category: [categoryName] });
+  const [appliedFilters, setAppliedFilters] = useState<AppliedFilters>({ category: [categoryName] });
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
 
   useEffect(() => {
@@ -64,8 +84,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         brand: [],
         priceRange: undefined
       });
-    } catch (err) {
-      console.error('Error fetching category products:', err);
+    } catch (error) {
+      console.error('Error fetching category products:', error);
       toast.error('Failed to fetch products');
       setProducts([]);
     } finally {
@@ -74,48 +94,54 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   };
 
   fetchProducts();
-}, [categorySlug]);
+}, [categorySlug, categoryName]);
 
   useEffect(() => {
     let count = 0;
     for (const key in appliedFilters) {
-      if (Array.isArray(appliedFilters[key]) && appliedFilters[key].length > 0) {
-        count += appliedFilters[key].length;
+      const filterKey = key as keyof AppliedFilters;
+      const filterValue = appliedFilters[filterKey];
+      if (Array.isArray(filterValue) && filterValue.length > 0) {
+        count += filterValue.length;
       }
       if (key === 'priceRange') count += 1;
     }
     setActiveFiltersCount(count);
   }, [appliedFilters]);
 
-  const handleApplyFilters = (filters: any) => {
+  const handleApplyFilters = (filters: AppliedFilters) => {
     setAppliedFilters(filters);
     if (page !== 1) goToPage(1);
   };
 
-  const filteredProducts = products.filter((product: any) => {
+  const filteredProducts = products.filter((product: Product) => {
     const specs = product.specs || {};
-    const match = (key: string, source: any) => {
-      const filter = appliedFilters[key];
-      return !filter || filter.length === 0 || filter.includes(source);
-    };
 
     if (normalize(categoryName) === 'new') {
-  // Filter ONLY by other selected filters (e.g. brand, priceRange)
-  return (
-    (!appliedFilters.brand || appliedFilters.brand.length === 0 || appliedFilters.brand.includes(product.brand?.name || product.brand)) &&
-    (!appliedFilters.priceRange ||
-      (product.price >= appliedFilters.priceRange[0] &&
-       product.price <= appliedFilters.priceRange[1]))
-  );
-}
+      // Filter ONLY by other selected filters (e.g. brand, priceRange)
+      const brandValue = typeof product.brand === 'object' ? product.brand?.name : product.brand;
+      const brandFilter = appliedFilters.brand;
+      const brandMatch = !brandFilter || brandFilter.length === 0 || brandFilter.includes(brandValue || '');
 
-    return (
-      match('category', product.category?.name || product.category || specs.Category) &&
-      match('brand', product.brand?.name || product.brand || specs.Brand) &&
-      (!appliedFilters.priceRange ||
-        (product.price >= appliedFilters.priceRange[0] &&
-          product.price <= appliedFilters.priceRange[1]))
-    );
+      const priceMatch = !appliedFilters.priceRange ||
+        (product.price >= appliedFilters.priceRange[0] && product.price <= appliedFilters.priceRange[1]);
+
+      return brandMatch && priceMatch;
+    }
+
+    // For regular categories, filter by category, brand, and price
+    const categoryValue = typeof product.category === 'object' ? product.category?.name : product.category || specs.Category;
+    const categoryFilter = appliedFilters.category;
+    const categoryMatch = !categoryFilter || categoryFilter.length === 0 || categoryFilter.includes(categoryValue || '');
+
+    const brandValue = typeof product.brand === 'object' ? product.brand?.name : product.brand || specs.Brand;
+    const brandFilter = appliedFilters.brand;
+    const brandMatch = !brandFilter || brandFilter.length === 0 || brandFilter.includes(brandValue || '');
+
+    const priceMatch = !appliedFilters.priceRange ||
+      (product.price >= appliedFilters.priceRange[0] && product.price <= appliedFilters.priceRange[1]);
+
+    return categoryMatch && brandMatch && priceMatch;
   });
 
   const sortedProducts = [...filteredProducts];
@@ -225,13 +251,13 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 <div className="grid grid-cols-2 gap-4 lg:hidden">
                   {paginatedProducts.map((product) => (
                     <div key={product.id} className="aspect-square">
-                      <ProductCard product={product} compact />
+                      <ProductCard product={product as unknown as import('@/../types/product').Product} compact />
                     </div>
                   ))}
                 </div>
                 <div className="hidden lg:grid grid-cols-3 gap-6">
                   {paginatedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product as unknown as import('@/../types/product').Product} />
                   ))}
                 </div>
               </>

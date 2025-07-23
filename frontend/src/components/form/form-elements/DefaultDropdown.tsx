@@ -208,7 +208,6 @@ const Dropdown: React.FC<DropdownProps> = ({
 // NEW MULTI-SELECT DROPDOWN COMPONENT
 const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   id,
-  name,
   value,
   onChange,
   options,

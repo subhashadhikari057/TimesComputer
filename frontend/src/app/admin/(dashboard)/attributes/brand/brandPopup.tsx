@@ -41,7 +41,6 @@ export default function BrandPopup({
 }: BrandPopupProps) {
   const [form, setForm] = useState<BrandFormData>(INITIAL_FORM_DATA);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
 
   const isEditMode = Boolean(initialData?.id);
@@ -58,14 +57,12 @@ export default function BrandPopup({
         setForm(INITIAL_FORM_DATA);
       }
       setShowValidation(false);
-      setError(null);
     }
   }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
     setShowValidation(false);
-    setError(null);
   };
 
   const handleCancel = () => {
@@ -86,7 +83,6 @@ export default function BrandPopup({
 
     try {
       setLoading(true);
-      setError(null);
 
       const formData = new FormData();
       formData.append("name", form.name);
@@ -109,8 +105,9 @@ export default function BrandPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message;
+    } catch (err) {
+      const error = err as { response?: { data?: { error?: string; message?: string } }; message?: string };
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || "Unknown error occurred";
 
       if (
         errorMessage.includes("already exists") ||
@@ -123,7 +120,7 @@ export default function BrandPopup({
         toast.error(`Failed to ${isEditMode ? "update" : "create"} brand`);
       }
 
-      setError(errorMessage);
+
     } finally {
       setLoading(false);
     }
@@ -143,13 +140,13 @@ export default function BrandPopup({
     // Validate file type
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      setError("Invalid file type. Please upload PNG, JPG, or WebP files.");
+      toast.error("Invalid file type. Please upload PNG, JPG, or WebP files.");
       return;
     }
 
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      setError("File size too large. Please upload files smaller than 10MB.");
+      toast.error("File size too large. Please upload files smaller than 10MB.");
       return;
     }
 
