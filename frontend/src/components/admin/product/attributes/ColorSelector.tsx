@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Plus, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { getAllColors } from "@/api/color";
 import { MultiSelectDropdown } from "@/components/form/form-elements/DefaultDropdown";
+import ColorPopup from "@/app/admin/(dashboard)/attributes/color/colorPopup";
 
 interface DropdownOption {
   value: string | number;
@@ -27,9 +27,9 @@ export default function ColorSelector({
   selectedColorIds,
   onColorsChange,
 }: ColorSelectorProps) {
-  const router = useRouter();
   const [colors, setColors] = useState<Color[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showColorModal, setShowColorModal] = useState(false);
 
   useEffect(() => {
     loadColors();
@@ -50,6 +50,19 @@ export default function ColorSelector({
   const handleColorsChange = (colorIds: (string | number)[]) => {
     const numberIds = colorIds.map(id => Number(id));
     onColorsChange(numberIds);
+  };
+
+  const handleAddColorClick = () => {
+    setShowColorModal(true);
+  };
+
+  const handleColorModalClose = () => {
+    setShowColorModal(false);
+  };
+
+  const handleColorCreated = () => {
+    loadColors(); // Refresh the colors list
+    setShowColorModal(false);
   };
 
   // Enhanced options with hex codes
@@ -110,43 +123,52 @@ export default function ColorSelector({
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Colors
-        </label>
-        <button
-          type="button"
-          onClick={() => router.push("/admin/attributes/color")}
+    <>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Colors
+          </label>
+          <button
+            type="button"
+            onClick={handleAddColorClick}
+            disabled={loading}
+            className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Plus size={14} className="mr-1" />
+            Add Color
+          </button>
+        </div>
+
+        <MultiSelectDropdown
+          id="colors"
+          name="colors"
+          value={selectedColorIds}
+          onChange={handleColorsChange}
+          options={colorOptions}
+          placeholder="Select colors..."
           disabled={loading}
-          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Plus size={14} className="mr-1" />
-          Add Color
-        </button>
+          size="md"
+          renderSelectedTag={renderSelectedColorTag}
+          renderOption={renderColorOption}
+        />
+
+        {/* Selection count */}
+        {selectedColorIds.length > 0 && (
+          <div className="mt-2">
+            <p className="text-xs text-gray-500">
+              {selectedColorIds.length} color{selectedColorIds.length !== 1 ? 's' : ''} selected
+            </p>
+          </div>
+        )}
       </div>
 
-      <MultiSelectDropdown
-        id="colors"
-        name="colors"
-        value={selectedColorIds}
-        onChange={handleColorsChange}
-        options={colorOptions}
-        placeholder="Select colors..."
-        disabled={loading}
-        size="md"
-        renderSelectedTag={renderSelectedColorTag}
-        renderOption={renderColorOption}
+      {/* Color Modal */}
+      <ColorPopup
+        isOpen={showColorModal}
+        onClose={handleColorModalClose}
+        onSuccess={handleColorCreated}
       />
-
-      {/* Selection count */}
-      {selectedColorIds.length > 0 && (
-        <div className="mt-2">
-          <p className="text-xs text-gray-500">
-            {selectedColorIds.length} color{selectedColorIds.length !== 1 ? 's' : ''} selected
-          </p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
