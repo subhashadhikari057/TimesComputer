@@ -1,6 +1,6 @@
 "use client";
 
-import { X, ChevronDown, ChevronRight } from "lucide-react";
+import { X, ChevronDown, ChevronRight, Home } from "lucide-react";
 import {
   menuItems,
   MenuItem,
@@ -284,6 +284,20 @@ export default function Sidebar({
             </nav>
           </div>
         </div>
+
+        {/* Back to Store button for admin/superadmin */}
+        {user && (user.role === 'ADMIN' || user.role === 'SUPERADMIN') && (
+          <div className="p-4 border-t border-gray-100 flex justify-center">
+            <Link
+              href="/"
+              className="group flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100 transition-colors"
+              title="Back to Store"
+            >
+              <Home className="text-blue-600 group-hover:text-blue-800" size={22} />
+              <span className="sr-only">Back to Store</span>
+            </Link>
+          </div>
+        )}
       </div>
 
 
