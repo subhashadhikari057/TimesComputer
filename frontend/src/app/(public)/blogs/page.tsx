@@ -65,7 +65,7 @@ export default function BlogsPage() {
   if (loading) {
     return (
       <div>
-        <HeroSection />
+        <HeroSection latestBlog={blogs[0]} />
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="flex justify-center items-center py-16">
             <LoadingSpinner />
@@ -78,7 +78,7 @@ export default function BlogsPage() {
   if (error) {
     return (
       <div>
-        <HeroSection />
+        <HeroSection latestBlog={blogs[0]} />
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center py-16 text-gray-500">{error}</div>
         </div>
@@ -88,7 +88,7 @@ export default function BlogsPage() {
 
   return (
     <div>
-      <HeroSection />
+      <HeroSection latestBlog={blogs[0]} />
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold mb-8">Latest Blogs</h2>
         {blogs.length === 0 ? (
