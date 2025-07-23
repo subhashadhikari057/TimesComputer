@@ -10,7 +10,7 @@ import { useCompare } from '@/contexts/CompareContext';
 interface ProductCardProps {
   product: Product;
   compact?: boolean;
-  dynamicHeight?: boolean; // ← new prop for Option 2
+  dynamicHeight?: boolean;
 }
 
 export default function ProductCard({ product, compact = false, dynamicHeight = false }: ProductCardProps) {
@@ -41,6 +41,28 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
     }
   };
 
+  const getMarketingTagColor = (tagName: string) => {
+    switch (tagName.toLowerCase()) {
+      case 'hot deal':
+        return 'bg-red-500';
+      case 'trending':
+        return 'bg-purple-500';
+      case 'bestseller':
+        return 'bg-yellow-500';
+      case 'new arrival':
+        return 'bg-green-500';
+      case 'limited offer':
+        return 'bg-orange-500';
+      default:
+        return 'bg-blue-500';
+    }
+  };
+
+  // Get the first marketing tag if available
+  const marketingTag = product.marketingTags && product.marketingTags.length > 0 
+    ? product.marketingTags[0].tag 
+    : null;
+
   return (
     <div
       className={`w-full ${compact ? 'max-w-full' : 'max-w-[90%] sm:max-w-[250px]'} mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-sm transition duration-300 ease-in-out transform hover:scale-[1.02] hover:-translate-y-1 hover:opacity-95`}
@@ -49,6 +71,7 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
       {dynamicHeight ? (
         // ✅ Option 2: Dynamic height using aspect ratio
         <div className="relative w-full aspect-[4/3] bg-white overflow-hidden">
+          {/* Product Tag */}
           {product.tag && !compact && (
             <span
               className={`absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-white capitalize ${getTagColor(
@@ -56,6 +79,17 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
               )}`}
             >
               {product.tag}
+            </span>
+          )}
+
+          {/* Marketing Tag Badge */}
+          {marketingTag && !compact && (
+            <span
+              className={`absolute top-2 right-2 z-10 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-white capitalize ${getMarketingTagColor(
+                marketingTag.name
+              )}`}
+            >
+              {marketingTag.name}
             </span>
           )}
 
@@ -75,6 +109,7 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
             compact ? 'h-32' : 'h-40 sm:h-44'
           } bg-white overflow-hidden flex items-center justify-center`}
         >
+          {/* Product Tag */}
           {product.tag && !compact && (
             <span
               className={`absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-white capitalize ${getTagColor(
@@ -82,6 +117,17 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
               )}`}
             >
               {product.tag}
+            </span>
+          )}
+
+          {/* Marketing Tag Badge */}
+          {marketingTag && !compact && (
+            <span
+              className={`absolute top-2 right-2 z-10 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-white capitalize ${getMarketingTagColor(
+                marketingTag.name
+              )}`}
+            >
+              {marketingTag.name}
             </span>
           )}
 
@@ -103,6 +149,19 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
         >
           {product.name}
         </h3>
+
+        {/* Marketing Tag Badge in Content Area (for compact view) */}
+        {marketingTag && compact && (
+          <div className="flex">
+            <span
+              className={`inline-block rounded-full px-2 py-0.5 text-[8px] font-semibold text-white capitalize ${getMarketingTagColor(
+                marketingTag.name
+              )}`}
+            >
+              {marketingTag.name}
+            </span>
+          </div>
+        )}
 
         <div className="mt-1 space-y-2">
           <div className="flex items-center justify-between">

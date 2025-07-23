@@ -41,9 +41,13 @@ export default function MarketingTagSelector({
   };
 
   const handleTagsChange = (tagIds: string | number | null) => {
-    // Convert single selection to array for backend
-    const arrayValue = tagIds !== null ? [Number(tagIds)] : [];
-    onMarketingTagsChange(arrayValue);
+    // Handle "None" selection (value: 0) or null
+    if (tagIds === 0 || tagIds === null) {
+      onMarketingTagsChange([]); // Clear selection
+    } else {
+      // Convert single selection to array for backend
+      onMarketingTagsChange([Number(tagIds)]);
+    }
   };
 
   const handleAddMarketingTagClick = () => {
@@ -59,10 +63,17 @@ export default function MarketingTagSelector({
     setShowMarketingTagModal(false);
   };
 
-  const marketingTagOptions = marketingTags.map((tag) => ({
-    value: tag.id,
-    label: tag.name,
-  }));
+  // Create options with "None" option at the beginning
+  const marketingTagOptions = [
+    { value: 0, label: "None" }, // Special "None" option
+    ...marketingTags.map((tag) => ({
+      value: tag.id,
+      label: tag.name,
+    }))
+  ];
+
+  // Determine current selection value
+  const currentValue = selectedMarketingTagIds.length > 0 ? selectedMarketingTagIds[0] : 0;
 
   return (
     <>
@@ -85,13 +96,23 @@ export default function MarketingTagSelector({
         <Dropdown
           id="marketingTags"
           name="marketingTags"
-          value={selectedMarketingTagIds.length > 0 ? selectedMarketingTagIds[0] : null}
+          value={currentValue}
           onChange={handleTagsChange}
           options={marketingTagOptions}
           placeholder="Select a marketing tag"
           disabled={loading}
           size="md"
         />
+
+        {/* Show current selection info */}
+        <div className="mt-2">
+          <p className="text-xs text-gray-500">
+            {selectedMarketingTagIds.length > 0 
+              ? `Selected: ${marketingTags.find(tag => tag.id === selectedMarketingTagIds[0])?.name || 'Unknown'}`
+              : 'No marketing tag selected'
+            }
+          </p>
+        </div>
       </div>
 
       {/* Marketing Tag Modal */}
