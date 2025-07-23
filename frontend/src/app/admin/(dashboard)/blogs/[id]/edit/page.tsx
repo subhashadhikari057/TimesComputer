@@ -30,11 +30,18 @@ type RichTextEditorHandle = {
   setContent: (content: string) => void;
 };
 
+interface BlogImage {
+  file: File;
+  preview: string;
+  isNew: boolean; // true if uploaded in this session, false if from server
+  serverPath?: string; // path as stored on server, only for old images
+}
+
 interface BlogFormData {
   title: string;
   content: string;
   author: string;
-  images: { file: File; preview: string }[];
+  images: BlogImage[];
   slug: string;
   metadata: {
     [key: string]: unknown;
@@ -68,18 +75,17 @@ const fetchBlog = async (
     images: (data.images || []).map((imagePath: string) => {
       const fileName = imagePath.split("/").pop() || "image.jpg";
       const file = new File([""], fileName, { type: "image/jpeg" });
-
-      // Convert relative path to absolute URL
       const apiUrl =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
       const baseUrl = apiUrl.replace("/api", ""); // Remove /api for static files
       const imageUrl = imagePath.startsWith("http")
         ? imagePath // Already absolute URL
         : `${baseUrl}/${imagePath}`; // Convert relative to absolute
-
       return {
         file: file,
         preview: imageUrl,
+        isNew: false,
+        serverPath: imagePath,
       };
     }),
   };
@@ -177,7 +183,10 @@ export default function EditBlog() {
         const preview = e.target?.result as string;
         setForm((prev) => ({
           ...prev,
-          images: [...prev.images, { file, preview }],
+          images: [
+            ...prev.images,
+            { file, preview, isNew: true },
+          ],
         }));
       };
       reader.readAsDataURL(file);
@@ -232,10 +241,17 @@ export default function EditBlog() {
       formData.append("author", form.author);
       formData.append("slug", form.slug);
       formData.append("metadata", JSON.stringify(form.metadata));
-
-      // Add all images
-      form.images.forEach((img) => formData.append("images", img.file));
-
+      // Separate old and new images
+      const remainingImages = form.images
+        .filter((img) => !img.isNew && img.serverPath)
+        .map((img) => img.serverPath!);
+      formData.append("remainingImages", JSON.stringify(remainingImages));
+      // Only append new images
+      form.images.forEach((img) => {
+        if (img.isNew) {
+          formData.append("images", img.file);
+        }
+      });
       await updateBlog(Number(id), formData);
       toast.success("Blog post updated successfully!");
       router.push("/admin/blogs");
