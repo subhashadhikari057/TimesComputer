@@ -27,7 +27,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
         // Try to make an authenticated request to verify token
         await apiRequest("GET", "/auth/verify");
         setIsAuthenticated(true);
-      } catch (error) {
+      } catch {
         toast.error("Please login to access admin dashboard");
         router.push("/admin/login");
       } finally {

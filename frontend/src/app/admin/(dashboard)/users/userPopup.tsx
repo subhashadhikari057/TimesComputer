@@ -59,7 +59,7 @@ export default function UserPopup({
       setShowValidation(false);
       setError(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM_DATA);
@@ -106,7 +106,7 @@ export default function UserPopup({
       }
 
       handleCancel();
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error("failed to save admin user");
       console.error(
         `Error ${isEditMode ? "updating" : "creating"} admin user:`,

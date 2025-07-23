@@ -54,7 +54,7 @@ export default function ColorSelector({
   }));
 
   // Custom renderer for selected color tags
-  const renderSelectedColorTag = (option: any) => {
+  const renderSelectedColorTag = (option: { value: number; label: string; hexCode: string }) => {
     const handleRemoveTag = (e: React.MouseEvent) => {
       e.stopPropagation();
       onColorsChange(selectedColorIds.filter(id => id !== option.value));
@@ -80,7 +80,7 @@ export default function ColorSelector({
   };
 
   // Custom renderer for dropdown options
-  const renderColorOption = (option: any, isSelected: boolean) => (
+  const renderColorOption = (option: { value: number; label: string; hexCode: string }, isSelected: boolean) => (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
         <div 

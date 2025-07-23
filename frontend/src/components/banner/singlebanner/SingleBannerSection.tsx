@@ -18,7 +18,7 @@ function UpperSingleBannerSection() {
         const adsData = response.data || [];
         
         // Find the upper banner specifically
-        const upperBannerAd = adsData.find((ad: any) => ad.placement === 'upper-banner' && ad.isActive);
+        const upperBannerAd = adsData.find((ad: { placement: string; isActive: boolean; id: number; images: string[]; title?: string; link?: string }) => ad.placement === 'upper-banner' && ad.isActive);
         
         if (upperBannerAd && upperBannerAd.images[0]) {
           setBanner({
@@ -75,7 +75,7 @@ function LowerSingleBannerSection() {
         const adsData = response.data || [];
         
         // Find the lower banner specifically
-        const lowerBannerAd = adsData.find((ad: any) => ad.placement === 'lower-banner' && ad.isActive);
+        const lowerBannerAd = adsData.find((ad: { placement: string; isActive: boolean; id: number; images: string[]; title?: string; link?: string }) => ad.placement === 'lower-banner' && ad.isActive);
         
         if (lowerBannerAd && lowerBannerAd.images[0]) {
           setBanner({

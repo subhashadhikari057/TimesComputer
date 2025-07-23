@@ -12,9 +12,9 @@ interface ExportableData extends Record<string, unknown> {
   id?: string | number;
 }
 
-interface ProcessedRowData extends Record<string, string> {}
+type ProcessedRowData = Record<string, string>;
 
-interface ColumnStyles extends Record<number, { cellWidth: number }> {}
+type ColumnStyles = Record<number, { cellWidth: number }>;
 
 interface ExportPopupProps {
   isOpen: boolean;

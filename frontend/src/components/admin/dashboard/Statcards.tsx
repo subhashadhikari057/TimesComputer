@@ -63,7 +63,6 @@ export default function StatCard({
   };
 
   const changeStyles = getChangeStyles();
-  const ChangeIcon = changeStyles.icon;
 
   return (
     <div

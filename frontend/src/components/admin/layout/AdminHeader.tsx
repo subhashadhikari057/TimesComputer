@@ -51,7 +51,7 @@ export default function Header({
         } else {
           router.push("/admin/login");
         }
-      } catch (error) {
+      } catch {
         router.push("/admin/login");
       } finally {
         setLoading(false);
@@ -77,7 +77,7 @@ export default function Header({
       setUser(null);
       toast.success("Logout successful!");
       router.push("/admin/login");
-    } catch (error) {
+    } catch {
       toast.error("Logout failed. Please try again.");
     } finally {
       setIsLoggingOut(false);
@@ -371,24 +371,25 @@ function ChangePasswordModal({
     try {
       await changePassword(formData);
       onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       let errorMessage = "Failed to change password. Please try again.";
 
-      if (error?.response?.status === 400) {
-        if (error?.response?.data?.message) {
-          if (Array.isArray(error.response.data.message)) {
-            errorMessage = error.response.data.message
-              .map((err: any) => err.message || err)
+      const errorObj = error as { response?: { status?: number; data?: { message?: string | Array<{ message?: string }>; error?: string } } };
+      if (errorObj?.response?.status === 400) {
+        if (errorObj?.response?.data?.message) {
+          if (Array.isArray(errorObj.response.data.message)) {
+            errorMessage = errorObj.response.data.message
+              .map((err: { message?: string }) => err.message || err)
               .join(", ");
           } else {
-            errorMessage = error.response.data.message;
+            errorMessage = errorObj.response.data.message as string;
           }
-        } else if (error?.response?.data?.error) {
-          errorMessage = error.response.data.error;
+        } else if (errorObj?.response?.data?.error) {
+          errorMessage = errorObj.response.data.error;
         }
-      } else if (error?.response?.status === 401) {
+      } else if (errorObj?.response?.status === 401) {
         errorMessage = "Current password is incorrect.";
-      } else if (error?.response?.status === 403) {
+      } else if (errorObj?.response?.status === 403) {
         errorMessage = "You don't have permission to change password.";
       }
 

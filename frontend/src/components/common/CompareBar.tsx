@@ -3,6 +3,7 @@
 import { useCompare } from '@/contexts/CompareContext';
 import { ArrowRight, X, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getImageUrl } from '@/lib/imageUtils';
 
 export default function CompareBar() {
@@ -50,9 +51,11 @@ export default function CompareBar() {
       <div className="flex gap-2 mt-3 overflow-x-auto">
         {compareProducts.map((product) => (
           <div key={product.id} className="flex-shrink-0 w-12 h-12 bg-gray-100 rounded border overflow-hidden">
-            <img
+            <Image
               src={product.images?.[0] ? getImageUrl(product.images[0]) : '/products/Frame_68.png'}
               alt={product.name || 'Product'}
+              width={48}
+              height={48}
               className="w-full h-full object-cover"
             />
           </div>

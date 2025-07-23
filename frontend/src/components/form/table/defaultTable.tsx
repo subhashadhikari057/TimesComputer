@@ -5,7 +5,6 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
-  TimerReset,
   KeyRound,
 } from "lucide-react";
 
@@ -15,7 +14,7 @@ export interface Column {
   label: string;
   sortable?: boolean;
   className?: string;
-  render: (row: any) => React.ReactNode;
+  render: (row: Record<string, unknown>) => React.ReactNode;
   filterable?: boolean;
   searchable?: boolean;
   width?: string;
@@ -30,7 +29,7 @@ interface SortConfig {
 }
 
 interface TableData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface DefaultTableProps {
@@ -125,7 +124,7 @@ const DefaultTable: React.FC<DefaultTableProps> = ({
                 </th>
 
                 {/* Dynamic columns Header */}
-                {columns.map((column, index) => {
+                {columns.map((column) => {
                   return (
                     <th
                       key={column.id}

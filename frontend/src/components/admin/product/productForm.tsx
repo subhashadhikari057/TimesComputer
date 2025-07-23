@@ -33,7 +33,7 @@ interface ProductFormProps {
     colorIds?: number[];
   };
   productId?: string;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: unknown) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
 }

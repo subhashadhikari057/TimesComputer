@@ -16,7 +16,6 @@ import {
   Award,
   RefreshCw,
   Calendar,
-  Clock,
 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { getAuditLogs, getLoginLogs, getAllAdmins } from "@/api/adminUser";
@@ -90,7 +89,6 @@ export default function DashboardPage() {
   const [productsLoading, setProductsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedChart, setSelectedChart] = useState("bar");
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   // Enhanced analytics data processing
   const analyticsData = useMemo(() => {
@@ -145,9 +143,9 @@ export default function DashboardPage() {
     try {
       setProductsLoading(true);
       const data = await getAllProducts();
-      const publishedProducts = Array.isArray(data) ? data.filter((product: any) => product.isPublished) : [];
+      const publishedProducts = Array.isArray(data) ? data.filter((product: Product & { isPublished?: boolean }) => product.isPublished) : [];
       
-      const sortedByViews = publishedProducts.sort((a: any, b: any) => {
+      const sortedByViews = publishedProducts.sort((a: Product, b: Product) => {
         const viewsA = a.views || a.viewCount || 0;
         const viewsB = b.views || b.viewCount || 0;
         return viewsB - viewsA;
@@ -179,8 +177,6 @@ export default function DashboardPage() {
         fetchStats(),
         fetchTopProducts(),
       ]);
-      
-      setLastRefresh(new Date());
     } catch (error) {
       toast.error("Failed to refresh dashboard");
       console.error("Refresh error:", error);

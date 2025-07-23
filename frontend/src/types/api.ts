@@ -32,7 +32,7 @@ export interface Product {
   images: string[];
   brand: Brand;
   category: Category;
-  specifications?: Record<string, any>;
+  specifications?: Record<string, unknown>;
   features?: string[];
   isActive: boolean;
   inStock: boolean;

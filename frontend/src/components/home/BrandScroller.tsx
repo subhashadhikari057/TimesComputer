@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { getAllBrands } from '@/api/brand';
 import { getImageUrl } from '@/lib/imageUtils';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 import SkeletonLoader from '../common/skeletonloader';
 
 interface Brand {

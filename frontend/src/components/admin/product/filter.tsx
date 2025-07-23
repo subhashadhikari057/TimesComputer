@@ -18,9 +18,9 @@ export interface FilterConfig {
 }
 
 export interface FilterComponentProps {
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   filterConfigs: FilterConfig[];
-  onFilterChange: (key: string, value: any) => void;
+  onFilterChange: (key: string, value: unknown) => void;
   onResetFilters?: () => void;
   showResetButton?: boolean;
   dropdownWidth?: string;

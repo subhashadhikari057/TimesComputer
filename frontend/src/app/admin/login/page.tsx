@@ -70,7 +70,7 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     
     toast.success("Login successful!");
     router.push("/admin/dashboard");
-  } catch (error) {
+  } catch {
     toast.error("Login failed. Please try again.");
   } finally {
     setIsLoading(false);

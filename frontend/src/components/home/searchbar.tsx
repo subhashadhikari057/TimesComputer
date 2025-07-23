@@ -23,7 +23,7 @@ export default function SearchBar({ isMobile = false }: SearchBarProps) {
     const fetchProducts = async () => {
       try {
         const data = await getAllProducts();
-        const products = Array.isArray(data) ? data.filter((product: any) => product.isPublished) : [];
+        const products = Array.isArray(data) ? data.filter((product: { isPublished?: boolean }) => product.isPublished) : [];
         setAllProducts(products);
       } catch (error) {
         console.error("Failed to fetch products for search:", error);
@@ -46,7 +46,7 @@ export default function SearchBar({ isMobile = false }: SearchBarProps) {
     const filtered = allProducts.filter((product: Product) => {
       const searchFields = [
         product.name?.toLowerCase(),
-        typeof product.brand === 'string' ? product.brand.toLowerCase() : (product.brand as any)?.name?.toLowerCase(),
+        typeof product.brand === 'string' ? product.brand.toLowerCase() : (product.brand as { name?: string } | undefined)?.name?.toLowerCase(),
       ].filter(Boolean) as string[];
 
       return query.length === 1
@@ -108,7 +108,7 @@ export default function SearchBar({ isMobile = false }: SearchBarProps) {
               <div className="flex justify-between">
                 {item.brand && (
                   <span className="text-xs text-gray-500">
-                    {typeof item.brand === 'string' ? item.brand : (item.brand as any)?.name}
+                    {typeof item.brand === 'string' ? item.brand : (item.brand as { name?: string } | undefined)?.name}
                   </span>
                 )}
                 <span className="text-xs font-semibold">

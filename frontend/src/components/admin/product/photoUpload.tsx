@@ -2,6 +2,7 @@
 
 import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface PhotoUploadProps {
   images: File[];
@@ -126,7 +127,7 @@ function ImagePreview({
       <div
         className={`w-full ${size} bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden hover:border-gray-300 transition-colors`}
       >
-        <img src={src} alt={alt} className="w-full h-full object-cover" />
+        <Image src={src} alt={alt} width={200} height={150} className="w-full h-full object-cover" />
       </div>
       <button
         type="button"

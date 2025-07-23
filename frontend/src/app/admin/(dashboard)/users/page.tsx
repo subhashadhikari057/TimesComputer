@@ -3,11 +3,9 @@
 import {
   Plus,
   Users,
-  UserCheck,
   Search,
   Download,
   Trash2,
-  Mail,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import StatCard from "@/components/admin/dashboard/Statcards";
@@ -28,6 +26,7 @@ interface User {
   name: string;
   email: string;
   password: string;
+  [key: string]: unknown;
 }
 
 // Main Component
@@ -56,7 +55,7 @@ export default function UsersPage() {
     try {
       const data = await getAllAdmins();
       setUserData(Array.isArray(data) ? data : data.users || []);
-    } catch (err) {
+    } catch {
       setError("Failed to fetch users");
     } finally {
       setLoading(false);
@@ -76,11 +75,11 @@ export default function UsersPage() {
       filterable: true,
       searchable: true,
       width: "300px",
-      render: (user: User) => (
+      render: (user: Record<string, unknown>) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {user.name}
+              {user.name as string}
             </div>
           </div>
         </div>
@@ -93,11 +92,11 @@ export default function UsersPage() {
       filterable: true,
       searchable: true,
       width: "300px",
-      render: (user: User) => (
+      render: (user: Record<string, unknown>) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {user.email}
+              {user.email as string}
             </div>
           </div>
         </div>
@@ -108,7 +107,6 @@ export default function UsersPage() {
   // Use custom hook for table data management
   const {
     searchTerm,
-    filters,
     sortConfig,
     selectedItems,
     processedData,
@@ -126,20 +124,20 @@ export default function UsersPage() {
   });
 
   // Event handlers
-  const handleEdit = (row: any) => {
-    setEditingUser(row);
+  const handleEdit = (row: Record<string, unknown>, index: number) => {
+    setEditingUser(row as User);
     setShowEditPopup(true);
   };
 
-  const handleResetPassword = (row: any) => {
-    setResettingPasswordUser(row);
+  const handleResetPassword = (row: Record<string, unknown>, index: number) => {
+    setResettingPasswordUser(row as User);
     setShowResetPopup(true);
   };
 
-  const handleDelete = (row: any) => {
+  const handleDelete = (row: Record<string, unknown>, index: number) => {
     setDeleteModal({
       isOpen: true,
-      user: row,
+      user: row as User,
     });
   };
 
@@ -154,8 +152,8 @@ export default function UsersPage() {
       setUserData((prev) =>
         prev.filter((user) => user.id !== deleteModal.user!.id)
       );
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete user");
+    } catch (error: unknown) {
+      toast.error((error as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to delete user");
     } finally {
       setDeleteModal({ isOpen: false, user: null });
     }
@@ -190,8 +188,6 @@ export default function UsersPage() {
 
   // Calculate stats
   const totalUsers = userData.length;
-  const activeUsers = "5";
-  const verifiedUsers = "5";
 
   return (
     <div className="p-6 space-y-6">

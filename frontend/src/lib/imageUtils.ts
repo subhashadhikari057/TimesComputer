@@ -33,7 +33,7 @@ export const getImageUrls = (imagePaths: string[]): string[] => {
 };
 
 
-export const createImageFileFromUrl = (imageUrl: string, fileName?: string): { preview: string; existingPath: string } => {
+export const createImageFileFromUrl = (imageUrl: string): { preview: string; existingPath: string } => {
   return {
     preview: getImageUrl(imageUrl),
     existingPath: imageUrl,

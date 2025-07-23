@@ -2,6 +2,7 @@
 
 import { Upload, X } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface IconUploadProps {
   images: File[];
@@ -85,9 +86,11 @@ function ImagePreview({ src, onRemove }: { src: string; onRemove: () => void }) 
   return (
     <div className="relative group">
       <div className="w-full h-20 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
-        <img
+        <Image
           src={src}
           alt="Icon Preview"
+          width={80}
+          height={80}
           className="max-w-full max-h-full object-cover"
         />
       </div>

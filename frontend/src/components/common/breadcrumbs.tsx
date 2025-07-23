@@ -38,7 +38,6 @@ export function Breadcrumbs() {
           </BreadcrumbItem>
 
           {breadcrumbs.map((crumb, index) => {
-            const islast = index === breadcrumbs.length - 1;
   const isCategory = crumb.label.toLowerCase() === 'category';
   const isBrand = crumb.label.toLowerCase() === 'brand';
 

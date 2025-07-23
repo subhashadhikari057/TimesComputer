@@ -5,7 +5,6 @@ import { CategoryCard } from "./categoriecard";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import Link from "next/link";
 import { getAllCategories } from "@/api/category";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { getImageUrl } from "@/lib/imageUtils";
 import SkeletonLoader from "../common/skeletonloader";
 
@@ -24,7 +23,7 @@ const TopCategories = () => {
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Transform backend categories to component format
-  const transformCategories = (backendCategories: any[]): Category[] => {
+  const transformCategories = (backendCategories: { id: number; name: string; image: string }[]): Category[] => {
     return backendCategories.map((category) => ({
       id: category.id,
       title: category.name.toLowerCase(),
@@ -58,10 +57,6 @@ const TopCategories = () => {
 
   const visibleCategories =
     isMobile && !showAll ? categories.slice(0, 4) : categories;
-
-  const slugify = (text: string) => {
-    return text.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-  }
 
   if (loading) {
     return (

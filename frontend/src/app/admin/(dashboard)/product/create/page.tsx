@@ -243,11 +243,11 @@ export default function CreateProduct() {
       
       toast.success("Product created successfully!");
       router.push("/admin/product/all-products");
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err.response?.data?.errors ||
-        err.response?.data?.message ||
-        err.message ||
+        (err as { response?: { data?: { errors?: string; message?: string } }; message?: string })?.response?.data?.errors ||
+        (err as { response?: { data?: { errors?: string; message?: string } }; message?: string })?.response?.data?.message ||
+        (err as { message?: string })?.message ||
         "An unexpected error occurred";
       
       toast.error(`Failed to create product: ${typeof errorMessage === 'string' ? errorMessage : JSON.stringify(errorMessage)}`);

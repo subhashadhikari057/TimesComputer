@@ -25,10 +25,9 @@ const footerCategories = [
 
 const Footer: FC = () => {
   const year = new Date().getFullYear();
-  const router = useRouter();
+  const pathname = usePathname();
 
   const getCurrentCategory = () => {
-    const pathname = usePathname();
     if (pathname === '/') {
       return undefined;
     }
@@ -45,8 +44,6 @@ const Footer: FC = () => {
     }
     return undefined;
   };
-
-  const currentCategory = getCurrentCategory();
 
   return (
     <footer className="bg-muted-background w-full py-6 text-muted-foreground2 font-medium text-sm">

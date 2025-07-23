@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Save, X } from "lucide-react";
+import { Save } from "lucide-react";
 import dynamic from 'next/dynamic';
 import ComponentCard from "@/components/common/ComponentsCard";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
@@ -31,7 +31,7 @@ interface BlogFormData {
   images: { file: File; preview: string }[];
   slug: string;
   metadata: {
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -122,7 +122,7 @@ export default function CreateBlog() {
         setForm(prev => ({ ...prev, metadata: parsedMetadata }));
         setMetadataInput("");
         toast.success("Metadata added successfully");
-      } catch (error) {
+      } catch {
         toast.error("Invalid JSON format");
       }
     }
@@ -167,7 +167,7 @@ export default function CreateBlog() {
       await createBlog(formData);
       toast.success("Blog post created successfully!");
       router.push("/admin/blogs");
-    } catch (error) {
+    } catch {
       toast.error("Failed to create blog post. Please try again.");
     } finally {
       setIsSubmitting(false);

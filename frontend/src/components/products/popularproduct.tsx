@@ -6,7 +6,6 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { getAllProducts } from "@/api/product";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
 import SkeletonLoader from "../common/skeletonloader";
 
 function PopularProductsSection() {
@@ -27,10 +26,10 @@ function PopularProductsSection() {
         setError(null);
         const data = await getAllProducts();
         // Filter only published products
-        const publishedProducts = Array.isArray(data) ? data.filter((product: any) => product.isPublished) : [];
+        const publishedProducts = Array.isArray(data) ? data.filter((product: Product & { isPublished?: boolean }) => product.isPublished) : [];
 
         // Sort products by view count (most viewed first)
-        const sortedByViews = publishedProducts.sort((a: any, b: any) => {
+        const sortedByViews = publishedProducts.sort((a: Product & { views?: number; viewCount?: number }, b: Product & { views?: number; viewCount?: number }) => {
           const viewsA = a.views || a.viewCount || 0;
           const viewsB = b.views || b.viewCount || 0;
           return viewsB - viewsA; // Descending order (highest views first)
