@@ -31,11 +31,11 @@ export async function createInquiry(data: InquiryInput) {
 //   return response.data;
 // }
 
-// // POST /inquiry/bulk/:id → create a bulk order inquiry
-// export async function createBulkInquiry(productId: number, quantity: number, selectedColor: string | null) {
-//   const response = await axios.post(`/inquiry/bulk/${productId}`, {
-//     quantity,
-//     selectedColor
-//   });
-//   return response.data;
-// }
+// POST /inquiry/bulk/:id → create a bulk order inquiry
+export async function createBulkInquiry(productId: number, quantity: number, selectedColor: string | null) {
+  const response = await axios.post(`/inquiry/bulk/${productId}`, {
+    quantity,
+    selectedColor
+  });
+  return response.data;
+}
