@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import fs from "fs";
+import path from "path";
 import {
     addBlogService,
     getAllBlogService,
@@ -62,33 +64,23 @@ export const updateBlog = async (req: Request, res: Response) => {
         if (isNaN(id)) return res.status(400).json({ error: "Invalid Blog ID." });
 
         const { title, content, author, slug, metadata } = req.body;
-        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
         const updateData: any = {};
 
-        // Validate and add fields if they exist and are valid
-        if (typeof title === "string" && title.trim()) {
-            updateData.title = title.trim();
-        }
+        const existingBlog = await getBlogByIdService(id);
+        if (!existingBlog) return res.status(404).json({ error: "Blog not found." });
 
-        if (typeof content === "string" && content.trim()) {
-            updateData.content = content.trim();
-        }
+        // Handle text fields
+        if (title?.trim()) updateData.title = title.trim();
+        if (content?.trim()) updateData.content = content.trim();
+        if (author?.trim()) updateData.author = author.trim();
+        if (slug?.trim()) updateData.slug = slug.trim();
 
-        if (typeof author === "string" && author.trim()) {
-            updateData.author = author.trim();
-        }
-
-        if (typeof slug === "string" && slug.trim()) {
-            updateData.slug = slug.trim();
-        }
-
-        // Try to parse metadata if it exists
+        // Handle metadata
         if (metadata) {
             try {
-                const parsedMetadata = typeof metadata === "string" ? JSON.parse(metadata) : metadata;
-
-                if (parsedMetadata && typeof parsedMetadata === "object" && !Array.isArray(parsedMetadata)) {
-                    updateData.metadata = parsedMetadata;
+                const parsed = typeof metadata === "string" ? JSON.parse(metadata) : metadata;
+                if (typeof parsed === "object" && !Array.isArray(parsed)) {
+                    updateData.metadata = parsed;
                 } else {
                     return res.status(400).json({ error: "Metadata must be a valid JSON object." });
                 }
@@ -97,24 +89,46 @@ export const updateBlog = async (req: Request, res: Response) => {
             }
         }
 
-        // Handle image upload (only first image)
-        if (files && files["image"] && files["image"][0]) {
-            updateData.images = [files["image"][0].path]; // assuming images is an array
+        // Handle image removal
+        let remainingImages: string[] = [];
+        if (req.body.remainingImages) {
+            try {
+                remainingImages = JSON.parse(req.body.remainingImages);
+            } catch {
+                return res.status(400).json({ error: "Invalid JSON for remainingImages" });
+            }
         }
 
-        if (Object.keys(updateData).length === 0) {
-            return res.status(400).json({ error: "No valid fields provided for update." });
-        }
+        // Find removed images (to delete from disk)
+        const removedImages = (existingBlog.images || []).filter(
+            img => !remainingImages.includes(img)
+        );
 
+        removedImages.forEach(imgPath => {
+            fs.unlink(path.resolve(imgPath), (err) => {
+                if (err) console.error("Failed to delete:", imgPath, err.message);
+            });
+        });
+
+        // Handle new images
+        const files = req.files as Express.Multer.File[];
+        const newImagePaths = files?.length ? files.map(file => file.path) : [];
+
+        // Final images to store
+        updateData.images = [...remainingImages, ...newImagePaths];
+
+        // Update DB
         const updatedBlog = await updateBlogService(id, updateData);
-        res.status(200).json({ message: "Blog updated successfully.", data: updatedBlog });
+        res.status(200).json({ message: "Blog updated successfully", data: updatedBlog });
     } catch (error: any) {
-        const status = error.message.includes("not found") ? 404 :
-            error.message.includes("already exists") ? 409 : 500;
+        const status = error.message.includes("not found")
+            ? 404
+            : error.message.includes("already exists")
+                ? 409
+                : 500;
         res.status(status).json({ error: error.message });
     }
 };
-
 
 export const deleteBlog = async (req: Request, res: Response) => {
     try {
