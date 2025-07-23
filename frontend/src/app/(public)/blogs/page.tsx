@@ -91,13 +91,13 @@ export default function BlogsPage() {
       <HeroSection latestBlog={blogs[0]} />
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold mb-8">Latest Blogs</h2>
-        {blogs.length === 0 ? (
+        {blogs.length <= 1 ? (
           <div className="text-center py-16 text-gray-500">
-            No blogs available
+            No more blogs available
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {blogs.map((blog) => (
+            {blogs.slice(1).map((blog) => (
               <BlogCard
                 key={blog.id}
                 id={blog.id.toString()}

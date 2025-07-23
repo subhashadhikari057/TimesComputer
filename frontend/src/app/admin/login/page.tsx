@@ -47,7 +47,7 @@ export default function AdminLogin() {
         // If we reach here, user is authenticated
         toast.info("You are already logged in. Redirecting to dashboard...");
         router.push("/admin/dashboard");
-      } catch (error) {
+      } catch {
         // Token is invalid or expired, clear localStorage and allow login
         localStorage.removeItem('user');
         setCheckingAuth(false);
