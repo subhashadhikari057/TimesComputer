@@ -2,7 +2,11 @@ import axios from "@/lib/axiosInstance";
 
 // GET /product → fetch all products
 export async function getAllProducts() {
+    console.log('🔍 Making API call to:', axios.defaults.baseURL + '/product');
     const response = await axios.get("/product");
+    console.log('🔍 Raw axios response:', response);
+    console.log('🔍 Response data:', response.data);
+    console.log('🔍 Response status:', response.status);
     return response.data;
 }
 

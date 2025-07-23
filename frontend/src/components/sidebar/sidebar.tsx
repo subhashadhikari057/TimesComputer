@@ -110,21 +110,46 @@ const categories = [
 
     setArr(updatedArr);
 
-    const nextFilters: Filters = {
-      brand: updatedKey === 'brand' ? updatedArr : selectedBrands,
-      category: updatedKey === 'category' ? updatedArr : selectCategory,
-      priceRange,
-    };
+    // Build complete filter object, only including non-empty arrays
+    const nextFilters: Filters = {};
+    
+    const newBrands = updatedKey === 'brand' ? updatedArr : selectedBrands;
+    const newCategories = updatedKey === 'category' ? updatedArr : selectCategory;
+    
+    if (newBrands.length > 0) {
+      nextFilters.brand = newBrands;
+    }
+    
+    if (newCategories.length > 0) {
+      nextFilters.category = newCategories;
+    }
+    
+    if (priceRange && (priceRange[0] !== 25000 || priceRange[1] !== 500000)) {
+      nextFilters.priceRange = priceRange;
+    }
 
+    console.log('🎛️ Sidebar applying filters:', nextFilters);
     onApplyFilters?.(nextFilters);
   };
 
   const handleApply = () => {
-    onApplyFilters?.({
-      brand: selectedBrands,
-      category: selectCategory,
-      priceRange,
-    });
+    // Build complete filter object, only including non-empty arrays
+    const nextFilters: Filters = {};
+    
+    if (selectedBrands.length > 0) {
+      nextFilters.brand = selectedBrands;
+    }
+    
+    if (selectCategory.length > 0) {
+      nextFilters.category = selectCategory;
+    }
+    
+    if (priceRange && (priceRange[0] !== 25000 || priceRange[1] !== 500000)) {
+      nextFilters.priceRange = priceRange;
+    }
+
+    console.log('🎛️ Apply button filters:', nextFilters);
+    onApplyFilters?.(nextFilters);
   };
 
   return (

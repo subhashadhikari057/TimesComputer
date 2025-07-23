@@ -67,41 +67,50 @@ function SearchPageContent() {
   };
 
   const filteredProducts = products.filter(product => {
-    const specs = product.specs || {};
+    // Search query filter
+    if (query) {
+      const searchFields = [
+        product.name,
+        product.title,
+        typeof product.brand === 'object' && product.brand !== null 
+          ? (product.brand as { name: string }).name 
+          : product.brand
+      ].filter(Boolean);
 
-    const matchesQuery =
-      !query ||
-      [product.name, product.title, typeof product.brand === 'object' && product.brand !== null ? (product.brand as { name: string }).name : product.brand, specs.Brand]
-        .filter(Boolean)
-        .some(field => {
-          const f = String(field).toLowerCase();
-          return query.length === 1 ? f.startsWith(query) : f.includes(query);
-        });
+      const matchesQuery = searchFields.some(field => {
+        const f = String(field).toLowerCase();
+        return query.length === 1 ? f.startsWith(query) : f.includes(query);
+      });
 
-    if (!matchesQuery) return false;
+      if (!matchesQuery) return false;
+    }
 
-    const filterMatch = (key: string, paths: string[]) => {
-      const filterArray = appliedFilters[key] as string[] | undefined;
-      if (!filterArray || filterArray.length === 0) return true;
-      const value = paths.map(p => specs[p] || (product as Record<string, unknown>)[p]).find(v => Boolean(v) && typeof v === 'string') as string;
-      return value && filterArray.includes(value);
-    };
+    // Brand filter
+    if (appliedFilters.brand && appliedFilters.brand.length > 0) {
+      const brandName = typeof product.brand === 'object' && product.brand !== null
+        ? (product.brand as { name: string }).name
+        : product.brand as string;
+      if (!brandName || !appliedFilters.brand.includes(brandName)) {
+        return false;
+      }
+    }
 
-    if (
-      !filterMatch("brand", ["Brand", "brand"]) ||
-      !filterMatch("processor", ["Processor", "processor"]) ||
-      !filterMatch("memory", ["Memory", "RAM", "memory"]) ||
-      !filterMatch("connectivity", ["Connectivity", "connectivity"]) ||
-      !filterMatch("switchType", ["Switch Type", "switchType"]) ||
-      !filterMatch("graphics", ["Graphics", "GPU", "graphics"]) ||
-      !filterMatch("screenSize", ["Screen Size", "Display", "screenSize"]) ||
-      !filterMatch("resolution", ["Resolution", "resolution"])
-    )
-      return false;
+    // Category filter
+    if (appliedFilters.category && appliedFilters.category.length > 0) {
+      const categoryName = typeof product.category === 'object' && product.category !== null
+        ? (product.category as { name: string }).name
+        : product.category as string;
+      if (!categoryName || !appliedFilters.category.includes(categoryName)) {
+        return false;
+      }
+    }
 
+    // Price filter
     if (appliedFilters.priceRange && product.price) {
       const [min, max] = appliedFilters.priceRange;
-      if (product.price < min || product.price > max) return false;
+      if (product.price < min || product.price > max) {
+        return false;
+      }
     }
 
     return true;

@@ -10,6 +10,15 @@ import { getAllProducts } from '@/api/product';
 import { Product } from '../../../../types/product';
 import { Filters } from '../../../../types/filtewr';
 
+// Local type for filtering to handle API response structure
+interface FilterProduct {
+  name?: string;
+  price?: number;
+  isPublished?: boolean;
+  brand?: string | { name: string };
+  category?: string | { name: string };
+}
+
 import SkeletonLoader from '@/components/common/skeletonloader';
 
 
@@ -32,11 +41,42 @@ function AllProductsPageContent() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        console.log('🔍 About to call API...');
+        console.log('🔍 API Base URL:', process.env.NEXT_PUBLIC_API_URL);
+        
         const data = await getAllProducts();
-        const published = Array.isArray(data) ? data.filter(p => p.isPublished) : [];
-        setProducts(published);
+        console.log('🔍 API CALL SUCCESS');
+        console.log('🔍 FULL API RESPONSE:', data);
+        console.log('🔍 Type of data:', typeof data);
+        console.log('🔍 Is array:', Array.isArray(data));
+        console.log('🔍 Data keys (if object):', data && typeof data === 'object' ? Object.keys(data) : 'N/A');
+        console.log('🔍 Data length:', data?.length);
+        console.log('🔍 First item:', data?.[0]);
+        
+        // Try to extract products from different possible structures
+        let products = [];
+        if (Array.isArray(data)) {
+          products = data;
+          console.log('✅ Using data directly as array');
+        } else if (data && data.data && Array.isArray(data.data)) {
+          products = data.data;
+          console.log('✅ Using data.data array');
+        } else if (data && data.products && Array.isArray(data.products)) {
+          products = data.products;
+          console.log('✅ Using data.products array');
+        } else {
+          console.log('❌ Could not find products array in response');
+          products = [];
+        }
+        
+        console.log('🔍 Extracted products count:', products.length);
+        console.log('🔍 First product example:', products[0]);
+        
+        const publishedProducts = products.filter((p: FilterProduct) => p.isPublished === true);
+        console.log('✅ Published products:', publishedProducts.length);
+        setProducts(publishedProducts);
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("❌ Error fetching products:", error);
         setProducts([]);
       } finally {
         setLoading(false);
@@ -58,34 +98,117 @@ function AllProductsPageContent() {
   }, [appliedFilters]);
 
   const handleApplyFilters = (filters: Filters) => {
+    console.log('🔍 Applying Filters:', filters);
     setAppliedFilters(filters);
     if (page !== 1) goToPage(1);
   };
 
+  const handleResetFilters = () => {
+    console.log('🔄 Resetting Filters');
+    setAppliedFilters({});
+    if (page !== 1) goToPage(1);
+  };
+
   const filteredProducts = products.filter(product => {
-    const specs = product.specs || {};
+    // Helper function to safely extract brand name
+    const getBrandName = (product: FilterProduct): string | null => {
+      if (!product.brand) return null;
+      if (typeof product.brand === 'string') return product.brand;
+      if (typeof product.brand === 'object' && product.brand.name) return product.brand.name;
+      return null;
+    };
 
-    if (appliedFilters.brand && appliedFilters.brand.length > 0) {
-      const brand = typeof product.brand === 'object' && product.brand !== null 
-        ? (product.brand as { name: string }).name 
-        : product.brand || specs.Brand;
-      if (!brand || !appliedFilters.brand.includes(brand)) return false;
+    // Helper function to safely extract category name
+    const getCategoryName = (product: FilterProduct): string | null => {
+      if (!product.category) return null;
+      if (typeof product.category === 'string') return product.category;
+      if (typeof product.category === 'object' && product.category.name) return product.category.name;
+      return null;
+    };
+
+    // BRAND FILTER: Only apply if brands are selected
+    const hasActiveBrandFilter = appliedFilters.brand && Array.isArray(appliedFilters.brand) && appliedFilters.brand.length > 0;
+    if (hasActiveBrandFilter) {
+      const productBrand = getBrandName(product);
+      if (!productBrand) {
+        console.log('❌ Product has no brand:', product.name);
+        return false; // Exclude products without brand when brand filter is active
+      }
+      if (!appliedFilters.brand!.includes(productBrand)) {
+        return false; // Exclude products that don't match selected brands
+      }
     }
 
-    if (appliedFilters.category && appliedFilters.category.length > 0) {
-      const category = typeof product.category === 'object' && product.category !== null 
-        ? (product.category as { name: string }).name 
-        : product.category || specs.Category;
-      if (!category || !appliedFilters.category.includes(category)) return false;
+    // CATEGORY FILTER: Only apply if categories are selected
+    const hasActiveCategoryFilter = appliedFilters.category && Array.isArray(appliedFilters.category) && appliedFilters.category.length > 0;
+    if (hasActiveCategoryFilter) {
+      const productCategory = getCategoryName(product);
+      if (!productCategory) {
+        console.log('❌ Product has no category:', product.name);
+        return false; // Exclude products without category when category filter is active
+      }
+      if (!appliedFilters.category!.includes(productCategory)) {
+        return false; // Exclude products that don't match selected categories
+      }
     }
 
-    if (appliedFilters.priceRange && product.price) {
-      const [min, max] = appliedFilters.priceRange;
-      if (product.price < min || product.price > max) return false;
+    // PRICE FILTER: Only apply if price range is set
+    const hasActivePriceFilter = appliedFilters.priceRange && 
+      Array.isArray(appliedFilters.priceRange) && 
+      appliedFilters.priceRange.length === 2 &&
+      appliedFilters.priceRange[0] !== undefined && 
+      appliedFilters.priceRange[1] !== undefined;
+    
+    if (hasActivePriceFilter) {
+      if (!product.price || typeof product.price !== 'number') {
+        console.log('❌ Product has invalid price:', product.name, product.price);
+        return false; // Exclude products without valid price when price filter is active
+      }
+      const [minPrice, maxPrice] = appliedFilters.priceRange!;
+      if (product.price < minPrice || product.price > maxPrice) {
+        return false; // Exclude products outside price range
+      }
     }
 
+    // If no filters are active OR product passes all active filters, include it
     return true;
   });
+
+  // Enhanced debugging for filter state
+  const hasAnyActiveFilters = (
+    (appliedFilters.brand && appliedFilters.brand.length > 0) ||
+    (appliedFilters.category && appliedFilters.category.length > 0) ||
+    (appliedFilters.priceRange && appliedFilters.priceRange.length === 2)
+  );
+
+  console.log('✅ Filter Debug Info:', {
+    totalProducts: products.length,
+    filteredProducts: filteredProducts.length,
+    hasAnyActiveFilters: hasAnyActiveFilters,
+    appliedFilters: appliedFilters,
+    filterBreakdown: {
+      brandFilter: appliedFilters.brand || [],
+      categoryFilter: appliedFilters.category || [],
+      priceFilter: appliedFilters.priceRange || null,
+    },
+    productSample: products.slice(0, 3).map((p: FilterProduct) => ({
+      name: p.name,
+      brand: typeof p.brand === 'object' ? p.brand?.name : p.brand,
+      category: typeof p.category === 'object' ? p.category?.name : p.category,
+      price: p.price
+    }))
+  });
+
+  // Log which products are being excluded and why
+  if (hasAnyActiveFilters && filteredProducts.length < products.length) {
+    const excludedProducts = products.filter(p => !filteredProducts.includes(p));
+    console.log('🚫 Excluded Products:', excludedProducts.map((p: FilterProduct) => ({
+      name: p.name,
+      brand: typeof p.brand === 'object' ? p.brand?.name : p.brand,
+      category: typeof p.category === 'object' ? p.category?.name : p.category,
+      reason: 'Check filter logic above'
+    })));
+  }
 
   const sortedProducts = [...filteredProducts];
   if (sort === 'price-low-high') sortedProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -193,7 +316,7 @@ function AllProductsPageContent() {
             {filteredProducts.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500">No products match your selected filters.</p>
-                <Button className="mt-4" onClick={() => setAppliedFilters({})}>
+                <Button className="mt-4" onClick={handleResetFilters}>
                   Clear Filters
                 </Button>
               </div>

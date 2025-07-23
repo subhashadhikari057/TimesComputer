@@ -115,33 +115,54 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   };
 
   const filteredProducts = products.filter((product: Product) => {
-    const specs = product.specs || {};
-
     if (normalize(categoryName) === 'new') {
-      // Filter ONLY by other selected filters (e.g. brand, priceRange)
-      const brandValue = typeof product.brand === 'object' ? product.brand?.name : product.brand;
-      const brandFilter = appliedFilters.brand;
-      const brandMatch = !brandFilter || brandFilter.length === 0 || brandFilter.includes(brandValue || '');
+      // For "new" category, filter ONLY by brand and price (not category)
+      if (appliedFilters.brand && appliedFilters.brand.length > 0) {
+        const brandName = typeof product.brand === 'object' && product.brand !== null
+          ? (product.brand as { name: string }).name
+          : product.brand as string;
+        if (!brandName || !appliedFilters.brand.includes(brandName)) {
+          return false;
+        }
+      }
 
-      const priceMatch = !appliedFilters.priceRange ||
-        (product.price >= appliedFilters.priceRange[0] && product.price <= appliedFilters.priceRange[1]);
+      if (appliedFilters.priceRange && product.price) {
+        const [min, max] = appliedFilters.priceRange;
+        if (product.price < min || product.price > max) {
+          return false;
+        }
+      }
 
-      return brandMatch && priceMatch;
+      return true;
     }
 
     // For regular categories, filter by category, brand, and price
-    const categoryValue = typeof product.category === 'object' ? product.category?.name : product.category || specs.Category;
-    const categoryFilter = appliedFilters.category;
-    const categoryMatch = !categoryFilter || categoryFilter.length === 0 || categoryFilter.includes(categoryValue || '');
+    if (appliedFilters.category && appliedFilters.category.length > 0) {
+      const categoryName = typeof product.category === 'object' && product.category !== null
+        ? (product.category as { name: string }).name
+        : product.category as string;
+      if (!categoryName || !appliedFilters.category.includes(categoryName)) {
+        return false;
+      }
+    }
 
-    const brandValue = typeof product.brand === 'object' ? product.brand?.name : product.brand || specs.Brand;
-    const brandFilter = appliedFilters.brand;
-    const brandMatch = !brandFilter || brandFilter.length === 0 || brandFilter.includes(brandValue || '');
+    if (appliedFilters.brand && appliedFilters.brand.length > 0) {
+      const brandName = typeof product.brand === 'object' && product.brand !== null
+        ? (product.brand as { name: string }).name
+        : product.brand as string;
+      if (!brandName || !appliedFilters.brand.includes(brandName)) {
+        return false;
+      }
+    }
 
-    const priceMatch = !appliedFilters.priceRange ||
-      (product.price >= appliedFilters.priceRange[0] && product.price <= appliedFilters.priceRange[1]);
+    if (appliedFilters.priceRange && product.price) {
+      const [min, max] = appliedFilters.priceRange;
+      if (product.price < min || product.price > max) {
+        return false;
+      }
+    }
 
-    return categoryMatch && brandMatch && priceMatch;
+    return true;
   });
 
   const sortedProducts = [...filteredProducts];

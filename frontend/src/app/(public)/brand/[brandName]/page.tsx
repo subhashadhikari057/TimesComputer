@@ -122,45 +122,25 @@ export default function BrandPage({ params }: BrandPageProps) {
   };
 
   const filteredProducts = products.filter((product: Product) => {
-    const specs = product.specs || {};
-    
-    const brandValue = typeof product.brand === 'object' ? product.brand?.name : product.brand;
-    const brandFilter = appliedFilters.brand;
-    const brandMatch = !brandFilter || brandFilter.length === 0 || brandFilter.includes(brandValue || '');
+    // Brand filter
+    if (appliedFilters.brand && appliedFilters.brand.length > 0) {
+      const brandName = typeof product.brand === 'object' && product.brand !== null
+        ? (product.brand as { name: string }).name
+        : product.brand as string;
+      if (!brandName || !appliedFilters.brand.includes(brandName)) {
+        return false;
+      }
+    }
 
-    const processorValue = product.processor || specs.Processor;
-    const processorFilter = appliedFilters.processor;
-    const processorMatch = !processorFilter || processorFilter.length === 0 || processorFilter.includes(processorValue || '');
+    // Price filter
+    if (appliedFilters.priceRange && product.price) {
+      const [min, max] = appliedFilters.priceRange;
+      if (product.price < min || product.price > max) {
+        return false;
+      }
+    }
 
-    const memoryValue = product.memory || specs.Memory;
-    const memoryFilter = appliedFilters.memory;
-    const memoryMatch = !memoryFilter || memoryFilter.length === 0 || memoryFilter.includes(memoryValue || '');
-
-    const connectivityValue = product.connectivity || specs.Connectivity;
-    const connectivityFilter = appliedFilters.connectivity;
-    const connectivityMatch = !connectivityFilter || connectivityFilter.length === 0 || connectivityFilter.includes(connectivityValue || '');
-
-    const switchTypeValue = product.switchType || specs.SwitchType;
-    const switchTypeFilter = appliedFilters.switchType;
-    const switchTypeMatch = !switchTypeFilter || switchTypeFilter.length === 0 || switchTypeFilter.includes(switchTypeValue || '');
-
-    const graphicsValue = product.graphics || specs.Graphics;
-    const graphicsFilter = appliedFilters.graphics;
-    const graphicsMatch = !graphicsFilter || graphicsFilter.length === 0 || graphicsFilter.includes(graphicsValue || '');
-
-    const screenSizeValue = product.screenSize || specs['Screen Size'];
-    const screenSizeFilter = appliedFilters.screenSize;
-    const screenSizeMatch = !screenSizeFilter || screenSizeFilter.length === 0 || screenSizeFilter.includes(screenSizeValue || '');
-
-    const resolutionValue = product.resolution || specs.Resolution;
-    const resolutionFilter = appliedFilters.resolution;
-    const resolutionMatch = !resolutionFilter || resolutionFilter.length === 0 || resolutionFilter.includes(resolutionValue || '');
-
-    const priceMatch = !appliedFilters.priceRange ||
-      (product.price >= appliedFilters.priceRange[0] && product.price <= appliedFilters.priceRange[1]);
-
-    return brandMatch && processorMatch && memoryMatch && connectivityMatch && 
-           switchTypeMatch && graphicsMatch && screenSizeMatch && resolutionMatch && priceMatch;
+    return true;
   });
 
   const sortedProducts = [...filteredProducts];
