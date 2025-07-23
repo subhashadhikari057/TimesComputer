@@ -24,9 +24,5 @@ export const AdminIdParamSchema = z.object({
 
 // ✅ Schema: SuperAdmin resets admin's Password
 export const ResetPasswordSchema = z.object({
-    newPassword: z.string().min(6),
-    confirmPassword: z.string().min(6)
-}).refine(data => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"]
+    password: z.string().min(6, "Password must be at least 6 characters")
 });

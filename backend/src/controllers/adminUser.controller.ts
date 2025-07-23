@@ -153,7 +153,7 @@ export const resetAdminPassword = async (req: Request, res: Response) => {
     const user = await getAdminById(id);
     if (!user) return res.status(404).json({ message: "Admin not found" });
 
-    const hashed = await hashPassword(body.data.newPassword);
+    const hashed = await hashPassword(body.data.password);
     await updateAdmin(id, { password: hashed });
 
     const currentUser = (req as any).user;

@@ -21,7 +21,7 @@ interface HeroSectionProps {
 export default function HeroSection({ latestBlog }: HeroSectionProps) {
   if (!latestBlog) return null;
 
-  const { title, content, id, metadata } = latestBlog;
+  const { title, content, metadata } = latestBlog;
 
   const extractDescription = (html: string) => {
     const text = html.replace(/<[^>]*>/g, "");
