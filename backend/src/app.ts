@@ -37,6 +37,7 @@ app.use(cookieParser());
 const allowedOrigins = [
     'http://192.168.68.122:3000',
     'http://localhost:3000',
+    'http://times-computer-htt1.vercel.app/'
 ]
 
 app.use(credentials);
