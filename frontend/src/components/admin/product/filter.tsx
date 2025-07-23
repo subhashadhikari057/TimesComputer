@@ -39,13 +39,17 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
     "px-3 py-2 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm";
 
   const renderFilterInput = (config: FilterConfig) => {
-    const value = filters[config.key] || "";
+    const filterValue = filters[config.key];
+    
     switch (config.type) {
       case "select":
+        const dropdownValue = typeof filterValue === 'string' || typeof filterValue === 'number' 
+          ? filterValue 
+          : null;
         return (
           <div className="w-full">
             <Dropdown
-              value={value}
+              value={dropdownValue}
               onChange={(selectedValue) =>
                 onFilterChange(config.key, selectedValue)
               }
@@ -57,6 +61,9 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         );
 
       case "radio":
+        const radioValue = typeof filterValue === 'string' || typeof filterValue === 'number' 
+          ? filterValue 
+          : null;
         return (
           <div className="grid grid-cols-2 gap-2">
             {config.options?.map((option) => (
@@ -65,7 +72,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
                   type="radio"
                   name={config.key}
                   value={option.value}
-                  checked={value === option.value}
+                  checked={radioValue === option.value}
                   onChange={(e) => onFilterChange(config.key, e.target.value)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                 />
@@ -78,18 +85,19 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         );
 
       case "checkbox":
+        const checkboxValue = Array.isArray(filterValue) ? filterValue : [];
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {config.options?.map((option) => (
               <label key={option.value} className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={Array.isArray(value) && value.includes(option.value)}
+                  checked={checkboxValue.includes(option.value)}
                   onChange={(e) => {
-                    const currentValues = Array.isArray(value) ? value : [];
+                    const currentValues = checkboxValue;
                     const newValues = e.target.checked
                       ? [...currentValues, option.value]
-                      : currentValues.filter((v) => v !== option.value);
+                      : currentValues.filter((v: unknown) => v !== option.value);
                     onFilterChange(config.key, newValues);
                   }}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
@@ -105,10 +113,13 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
       case "text":
       case "number":
       case "date":
+        const inputValue = typeof filterValue === 'string' || typeof filterValue === 'number' 
+          ? String(filterValue) 
+          : "";
         return (
           <input
             type={config.type}
-            value={value}
+            value={inputValue}
             onChange={(e) => onFilterChange(config.key, e.target.value)}
             className={`w-full ${inputBaseClass}`}
           />

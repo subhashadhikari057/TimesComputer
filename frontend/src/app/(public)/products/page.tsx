@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SortSelect from '@/components/common/sortselect';
 import ProductCard from '@/components/products/productcard';
@@ -15,7 +15,7 @@ import SkeletonLoader from '@/components/common/skeletonloader';
 
 const PRODUCTS_PER_PAGE = 12;
 
-export default function AllProductsPage() {
+function AllProductsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get('page');
@@ -256,5 +256,13 @@ export default function AllProductsPage() {
         </div>
       </aside>
     </>
+  );
+}
+
+export default function AllProductsPage() {
+  return (
+    <Suspense fallback={<SkeletonLoader type="product-card" />}>
+      <AllProductsPageContent />
+    </Suspense>
   );
 }

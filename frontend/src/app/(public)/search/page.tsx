@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SortSelect from "@/components/common/sortselect";
 import { getAllProducts } from "@/api/product"; // 🔁 API Call
@@ -14,7 +14,7 @@ import { Filters } from "../../../../types/filtewr";
 
 const PRODUCTS_PER_PAGE = 12;
 
-export default function SearchPage() {
+function SearchPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageParam = searchParams.get("page");
@@ -284,5 +284,13 @@ export default function SearchPage() {
         <div className="p-4 overflow-y-auto h-[calc(100vh-64px)]">{filterSidebar}</div>
       </aside>
     </>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<SkeletonLoader type="product-card" />}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

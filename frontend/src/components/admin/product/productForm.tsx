@@ -76,6 +76,8 @@ export default function ProductForm({
   const [productColorIds, setProductColorIds] = useState<number[]>(
     initialData?.colorIds || []
   );
+  const [selectedFeatureTagIds, setSelectedFeatureTagIds] = useState<number[]>([]);
+  const [selectedMarketingTagIds, setSelectedMarketingTagIds] = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Update form when initialData changes (for edit mode)
@@ -332,6 +334,10 @@ export default function ProductForm({
                   onCategoryChange={setSelectedCategoryId}
                   selectedColorIds={productColorIds}
                   onColorsChange={setProductColorIds}
+                  selectedFeatureTagIds={selectedFeatureTagIds}
+                  onFeatureTagsChange={setSelectedFeatureTagIds}
+                  selectedMarketingTagIds={selectedMarketingTagIds}
+                  onMarketingTagsChange={setSelectedMarketingTagIds}
                 />
               </ComponentCard>
 
