@@ -97,20 +97,15 @@ export const createBulkInquiry = async (req: Request, res: Response) => {
             colorText = '\nColor Preference: Any available color';
         }
 
-        // Construct bulk order WhatsApp message
+        // Construct bulk order WhatsApp message (shorter version)
         const message = 
             `🛒 BULK ORDER INQUIRY\n\n` +
             `Product: ${product.name}\n` +
             `Quantity: ${quantity} units\n` +
-            `Unit Price: Rs ${product.price?.toLocaleString('en-IN') || "To be discussed"}\n` +
-            `Estimated Total: Rs ${estimatedTotal}${colorText}\n\n` +
-            `Key Specifications:\n${specificationText}\n\n` +
-            `Please provide:\n` +
-            `• Best bulk pricing for ${quantity} units\n` +
-            `• Delivery timeline and shipping costs\n` +
-            `• Payment terms and options\n` +
-            `• Warranty and support details\n\n` +
-            `Looking forward to your response. Thank you!`;
+            `Unit Price: Rs ${product.price?.toLocaleString('en-IN') || "TBD"} (Negotiable)\n` +
+            `Total: Rs ${estimatedTotal}${colorText}\n\n` +
+            `Please provide bulk pricing, delivery timeline and payment terms.\n\n` +
+            `Thank you!`;
 
         const whatsappURL = `https://wa.me/${sellerNo}?text=${encodeURIComponent(message)}`;
 

@@ -82,15 +82,10 @@ export default function ProductDetails() {
       const response = await createBulkInquiry(productId, quantity, selectedColor);
 
       const { whatsappURL } = response;
+      
+      // Use the web URL directly - it works on both mobile and desktop
+      window.open(whatsappURL, '_blank');
 
-      // Try to open WhatsApp app first, fallback to web
-      const whatsappAppURL = whatsappURL.replace(/^https:\/\/wa\.me/, 'whatsapp://send');
-
-      const newWindow = window.open(whatsappAppURL, '_blank');
-
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        window.open(whatsappURL, '_blank');
-      }
     } catch (error) {
       console.error("Failed to create bulk order", error);
       throw error; // Re-throw to let the modal handle the error

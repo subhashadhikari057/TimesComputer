@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FaInstagram,
   FaFacebook,
@@ -10,21 +11,60 @@ import {
   FaEnvelope,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+import { getAllCategories } from "@/api/category";
 
+interface Category {
+  id: number;
+  name: string;
+  icon: string;
+}
 
-
-// Footer categories - static for now, could be moved to fetch from API if needed
-const footerCategories = [
-  { label: "All Products", value: "products" },
-  { label: "Gaming Laptops", value: "gaming laptop" },
-  { label: "Business Laptops", value: "business laptop" },
-  { label: "Student Laptops", value: "student laptop" },
-  { label: "Everyday Laptops", value: "everyday laptop" },
-  { label: "Macbooks", value: "mac" },
-];
+interface FooterCategory {
+  label: string;
+  value: string;
+}
 
 const Footer: FC = () => {
   const year = new Date().getFullYear();
+  const [footerCategories, setFooterCategories] = useState<FooterCategory[]>([]);
+
+  // Transform backend categories to footer format and limit to 5
+  const transformCategories = (backendCategories: Category[]): FooterCategory[] => {
+    const allProductsOption = { label: "All Products", value: "products" };
+    
+    const transformedCategories = backendCategories
+      .slice(0, 4) // Take only 4 from API to make room for "All Products"
+      .map((category) => ({
+        label: category.name,
+        value: category.name.toLowerCase().replace(/\s+/g, ' ').trim(),
+      }));
+
+    return [allProductsOption, ...transformedCategories];
+  };
+
+  // Fetch categories from backend
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await getAllCategories();
+      const categoriesData = response.data || [];
+      const transformedCategories = transformCategories(categoriesData);
+      setFooterCategories(transformedCategories);
+    } catch (error) {
+      console.error("Failed to fetch categories for footer:", error);
+      // Fallback to default categories if API fails
+      setFooterCategories([
+        { label: "All Products", value: "products" },
+        { label: "Laptops", value: "laptops" },
+        { label: "Accessories", value: "accessories" },
+        { label: "Gaming", value: "gaming" },
+        { label: "Business", value: "business" },
+      ]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   return (
     <footer className="bg-muted-background w-full py-6 text-muted-foreground2 font-medium text-sm">
@@ -57,7 +97,7 @@ const Footer: FC = () => {
               <div className="h-[2px] w-1/2 bg-primary mt-1"></div>
             </h3>
             <ul className="space-y-1 mt-2 text-sm">
-              {footerCategories.map((category) => (
+              {footerCategories.map((category: FooterCategory) => (
                 <li key={category.value}>
                   <Link
                     href={category.value === 'products' ? '/products' : `/category/${category.value}`}

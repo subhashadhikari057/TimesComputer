@@ -141,13 +141,15 @@ export default function Navbar() {
       <nav className="w-full h-14 flex items-center justify-between text-primary">
         <div className="w-full max-w-screen-xl mx-auto px-4 flex items-center justify-between">
           {/* Logo */}
-          <Image
-            src="/logos/logo.svg"
-            alt="Brand Logo"
-            width={120}
-            height={90}
-            priority
-          />
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <Image
+              src="/logos/logo.svg"
+              alt="Brand Logo"
+              width={120}
+              height={90}
+              priority
+            />
+          </Link>
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-16 text-[16px] font-bold">
@@ -241,7 +243,7 @@ export default function Navbar() {
               <Link target="_blank" href="https://www.facebook.com/timescomputers" rel="noopener noreferrer">
               <Facebook className="cursor-pointer w-6 h-6" />
               </Link>
-              <Link target="_blank" href="https://api.whatsapp.com/send?phone=9779808113344" rel="noopener noreferrer">
+              <Link target="_blank" href="https://api.whatsapp.com/send?phone=9779761657579" rel="noopener noreferrer">
               <FaWhatsapp className="cursor-pointer w-6 h-6" />
               </Link>
             </div>
