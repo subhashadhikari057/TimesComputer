@@ -30,3 +30,12 @@ export async function deleteInquiry(id: number) {
   const response = await axios.delete(`/inquiry/${id}`);
   return response.data;
 }
+
+// POST /inquiry/bulk/:id → create a bulk order inquiry
+export async function createBulkInquiry(productId: number, quantity: number, selectedColor: string | null) {
+  const response = await axios.post(`/inquiry/bulk/${productId}`, {
+    quantity,
+    selectedColor
+  });
+  return response.data;
+}

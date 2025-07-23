@@ -10,16 +10,18 @@ import { Plus, Check } from "lucide-react";
 import { useCompare } from "@/contexts/CompareContext";
 
 import { getProductBySlug, incrementProductView } from "@/api/product";
+import { createBulkInquiry } from "@/api/inquiry";
 import { Product } from "../../../../../types/product";
 import RecommendedProducts from "@/components/products/reccomendedproducts";
 import { getImageUrl } from "@/lib/imageUtils";
-import axios from "@/lib/axiosInstance";
 import SkeletonLoader from "@/components/common/skeletonloader";
+import BulkOrderModal from "@/components/common/BulkOrderModal";
 
 export default function ProductDetails() {
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [productData, setProductData] = useState<Product>({});
   const [loading, setLoading] = useState(true);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const { slug } = useParams<{ slug: string }>();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
 
@@ -68,14 +70,20 @@ export default function ProductDetails() {
     );
   }
 
-  const handleBuyInBulk = async () => {
+  const handleBuyInBulk = () => {
+    setShowBulkModal(true);
+  };
+
+  const handleBulkOrderSubmit = async (quantity: number, selectedColor: string | null) => {
     try {
       const productId = productData.id;
+      if (!productId) throw new Error('Product ID is required');
 
-      const response = await axios.post(`/inquiry/post/${productId}`);
+      const response = await createBulkInquiry(productId, quantity, selectedColor);
 
-      const whatsappURL = response.data.whatsappURL || response.data;
+      const { whatsappURL } = response;
 
+      // Try to open WhatsApp app first, fallback to web
       const whatsappAppURL = whatsappURL.replace(/^https:\/\/wa\.me/, 'whatsapp://send');
 
       const newWindow = window.open(whatsappAppURL, '_blank');
@@ -84,7 +92,8 @@ export default function ProductDetails() {
         window.open(whatsappURL, '_blank');
       }
     } catch (error) {
-      console.error("Failed to get WhatsApp URL", error);
+      console.error("Failed to create bulk order", error);
+      throw error; // Re-throw to let the modal handle the error
     }
   };
 
@@ -296,6 +305,14 @@ export default function ProductDetails() {
       <RecommendedProducts
         category={productData?.category}
         currentSlug={productData?.slug}
+      />
+
+      {/* Bulk Order Modal */}
+      <BulkOrderModal
+        isOpen={showBulkModal}
+        onClose={() => setShowBulkModal(false)}
+        product={productData}
+        onSubmit={handleBulkOrderSubmit}
       />
     </div>
   );
