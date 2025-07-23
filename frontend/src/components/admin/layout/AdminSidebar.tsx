@@ -95,11 +95,11 @@ export default function Sidebar({
     // Collapsed sidebar - show only icons with submenu indicators
     if (!isExpanded) {
       return (
-        <div key={item.id} className="relative clean-element">
+        <div key={item.id} className="relative">
           {item.href && item.href !== "#" && !item.hasSubmenu ? (
             <Link
               href={item.href}
-              className={`w-full flex items-center justify-center px-3 py-3 rounded-md transition-colors ${baseClass} relative group clean-element`}
+              className={`w-full flex items-center justify-center p-3 rounded-md transition-colors ${baseClass} relative group`}
               title={item.label}
               onClick={() => {
                 if (window.innerWidth < 1024) {
@@ -108,7 +108,7 @@ export default function Sidebar({
               }}
             >
               <Icon
-                size={20}
+                size={22}
                 className={isHighlighted ? "text-blue-600" : "text-gray-600"}
               />
             </Link>
@@ -117,11 +117,11 @@ export default function Sidebar({
               onClick={() =>
                 handleNavClick(item.href || "#", item.hasSubmenu, item.id)
               }
-              className={`w-full flex items-center justify-center px-3 py-3 rounded-md transition-colors ${baseClass} relative group clean-element`}
+              className={`w-full flex items-center justify-center p-3 rounded-md transition-colors ${baseClass} relative group`}
               title={item.label}
             >
               <Icon
-                size={20}
+                size={22}
                 className={isHighlighted ? "text-blue-600" : "text-gray-600"}
               />
             </button>
@@ -133,17 +133,17 @@ export default function Sidebar({
     // Expanded sidebar - show full menu
     if (item.hasSubmenu) {
       return (
-        <div key={item.id} className="clean-element">
+        <div key={item.id}>
           <button
             onClick={() => handleNavClick(item.href || "#", true, item.id)}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition-colors ${baseClass} clean-element`}
+            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md transition-colors ${baseClass}`}
           >
-            <div className="flex items-center space-x-3 clean-element">
+            <div className="flex items-center space-x-3 min-w-0">
               <Icon
-                size={16}
-                className={isHighlighted ? "text-blue-600" : "text-gray-600"}
+                size={18}
+                className={`${isHighlighted ? "text-blue-600" : "text-gray-600"} flex-shrink-0`}
               />
-              <span className="font-semibold text-[14px] clean-text">{item.label}</span>
+              <span className="font-medium text-sm truncate">{item.label}</span>
             </div>
             {isSubmenuExpanded ? (
               <ChevronDown
@@ -163,14 +163,14 @@ export default function Sidebar({
           </button>
 
           {isSubmenuExpanded && item.subItems && (
-            <div className="ml-8 mt-2 space-y-1 animate-fadeIn clean-element">
+            <div className="ml-6 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200">
               {item.subItems.map((sub, i) => {
                 const active = isRouteActive(sub.href);
                 return (
                   <Link
                     key={i}
                     href={sub.href}
-                    className={`block px-3 py-2 text-[13px] font-semibold rounded-md transition-colors clean-element ${
+                    className={`block px-3 py-2 text-sm rounded-md transition-colors ${
                       active
                         ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
                         : "text-gray-600 hover:bg-gray-50"
@@ -181,7 +181,7 @@ export default function Sidebar({
                       }
                     }}
                   >
-                    <span className="clean-text">{sub.label}</span>
+                    <span className="truncate">{sub.label}</span>
                     {isNavigating && active && (
                       <span className="ml-2 text-xs text-gray-400">...</span>
                     )}
@@ -198,7 +198,7 @@ export default function Sidebar({
       <Link
         key={item.id}
         href={item.href || "/admin/dashboard"}
-        className={`flex items-center space-x-3 px-3 py-2 rounded-md transition-colors clean-element ${
+        className={`flex items-center space-x-3 px-3 py-2.5 rounded-md transition-colors ${
           isItemActive
             ? "text-blue-600 bg-blue-50 hover:bg-blue-100"
             : "text-gray-700 hover:bg-gray-100"
@@ -210,12 +210,12 @@ export default function Sidebar({
         }}
       >
         <Icon
-          size={16}
-          className={isItemActive ? "text-blue-600" : "text-gray-600"}
+          size={18}
+          className={`${isItemActive ? "text-blue-600" : "text-gray-600"} flex-shrink-0`}
         />
-        <span className="font-semibold text-[14px] clean-text">{item.label}</span>
+        <span className="font-medium text-sm truncate">{item.label}</span>
         {isNavigating && isItemActive && (
-          <span className="ml-auto text-xs text-gray-400">...</span>
+          <span className="ml-auto text-xs text-gray-400 flex-shrink-0">...</span>
         )}
       </Link>
     );
@@ -224,53 +224,53 @@ export default function Sidebar({
   return (
     <>
       <div
-        className={`bg-white border-r border-gray-200 h-full transition-all duration-300 ease-in-out flex flex-col clean-sidebar
+        className={`bg-white border-r border-gray-200 transition-all duration-300 ease-in-out flex flex-col
           ${
             sidebarOpen
-              ? "w-3/4 md:w-64 translate-x-0"
+              ? "w-64 translate-x-0"
               : "w-20 -translate-x-full lg:translate-x-0 lg:hover:w-64"
           }
-          fixed left-0 lg:relative z-50 lg:z-auto overflow-hidden`}
-        onMouseEnter={() => !sidebarOpen && setIsHovered(true)}
-        onMouseLeave={() => !sidebarOpen && setIsHovered(false)}
+          fixed inset-y-0 left-0 lg:relative z-50 lg:z-auto overflow-hidden h-screen lg:h-full`}
+        onMouseEnter={() => !sidebarOpen && window.innerWidth >= 1024 && setIsHovered(true)}
+        onMouseLeave={() => !sidebarOpen && window.innerWidth >= 1024 && setIsHovered(false)}
       >
         <div
           className={`${
-            isExpanded ? "min-w-64" : "min-w-20"
-          } transition-all duration-300 flex flex-col h-full clean-element`}
+            isExpanded ? "w-64" : "w-20"
+                      } transition-all duration-300 flex flex-col h-full`}
         >
           {/* Fixed Header */}
-          <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 pt-4 border-b border-gray-100 clean-header">
+          <div className="flex-shrink-0 flex items-center justify-between h-16 px-4 border-b border-gray-100">
             {isExpanded ? (
               <>
-                <span className="text-md font-bold text-gray-800 clean-text">
+                <span className="text-sm font-bold text-gray-800 truncate">
                   Times Computer Automation
                 </span>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors clean-element"
+                  className="lg:hidden p-2 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0"
                   aria-label="Close sidebar"
                 >
                   <X size={20} />
                 </button>
               </>
             ) : (
-              <div className="w-full flex justify-center clean-element">
-                <span className="text-lg font-bold text-gray-800 clean-text">TCA</span>
+              <div className="w-full flex justify-center">
+                <span className="text-lg font-bold text-gray-800">TCA</span>
               </div>
             )}
           </div>
 
           {/* Scrollable Navigation */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden clean-element">
-            <nav className="mt-6 px-4 pb-6 clean-element">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            <nav className="mt-6 px-3 pb-6">
               {isExpanded && (
-                <div className="mb-3 clean-element">
+                <div className="mb-6 mt-2">
                   <p
-                    className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider clean-text ${
+                    className={`px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider ${
                       sidebarOpen
                         ? "opacity-100"
-                        : " group-hover:opacity-100"
+                        : "opacity-0 group-hover:opacity-100"
                     } transition-opacity duration-300`}
                   >
                     Menu
@@ -278,7 +278,7 @@ export default function Sidebar({
                 </div>
               )}
 
-              <div className="space-y-2 clean-element">
+              <div className="space-y-1">
                 {filteredMenuItems.map(renderMenuItem)}
               </div>
             </nav>
@@ -286,87 +286,7 @@ export default function Sidebar({
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
 
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-
-        /* Prevent debugging overlays and numbers */
-        .clean-sidebar {
-          position: relative;
-          isolation: isolate;
-          z-index: 10;
-        }
-
-        .clean-element {
-          position: relative;
-          isolation: isolate;
-        }
-
-        .clean-element::before,
-        .clean-element::after {
-          display: none !important;
-        }
-
-        .clean-text {
-          position: relative;
-          z-index: 1;
-          -webkit-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-        }
-
-        .clean-header {
-          position: relative;
-          isolation: isolate;
-          z-index: 15;
-        }
-
-        /* Hide any debugging content */
-        .clean-element > [data-react-devtools-portal],
-        .clean-element > [data-react-devtools],
-        .clean-element::before,
-        .clean-element::after {
-          display: none !important;
-          visibility: hidden !important;
-          opacity: 0 !important;
-        }
-
-        /* Prevent external overlays */
-        .clean-sidebar * {
-          position: relative;
-        }
-
-        /* Custom scrollbar styling */
-        .overflow-y-auto::-webkit-scrollbar {
-          width: 6px;
-        }
-
-        .overflow-y-auto::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .overflow-y-auto::-webkit-scrollbar-thumb {
-          background: rgba(156, 163, 175, 0.3);
-          border-radius: 3px;
-        }
-
-        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-          background: rgba(156, 163, 175, 0.5);
-        }
-      `}</style>
     </>
   );
 }
