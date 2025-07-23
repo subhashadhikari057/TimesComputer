@@ -37,7 +37,7 @@ export function Breadcrumbs() {
             </Link>
           </BreadcrumbItem>
 
-          {breadcrumbs.map((crumb, index) => {
+          {breadcrumbs.map((crumb) => {
   const isCategory = crumb.label.toLowerCase() === 'category';
   const isBrand = crumb.label.toLowerCase() === 'brand';
 

@@ -65,14 +65,15 @@ export default function CategoryManagementPage() {
       filterable: true,
       searchable: true,
 
-      render: (category: Category) => {
-        const iconUrl = getImageUrl(category.icon);
+      render: (category: Record<string, unknown>) => {
+        const categoryData = category as Category;
+        const iconUrl = getImageUrl(categoryData.icon);
         return (
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 rounded-lg flex items-center justify-center overflow-hidden">
               <Image
                 src={iconUrl}
-                alt={category.name}
+                alt={categoryData.name}
                 width={48}
                 height={48}
                 className="h-full w-full object-cover"
@@ -80,7 +81,7 @@ export default function CategoryManagementPage() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-gray-900 truncate">
-                {category.name}
+                {categoryData.name}
               </div>
             </div>
           </div>
@@ -94,10 +95,10 @@ export default function CategoryManagementPage() {
       filterable: false,
       searchable: false,
 
-      render: (category: Category) => (
+      render: (category: Record<string, unknown>) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
-          {new Date(category.createdAt).toLocaleDateString()}
+          {new Date((category as Category).createdAt).toLocaleDateString()}
         </div>
       ),
     },

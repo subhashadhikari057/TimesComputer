@@ -85,16 +85,17 @@ export default function ViewProductsPage() {
       searchable: false,
 
       widthClass: "w-16 lg:w-20",
-      render: (product: Product) => {
-        const imageUrl = product.images?.[0]
-          ? getImageUrl(product.images[0])
+      render: (product: Record<string, unknown>) => {
+        const productData = product as Product;
+        const imageUrl = productData.images?.[0]
+          ? getImageUrl(productData.images[0])
           : null;
         return (
           <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0">
             {imageUrl ? (
               <Image
                 src={imageUrl}
-                alt={product.name}
+                alt={productData.name}
                 width={40}
                 height={40}
                 className="h-full w-full object-cover"
@@ -115,11 +116,11 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: true,
       widthClass: "w-48 lg:w-1/4",
-      render: (product: Product) => {
+      render: (product: Record<string, unknown>) => {
         return (
           <div className="min-w-0">
             <div className="text-sm font-medium text-gray-900 break-words leading-tight max-w-xs">
-              {product.name}
+              {(product as Product).name}
             </div>
           </div>
         );
@@ -132,10 +133,11 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-28 lg:w-32",
-      render: (product: Product) => {
-        const categoryName = typeof product.category === 'object' 
-          ? product.category?.name 
-          : product.category || "No Category";
+      render: (product: Record<string, unknown>) => {
+        const productData = product as Product;
+        const categoryName = typeof productData.category === 'object' 
+          ? productData.category?.name 
+          : productData.category || "No Category";
         return (
           <div
             className="text-sm text-gray-900 truncate"
@@ -153,10 +155,11 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-28 lg:w-32",
-      render: (product: Product) => {
-        const brandName = typeof product.brand === 'object' 
-          ? product.brand?.name 
-          : product.brand || "No Brand";
+      render: (product: Record<string, unknown>) => {
+        const productData = product as Product;
+        const brandName = typeof productData.brand === 'object' 
+          ? productData.brand?.name 
+          : productData.brand || "No Brand";
         return (
           <div
             className="text-sm font-medium text-gray-900 truncate"
@@ -174,11 +177,12 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: false,
       widthClass: "w-24 lg:w-28",
-      render: (product: Product) => {
+      render: (product: Record<string, unknown>) => {
+        const productData = product as Product;
         const price =
-          typeof product.price === "string"
-            ? parseFloat(product.price.replace("$", ""))
-            : product.price;
+          typeof productData.price === "string"
+            ? parseFloat(productData.price.replace("$", ""))
+            : productData.price;
 
         return (
           <div className="text-sm font-medium text-gray-900 whitespace-nowrap">
@@ -194,19 +198,22 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: false,
       widthClass: "w-16 lg:w-20",
-      render: (product: Product) => (
-        <div
-          className={`text-sm font-medium break-words leading-tight line-clamp-2 ${
-            product.stock === 0
-              ? "text-red-600"
-              : product.stock < 10
-              ? "text-yellow-600"
-              : "text-gray-900"
-          }`}
-        >
-          {product.stock} units
-        </div>
-      ),
+      render: (product: Record<string, unknown>) => {
+        const productData = product as Product;
+        return (
+          <div
+            className={`text-sm font-medium break-words leading-tight line-clamp-2 ${
+              productData.stock === 0
+                ? "text-red-600"
+                : productData.stock < 10
+                ? "text-yellow-600"
+                : "text-gray-900"
+            }`}
+          >
+            {productData.stock} units
+          </div>
+        );
+      },
     },
     {
       id: "isPublished",
@@ -215,17 +222,18 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-28 lg:w-32",
-      render: (product: Product) => {
+      render: (product: Record<string, unknown>) => {
+        const productData = product as Product;
         return (
           <span
             className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
-              product.isPublished
+              productData.isPublished
                 ? "bg-green-100 text-green-800"
                 : "bg-gray-100 text-gray-800"
             }`}
           >
             <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-            {product.isPublished ? "Published" : "Draft"}
+            {productData.isPublished ? "Published" : "Draft"}
           </span>
         );
       },
@@ -237,17 +245,18 @@ export default function ViewProductsPage() {
       filterable: true,
       searchable: true,
       widthClass: "w-24 lg:w-28",
-      render: (product: Product) => {
+      render: (product: Record<string, unknown>) => {
+        const productData = product as Product;
         return (
           <span
             className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${
-              product.isFeature
+              productData.isFeature
                 ? "bg-green-100 text-green-800"
                 : "bg-gray-100 text-gray-800"
             }`}
           >
             <CheckCircle className="w-3 h-3 mr-1 flex-shrink-0" />
-            {product.isFeature ? "Yes" : "No"}
+            {productData.isFeature ? "Yes" : "No"}
           </span>
         );
       },
@@ -259,10 +268,10 @@ export default function ViewProductsPage() {
       filterable: false,
       searchable: false,
       widthClass: "w-32 lg:w-36",
-      render: (product: Product) => (
+      render: (product: Record<string, unknown>) => (
         <div className="flex items-center text-sm text-gray-600 whitespace-nowrap">
           <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
-          {new Date(product.createdAt).toLocaleDateString()}
+          {new Date((product as Product).createdAt).toLocaleDateString()}
         </div>
       ),
     },

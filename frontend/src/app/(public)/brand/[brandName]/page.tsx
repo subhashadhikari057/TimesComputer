@@ -14,14 +14,11 @@ interface BrandParams {
   brandName: string;
 }
 
-interface SearchParams {
-  sort?: string;
-  page?: string;
-}
+
 
 interface BrandPageProps {
   params: Promise<BrandParams>;
-  searchParams?: SearchParams;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 interface Product {

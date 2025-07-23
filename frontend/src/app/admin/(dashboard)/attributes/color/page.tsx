@@ -62,25 +62,28 @@ export default function ColorManagementPage() {
       filterable: true,
       searchable: true,
 
-      render: (color: Color) => (
-        <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden">
-            <div
-              className="w-full h-full"
-              style={{ backgroundColor: color.hexCode }}
-            />
-            {/* Add a subtle border for very light colors */}
-            {color.hexCode === "#FFFFFF" && (
-              <div className="absolute inset-0 border border-gray-300 rounded-lg" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {color.name}
+      render: (color: Record<string, unknown>) => {
+        const colorData = color as Color;
+        return (
+          <div className="flex items-center space-x-4">
+            <div className="h-12 w-12 rounded-lg border border-gray-200 shadow-sm flex items-center justify-center relative overflow-hidden">
+              <div
+                className="w-full h-full"
+                style={{ backgroundColor: colorData.hexCode }}
+              />
+              {/* Add a subtle border for very light colors */}
+              {colorData.hexCode === "#FFFFFF" && (
+                <div className="absolute inset-0 border border-gray-300 rounded-lg" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {colorData.name}
+              </div>
             </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       id: "hexCode",
@@ -89,10 +92,10 @@ export default function ColorManagementPage() {
       filterable: true,
       searchable: true,
 
-      render: (color: Color) => (
+      render: (color: Record<string, unknown>) => (
         <div className="flex items-center space-x-2">
           <span className="text-sm font-mono text-gray-900">
-            {color.hexCode.toUpperCase()}
+            {(color as Color).hexCode.toUpperCase()}
           </span>
         </div>
       ),

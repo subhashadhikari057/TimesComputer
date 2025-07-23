@@ -166,12 +166,12 @@ export default function BlogsPage() {
     defaultSort: { key: "createdAt", direction: "desc" },
   });
 
-  const handleEdit = (row: Record<string, unknown>, index: number) => {
+  const handleEdit = (row: Record<string, unknown>) => {
     const blog = row as Blog;
     router.push(`/admin/blogs/${blog.id}/edit`);
   };
 
-  const handleDelete = (row: Record<string, unknown>, index: number) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
       blog: row as Blog

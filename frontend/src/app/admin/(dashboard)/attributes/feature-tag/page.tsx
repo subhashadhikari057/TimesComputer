@@ -59,11 +59,11 @@ export default function FeatureTagPage() {
       filterable: true,
       searchable: true,
 
-      render: (featureTag: FeatureTag) => (
+      render: (featureTag: Record<string, unknown>) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {featureTag.name}
+              {(featureTag as FeatureTag).name}
             </div>
           </div>
         </div>

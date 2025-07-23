@@ -65,15 +65,16 @@ export default function BrandManagementPage() {
       filterable: true,
       searchable: true,
 
-      render: (brand: Brand) => {
-        const imageUrl = getImageUrl(brand.image);
+      render: (brand: Record<string, unknown>) => {
+        const brandData = brand as Brand;
+        const imageUrl = getImageUrl(brandData.image);
         return (
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center overflow-hidden">
-              {brand.image ? (
+              {brandData.image ? (
                 <Image
                   src={imageUrl}
-                  alt={brand.name}
+                  alt={brandData.name}
                   width={48}
                   height={48}
                   className="h-full w-full object-cover"
@@ -84,7 +85,7 @@ export default function BrandManagementPage() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-medium text-gray-900 truncate">
-                {brand.name}
+                {brandData.name}
               </div>
             </div>
           </div>
@@ -98,10 +99,10 @@ export default function BrandManagementPage() {
       filterable: false,
       searchable: false,
 
-      render: (brand: Brand) => (
+      render: (brand: Record<string, unknown>) => (
         <div className="flex items-center text-sm text-gray-600">
           <Calendar className="w-3 h-3 mr-1" />
-          {new Date(brand.createdAt).toLocaleDateString()}
+          {new Date((brand as Brand).createdAt).toLocaleDateString()}
         </div>
       ),
     },

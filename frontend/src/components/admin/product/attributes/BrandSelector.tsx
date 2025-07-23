@@ -18,21 +18,7 @@ interface BrandSelectorProps {
   onBrandChange: (brandId: number | null) => void;
 }
 
-interface BrandFormData {
-  name: string;
-  image: File | null;
-  imagePreview: string;
-  icon: File | null;
-  iconPreview: string;
-}
 
-const INITIAL_BRAND_FORM: BrandFormData = {
-  name: "",
-  image: null,
-  imagePreview: "",
-  icon: null,
-  iconPreview: "",
-};
 
 export default function BrandSelector({
   selectedBrandId,

@@ -10,7 +10,7 @@ import {
 export interface MenuItem {
   id: string;
   label: string;
-  icon: React.ComponentType;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   hasSubmenu: boolean;
   href?: string;
   subItems?: { label: string; href: string }[];

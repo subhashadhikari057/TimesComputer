@@ -58,11 +58,11 @@ export default function MarketingTagManagementPage() {
       filterable: true,
       searchable: true,
 
-      render: (marketingTag: MarketingTag) => (
+      render: (marketingTag: Record<string, unknown>) => (
         <div className="flex items-center space-x-4">
           <div className="min-w-0 flex-1">
             <div className="text-sm font-medium text-gray-900 truncate">
-              {marketingTag.name}
+              {(marketingTag as MarketingTag).name}
             </div>
           </div>
         </div>

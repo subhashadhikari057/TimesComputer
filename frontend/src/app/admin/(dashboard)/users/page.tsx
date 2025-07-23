@@ -124,17 +124,17 @@ export default function UsersPage() {
   });
 
   // Event handlers
-  const handleEdit = (row: Record<string, unknown>, index: number) => {
+  const handleEdit = (row: Record<string, unknown>) => {
     setEditingUser(row as User);
     setShowEditPopup(true);
   };
 
-  const handleResetPassword = (row: Record<string, unknown>, index: number) => {
+  const handleResetPassword = (row: Record<string, unknown>) => {
     setResettingPasswordUser(row as User);
     setShowResetPopup(true);
   };
 
-  const handleDelete = (row: Record<string, unknown>, index: number) => {
+  const handleDelete = (row: Record<string, unknown>) => {
     setDeleteModal({
       isOpen: true,
       user: row as User,

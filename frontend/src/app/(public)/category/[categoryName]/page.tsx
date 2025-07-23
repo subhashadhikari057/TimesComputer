@@ -14,14 +14,11 @@ interface CategoryParams {
   categoryName: string;
 }
 
-interface SearchParams {
-  sort?: string;
-  page?: string;
-}
+
 
 interface CategoryPageProps {
   params: Promise<CategoryParams>;
-  searchParams?: SearchParams;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 interface Product {
