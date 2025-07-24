@@ -64,7 +64,7 @@ export default function BrandCarousel({
 
   useEffect(() => {
     if (cardRef.current && brands.length > 0) {
-      const width = cardRef.current.offsetWidth + 24; // gap-6 = 24px
+      const width = cardRef.current.offsetWidth + 32; // gap-8 = 32px
       setBrandWidth(width);
     }
   }, [brands]);
@@ -117,7 +117,7 @@ export default function BrandCarousel({
       <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
         {title}
       </h2>
-      <div className="flex gap-6 overflow-hidden">
+      <div className="flex gap-8 overflow-hidden">
         {[...Array(10)].map((_, i) => (
           <SkeletonLoader key={i} type="brand" />
         ))}
@@ -161,7 +161,7 @@ export default function BrandCarousel({
       <div className="relative overflow-hidden">
         <div
           ref={containerRef}
-          className="flex gap-6 transition-transform duration-100 ease-out"
+          className="flex gap-8 transition-transform duration-100 ease-out"
           style={{
             transform: `translateX(-${translateX}px)`,
             width: `${brandWidth * brands.length}px`,
@@ -177,13 +177,13 @@ export default function BrandCarousel({
               onMouseLeave={handleMouseLeave}
               aria-label={`Shop by brand ${brand.name}`}
             >
-              <div className="w-40 h-24 sm:w-48 sm:h-28 bg-white rounded-2xl border border-gray-100 overflow-hidden hover:scale-105 transition-all duration-300 p-4 flex items-center justify-center">
+              <div className="w-36 h-24 sm:w-40 sm:h-28 bg-transparent rounded-2xl overflow-hidden hover:scale-105 transition-all duration-300 p-2 flex items-center justify-center">
                 <div className="relative w-full h-full">
                   <Image
                     src={getImageUrl(brand.image)}
                     alt={brand.name}
                     fill
-                    className="object-cover filter brightness-75 group-hover:brightness-100 transition-all duration-300"
+                    className="object-contain transition-all duration-300 group-hover:opacity-80"
                     sizes="(max-width: 640px) 160px, 192px"
                   />
                 </div>
