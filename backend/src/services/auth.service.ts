@@ -28,7 +28,7 @@ export const attachAccessToken = (user: User, res: Response): Response => {
         path: '/api',
         httpOnly: true,
         secure: process.env.SECURE === "true",
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: 1000 * 60 * 60, // 1 hour
     });
 };
@@ -43,7 +43,7 @@ export const attachRefreshToken = (user: User, res: Response): Response => {
         path: '/api/auth/refresh',
         httpOnly: true,
         secure: process.env.SECURE === "true",
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 };

@@ -35,9 +35,9 @@ app.use(cookieParser());
 
 // ✅ Core Middlewares
 const allowedOrigins = [
-    'http://192.168.68.122:3000',
     'http://localhost:3000',
-    'http://times-computer-htt1.vercel.app/'
+    process.env.CLIENT_ORIGIN as string,
+
 ]
 
 app.use(credentials);
