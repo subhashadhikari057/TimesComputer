@@ -6,7 +6,6 @@ import {
   Edit2,
   Users,
   Search,
-  Download,
   Calendar,
   Trash2,
 } from "lucide-react";
@@ -199,11 +198,6 @@ export default function BlogsPage() {
     setDeleteModal({ isOpen: false, blog: null });
   };
 
-  const handleExport = () => {
-    console.log("Export blogs");
-    toast.success("Blogs exported successfully!");
-  };
-
   const totalBlogs = blogData.length;
   const publishedBlogs = blogData.length; // All blogs are considered published for now
   const totalAuthors = new Set(blogData.map(blog => blog.author)).size;
@@ -276,16 +270,6 @@ export default function BlogsPage() {
                   Delete ({selectedItems.length})
                 </button>
               )}
-
-              <div className="flex items-center space-x-2 w-full sm:w-auto">
-                <button
-                  onClick={handleExport}
-                  className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                >
-                  <Download className="h-4 w-4 mr-1" />
-                  Export
-                </button>
-              </div>
             </div>
           </div>
         </div>
