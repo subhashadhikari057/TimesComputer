@@ -114,10 +114,11 @@ function PopularProductsSection() {
         grid-cols-2
         sm:grid-cols-2
         md:grid-cols-4
+        min-h-[320px]
       `}
       >
         {products.slice(0, visibleCount).map((product) => (
-          <div key={product.id} className="w-full">
+          <div key={product.id} className="w-full h-full flex">
             <ProductCard product={product} />
           </div>
         ))}

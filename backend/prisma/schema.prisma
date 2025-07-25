@@ -52,7 +52,7 @@ model Product {
   views         Int                   @default(0)
   brandId       Int?
   categoryId    Int?
-  isFeature     Boolean               @default(true)
+  isFeature     Boolean               @default(false)
   images        String[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt

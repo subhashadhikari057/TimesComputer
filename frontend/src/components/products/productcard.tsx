@@ -65,7 +65,7 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
 
   return (
     <div
-      className={`w-full ${compact ? 'max-w-full' : 'max-w-[90%] sm:max-w-[250px]'} mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-sm transition duration-300 ease-in-out transform hover:scale-[1.02] hover:-translate-y-1 hover:opacity-95`}
+      className={`w-full h-full flex flex-col ${compact ? 'max-w-full' : 'max-w-[90%] sm:max-w-[250px]'} mx-auto bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-sm transition duration-300 ease-in-out transform hover:scale-[1.02] hover:-translate-y-1 hover:opacity-95`}
     >
       {/* ---------- Image ---------- */}
       {dynamicHeight ? (
@@ -143,9 +143,9 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
       )}
 
       {/* ---------- Info ---------- */}
-      <div className={`flex flex-col gap-2 ${compact ? 'p-2' : 'p-3 sm:p-4'}`}>
+      <div className={`flex flex-col gap-2 flex-1 ${compact ? 'p-2' : 'p-3 sm:p-4'}`}>
         <h3
-          className={`line-clamp-2 ${compact ? 'text-[14px]' : 'text-xs sm:text-sm'} font-medium text-gray-900 leading-snug`}
+          className={`line-clamp-2 ${compact ? 'text-[14px] min-h-[32px]' : 'text-xs sm:text-sm min-h-[36px]'} font-medium text-gray-900 leading-snug`}
         >
           {product.name}
         </h3>
@@ -163,7 +163,7 @@ export default function ProductCard({ product, compact = false, dynamicHeight = 
           </div>
         )}
 
-        <div className="mt-1 space-y-2">
+        <div className="mt-auto space-y-2">
           <div className="flex items-center justify-between">
             <span
               className={`font-semibold text-blue-600 ${
