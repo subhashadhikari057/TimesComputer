@@ -22,6 +22,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "csurf": "^1.11.0",
+    "csv-parse": "^5.6.0",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "express-rate-limit": "^7.5.1",
@@ -44,5 +45,6 @@
     "ts-node-dev": "^2.0.0",
     "prisma": "^6.11.1",
     "typescript": "^5.3.3"
+
   }
 }

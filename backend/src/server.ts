@@ -8,10 +8,7 @@ const PORT = process.env.PORT || 8080;
 async function startServer() {
     try {
         await prisma.$connect();
-        console.log('✅ Connected to Neon PostgreSQL database');
-
         app.listen(PORT, () => {
-            console.log(`🚀 Server is running at http://localhost:${PORT}`);
         });
     } catch (error) {
         console.error('❌ Failed to connect to the database:', error);

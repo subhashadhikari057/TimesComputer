@@ -46,7 +46,6 @@ export const login = async (req: Request, res: Response) => {
         orderBy: { createdAt: "desc" },
         take: 5,
     });
-
     const failedCount = recentAttempts.filter(a => !a.success).length;
 
     if (failedCount >= 5) {
@@ -56,7 +55,6 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const user: User = await prisma.adminUser.findUnique({ where: { email } });
-
     const valid = user && user.isActive
         ? await comparePassword(password, user.password)
         : false;
