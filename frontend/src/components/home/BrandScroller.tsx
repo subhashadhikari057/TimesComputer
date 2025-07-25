@@ -173,13 +173,19 @@ export default function BrandCarousel({
             >
               <div className="w-40 h-24 sm:w-48 sm:h-28 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-300 p-4 flex items-center justify-center">
                 <div className="relative w-full h-full">
-                  <Image
-                    src={getImageUrl(brand.image)}
-                    alt={brand.name}
-                    fill
-                    className="object-contain filter brightness-75 group-hover:brightness-100 transition-all duration-300"
-                    sizes="(max-width: 640px) 160px, 192px"
-                  />
+                  {brand.image ? (
+                    <Image
+                      src={getImageUrl(brand.image)}
+                      alt={brand.name}
+                      fill
+                      className="object-contain filter brightness-75 group-hover:brightness-100 transition-all duration-300"
+                      sizes="(max-width: 640px) 160px, 192px"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                      No Image
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>

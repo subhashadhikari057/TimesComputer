@@ -1,5 +1,7 @@
 // hooks/useTableData.ts
 import { useState, useMemo, useCallback } from 'react';
+import { deleteProduct } from '@/api/product';
+import { toast } from 'sonner';
 
 // Types
 export interface SortConfig {
@@ -48,6 +50,7 @@ export interface UseTableDataReturn<T> {
   
   // Utilities
   generateFilterOptions: (field: keyof T) => Array<{ value: unknown; label: string }>;
+  clearSelection: () => void;
 }
 
 // Helper functions moved outside component to avoid dependency issues
@@ -86,8 +89,9 @@ function getFilterValue<T extends Record<string, unknown>>(item: T, field: strin
 export function useTableData<T extends Record<string, unknown>>({
   data,
   columns,
-  defaultSort
-}: UseTableDataProps<T>): UseTableDataReturn<T> {
+  defaultSort,
+  fetchData // <-- add this prop
+}: UseTableDataProps<T> & { fetchData?: () => void }): UseTableDataReturn<T> {
   // State
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -189,10 +193,21 @@ export function useTableData<T extends Record<string, unknown>>({
     });
   };
 
-  const handleBulkDelete = () => {
-    // const selectedData = selectedItems.map(index => processedData[index]);
-    // TODO: Implement actual bulk delete logic
-    setSelectedItems([]);
+  const handleBulkDelete = async () => {
+    const selectedData = selectedItems.map(index => processedData[index]);
+    try {
+      await Promise.all(
+        selectedData.map((product) =>
+          deleteProduct(Number(product.id))
+        )
+      );
+      toast.success('Selected products deleted successfully');
+      if (fetchData) fetchData();
+    } catch {
+      toast.error('Failed to delete selected products');
+    } finally {
+      setSelectedItems([]);
+    }
   };
 
   // Process data (filter, search, sort)
@@ -262,6 +277,8 @@ export function useTableData<T extends Record<string, unknown>>({
     setSelectedItems([]);
   }, []);
 
+  const clearSelection = () => setSelectedItems([]);
+
   return {
     // State
     searchTerm,
@@ -284,5 +301,6 @@ export function useTableData<T extends Record<string, unknown>>({
     
     // Utilities
     generateFilterOptions,
+    clearSelection,
   };
 }

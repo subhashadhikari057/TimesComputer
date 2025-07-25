@@ -6,7 +6,6 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 
-// import csrf from 'csurf'; // ✅ NEW: CSRF middleware
 
 import authRoutes from './routes/auth.route';
 import adminUserRoutes from "./routes/adminUser.route";
@@ -29,20 +28,19 @@ dotenv.config();
 const app = express();
 const uploadPath = path.join(__dirname, "uploads");
 
+const origin = process.env.ORIGIN;
+if (!origin) {
+  throw new Error('ORIGIN environment variable is not set');
+}
+
 // ✅ Security Middlewares
 app.use(helmet());
 app.use(cookieParser());
 
-// ✅ Core Middlewares
-const allowedOrigins = [
-    'http://192.168.68.122:3000',
-    'http://localhost:3000',
-]
-
 app.use(credentials);
 app.use(
     cors({
-        origin: allowedOrigins,
+        origin: origin,
         credentials: true,
     })
 );
@@ -54,18 +52,10 @@ app.use('/uploads', (req, res, next) => {
   next();
 }, express.static(path.join(__dirname, '..', 'uploads')));
 
-// // ✅ CSRF Protection (must come AFTER cookie + json parser)
-// app.use(csrf({ cookie: true }));
-
-// ✅ CSRF Token route — Frontend fetches this first
-// app.get('/api/csrf-token', (req, res) => {
-//     res.json({ csrfToken: req.csrfToken() });
-// });
 
 // ✅ Routes
 
 app.use((req, res, next) => {
-    console.log(req.cookies);
     next();
 });
 app.use('/api/init', initController);

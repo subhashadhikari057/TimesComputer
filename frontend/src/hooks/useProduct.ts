@@ -1,5 +1,6 @@
 // hooks/useProduct.ts
 import { useState, useEffect, useCallback } from 'react';
+import { getProductById, createProduct as apiCreateProduct, updateProduct as apiUpdateProduct, deleteProduct as apiDeleteProduct } from '../api/product';
 
 interface ProductData {
   id: string;
@@ -55,66 +56,6 @@ interface UseProductResult {
   deleteProduct: (id: string) => Promise<void>;
 }
 
-// Mock API functions - replace with actual API calls
-const api = {
-  fetchProduct: async (id: string): Promise<ProductData> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock data
-    return {
-      id,
-      name: "MacBook Pro 16-inch M3 Max",
-      description: "The most powerful MacBook Pro ever with M3 Max chip, featuring incredible performance for professional workflows.",
-      price: 2399.99,
-      stock: 25,
-      isPublished: true,
-      brochure: "",
-      imagePreviews: [
-        "/api/placeholder/300/300",
-        "/api/placeholder/300/300"
-      ],
-      specs: [
-        { key: "Processor", value: "Apple M3 Max" },
-        { key: "Memory", value: "32GB Unified Memory" },
-        { key: "Storage", value: "1TB SSD" },
-        { key: "Display", value: "16-inch Liquid Retina XDR" }
-      ],
-      brandId: 1,
-      categoryId: 2,
-      colorIds: [1, 2, 3]
-    };
-  },
-
-  createProduct: async (data: CreateProductData): Promise<ProductData> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Creating product:', data);
-    
-    // Return created product
-    return {
-      id: Date.now().toString(),
-      ...data
-    };
-  },
-
-  updateProduct: async (id: string, data: UpdateProductData): Promise<ProductData> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Updating product:', id, data);
-    
-    // Return updated product - merge with existing data
-    const existingProduct = await api.fetchProduct(id);
-    return {
-      ...existingProduct,
-      ...data,
-      id
-    };
-  },
-
-  deleteProduct: async (id: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Deleting product:', id);
-  }
-};
-
 export function useProduct(id?: string): UseProductResult {
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(!!id);
@@ -122,11 +63,11 @@ export function useProduct(id?: string): UseProductResult {
 
   const fetchProduct = useCallback(async () => {
     if (!id) return;
-    
     try {
       setLoading(true);
       setError(null);
-      const data = await api.fetchProduct(id);
+      // Use real API call
+      const data = await getProductById(Number(id));
       setProduct(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch product');
@@ -144,27 +85,49 @@ export function useProduct(id?: string): UseProductResult {
 
   const createProduct = async (data: CreateProductData): Promise<void> => {
     try {
-      await api.createProduct(data);
+      // Convert to FormData for API
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v, i) => formData.append(`${key}[${i}]`, v));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value as string | Blob);
+        }
+      });
+      await apiCreateProduct(formData);
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to create product');
+      setError(err instanceof Error ? err.message : 'Failed to create product');
+      throw err;
     }
   };
 
   const updateProduct = async (productId: string, data: UpdateProductData): Promise<void> => {
     try {
-      const updatedProduct = await api.updateProduct(productId, data);
-      setProduct(updatedProduct);
+      // Convert to FormData for API
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v, i) => formData.append(`${key}[${i}]`, v));
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value as string | Blob);
+        }
+      });
+      await apiUpdateProduct(Number(productId), formData);
+      // Optionally refetch product
+      await fetchProduct();
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to update product');
+      setError(err instanceof Error ? err.message : 'Failed to update product');
+      throw err;
     }
   };
 
   const deleteProduct = async (productId: string): Promise<void> => {
     try {
-      await api.deleteProduct(productId);
+      await apiDeleteProduct(Number(productId));
       setProduct(null);
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to delete product');
+      setError(err instanceof Error ? err.message : 'Failed to delete product');
+      throw err;
     }
   };
 
@@ -175,7 +138,7 @@ export function useProduct(id?: string): UseProductResult {
     refetch: fetchProduct,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
   };
 }
 

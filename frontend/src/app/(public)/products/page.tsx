@@ -41,39 +41,22 @@ function AllProductsPageContent() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        console.log('🔍 About to call API...');
-        console.log('🔍 API Base URL:', process.env.NEXT_PUBLIC_API_URL);
         
         const data = await getAllProducts();
-        console.log('🔍 API CALL SUCCESS');
-        console.log('🔍 FULL API RESPONSE:', data);
-        console.log('🔍 Type of data:', typeof data);
-        console.log('🔍 Is array:', Array.isArray(data));
-        console.log('🔍 Data keys (if object):', data && typeof data === 'object' ? Object.keys(data) : 'N/A');
-        console.log('🔍 Data length:', data?.length);
-        console.log('🔍 First item:', data?.[0]);
         
         // Try to extract products from different possible structures
         let products = [];
         if (Array.isArray(data)) {
           products = data;
-          console.log('✅ Using data directly as array');
         } else if (data && data.data && Array.isArray(data.data)) {
           products = data.data;
-          console.log('✅ Using data.data array');
         } else if (data && data.products && Array.isArray(data.products)) {
           products = data.products;
-          console.log('✅ Using data.products array');
         } else {
-          console.log('❌ Could not find products array in response');
           products = [];
         }
         
-        console.log('🔍 Extracted products count:', products.length);
-        console.log('🔍 First product example:', products[0]);
-        
         const publishedProducts = products.filter((p: FilterProduct) => p.isPublished === true);
-        console.log('✅ Published products:', publishedProducts.length);
         setProducts(publishedProducts);
       } catch (error) {
         console.error("❌ Error fetching products:", error);
@@ -98,13 +81,11 @@ function AllProductsPageContent() {
   }, [appliedFilters]);
 
   const handleApplyFilters = (filters: Filters) => {
-    console.log('🔍 Applying Filters:', filters);
     setAppliedFilters(filters);
     if (page !== 1) goToPage(1);
   };
 
   const handleResetFilters = () => {
-    console.log('🔄 Resetting Filters');
     setAppliedFilters({});
     if (page !== 1) goToPage(1);
   };
@@ -131,7 +112,6 @@ function AllProductsPageContent() {
     if (hasActiveBrandFilter) {
       const productBrand = getBrandName(product);
       if (!productBrand) {
-        console.log('❌ Product has no brand:', product.name);
         return false; // Exclude products without brand when brand filter is active
       }
       if (!appliedFilters.brand!.includes(productBrand)) {
@@ -144,7 +124,6 @@ function AllProductsPageContent() {
     if (hasActiveCategoryFilter) {
       const productCategory = getCategoryName(product);
       if (!productCategory) {
-        console.log('❌ Product has no category:', product.name);
         return false; // Exclude products without category when category filter is active
       }
       if (!appliedFilters.category!.includes(productCategory)) {
@@ -161,7 +140,6 @@ function AllProductsPageContent() {
     
     if (hasActivePriceFilter) {
       if (!product.price || typeof product.price !== 'number') {
-        console.log('❌ Product has invalid price:', product.name, product.price);
         return false; // Exclude products without valid price when price filter is active
       }
       const [minPrice, maxPrice] = appliedFilters.priceRange!;
@@ -173,42 +151,6 @@ function AllProductsPageContent() {
     // If no filters are active OR product passes all active filters, include it
     return true;
   });
-
-  // Enhanced debugging for filter state
-  const hasAnyActiveFilters = (
-    (appliedFilters.brand && appliedFilters.brand.length > 0) ||
-    (appliedFilters.category && appliedFilters.category.length > 0) ||
-    (appliedFilters.priceRange && appliedFilters.priceRange.length === 2)
-  );
-
-  console.log('✅ Filter Debug Info:', {
-    totalProducts: products.length,
-    filteredProducts: filteredProducts.length,
-    hasAnyActiveFilters: hasAnyActiveFilters,
-    appliedFilters: appliedFilters,
-    filterBreakdown: {
-      brandFilter: appliedFilters.brand || [],
-      categoryFilter: appliedFilters.category || [],
-      priceFilter: appliedFilters.priceRange || null,
-    },
-    productSample: products.slice(0, 3).map((p: FilterProduct) => ({
-      name: p.name,
-      brand: typeof p.brand === 'object' ? p.brand?.name : p.brand,
-      category: typeof p.category === 'object' ? p.category?.name : p.category,
-      price: p.price
-    }))
-  });
-
-  // Log which products are being excluded and why
-  if (hasAnyActiveFilters && filteredProducts.length < products.length) {
-    const excludedProducts = products.filter(p => !filteredProducts.includes(p));
-    console.log('🚫 Excluded Products:', excludedProducts.map((p: FilterProduct) => ({
-      name: p.name,
-      brand: typeof p.brand === 'object' ? p.brand?.name : p.brand,
-      category: typeof p.category === 'object' ? p.category?.name : p.category,
-      reason: 'Check filter logic above'
-    })));
-  }
 
   const sortedProducts = [...filteredProducts];
   if (sort === 'price-low-high') sortedProducts.sort((a, b) => (a.price || 0) - (b.price || 0));

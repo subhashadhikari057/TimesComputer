@@ -2,11 +2,7 @@ import axios from "@/lib/axiosInstance";
 
 // GET /product → fetch all products
 export async function getAllProducts() {
-    console.log('🔍 Making API call to:', axios.defaults.baseURL + '/product');
     const response = await axios.get("/product");
-    console.log('🔍 Raw axios response:', response);
-    console.log('🔍 Response data:', response.data);
-    console.log('🔍 Response status:', response.status);
     return response.data;
 }
 
@@ -27,8 +23,7 @@ export async function incrementProductView(slug: string) {
     try {
         const response = await axios.post(`/product/view/${slug}`);
         return response.data;
-    } catch (error) {
-        console.error('Failed to increment view count:', error);
+    } catch {
         // Don't throw error to avoid breaking the page if view tracking fails
         return null;
     }

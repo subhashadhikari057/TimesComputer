@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Save } from "lucide-react";
+import { Save, Download } from "lucide-react";
 import ComponentCard from "@/components/common/ComponentsCard";
 import DefaultInput from "@/components/form/form-elements/DefaultInput";
 import DefaultTextarea from "@/components/form/form-elements/DefaultTextarea";
@@ -14,6 +14,7 @@ import Specifications from "@/components/admin/product/specification";
 import AttributeSelector from "@/components/admin/product/attributes";
 import DefaultButton from "@/components/form/form-elements/DefaultButton";
 import { createProduct } from "@/api/product";
+import ImportFileModal from '@/components/admin/product/ImportFileModal';
 
 interface FormData {
   name: string;
@@ -55,6 +56,7 @@ export default function CreateProduct() {
   const router = useRouter();
   const [form, setForm] = useState<FormData>(INITIAL_FORM_DATA);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const generateSlug = (name: string): string => {
     return name
@@ -258,14 +260,24 @@ export default function CreateProduct() {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
+      <ImportFileModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onImport={() => {}} />
       <div className="pb-24">
         <div className="p-6">
           {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Create New Product
-            </h1>
-            <p className="text-gray-600">Add a new product to your inventory</p>
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Create New Product
+              </h1>
+              <p className="text-gray-600">Add a new product to your inventory</p>
+            </div>
+            <button
+              onClick={() => setIsImportModalOpen(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-1 focus:ring-blue-500 mt-4 sm:mt-0"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Import File
+            </button>
           </div>
 
           <form

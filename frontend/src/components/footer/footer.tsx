@@ -31,7 +31,7 @@ const Footer: FC = () => {
   // Transform backend categories to footer format and limit to 5
   const transformCategories = (backendCategories: Category[]): FooterCategory[] => {
     const allProductsOption = { label: "All Products", value: "products" };
-    
+
     const transformedCategories = backendCategories
       .slice(0, 4) // Take only 4 from API to make room for "All Products"
       .map((category) => ({
@@ -72,13 +72,13 @@ const Footer: FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           {/* Logo + Description */}
           <div className="flex flex-col items-start">
-          <Image
-            src="/logos/logo.svg"
-            alt="Brand Logo"
-            width={120}
-            height={90}
-            priority
-          />
+            <Image
+              src="/logos/logo.svg"
+              alt="Brand Logo"
+              width={120}
+              height={90}
+              priority
+            />
             <p className="text-sm leading-relaxed">
               Built on a simple idea — buying a laptop shouldn&apos;t be complicated.
             </p>

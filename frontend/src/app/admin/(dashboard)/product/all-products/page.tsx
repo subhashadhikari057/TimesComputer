@@ -23,6 +23,7 @@ import Image from "next/image";
 import ExportPopup from "@/components/form/table/exportModal";
 import { DeleteConfirmation } from "@/components/common/helper_function";
 import { FullHeightShimmerTable } from "@/components/common/shimmerEffect";
+import ImportFileModal from '@/components/admin/product/ImportFileModal';
 
 // Product interface
 interface Product extends Record<string, unknown> {
@@ -57,6 +58,8 @@ export default function ViewProductsPage() {
     isOpen: false,
     product: null,
   });
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
 
   async function fetchProducts() {
     setLoading(true);
@@ -277,6 +280,29 @@ export default function ViewProductsPage() {
     },
   ];
 
+  // Bulk delete handler for real-time UI update
+  const handleBulkDelete = async () => {
+    const selectedData = selectedItems.map(index => processedData[index]);
+    try {
+      await Promise.all(
+        selectedData.map((product) =>
+          deleteProduct(typeof product.id === 'string' ? parseInt(product.id) : product.id)
+        )
+      );
+      toast.success('Selected products deleted successfully');
+      setProducts(prev =>
+        prev.filter(product =>
+          !selectedData.some(deleted => deleted.id === product.id)
+        )
+      );
+    } catch {
+      toast.error('Failed to delete selected products');
+    } finally {
+      clearSelection();
+      setIsBulkDeleteModalOpen(false);
+    }
+  };
+
   // Use custom hook for table data management
   const {
     searchTerm,
@@ -284,14 +310,13 @@ export default function ViewProductsPage() {
     sortConfig,
     selectedItems,
     processedData,
-    filterConfigs,
     handleSearchChange,
     handleFilterChange,
     handleResetFilters,
     handleSort,
     handleSelectAll,
     handleSelectItem,
-    handleBulkDelete,
+    clearSelection,
   } = useTableData({
     data: products,
     columns: newColumns,
@@ -354,13 +379,20 @@ export default function ViewProductsPage() {
             Manage your product inventory and catalog
           </p>
         </div>
-        <div className="mt-4 sm:mt-0">
+        <div className="mt-4 sm:mt-0 flex space-x-2">
           <button
             onClick={handleAddProduct}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <Plus className="h-4 w-4 mr-1" />
             Add Product
+          </button>
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Import File
           </button>
         </div>
       </div>
@@ -410,7 +442,7 @@ export default function ViewProductsPage() {
               {/* Bulk Delete Button - Show only when items are selected */}
               {selectedItems.length > 0 && (
                 <button
-                  onClick={handleBulkDelete}
+                  onClick={() => setIsBulkDeleteModalOpen(true)}
                   className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-500"
                 >
                   <Trash2 className="h-4 w-4 mr-1" />
@@ -430,7 +462,7 @@ export default function ViewProductsPage() {
                 <div className="flex-1">
                   <FilterComponent
                     filters={filters}
-                    filterConfigs={filterConfigs as never}
+                    filterConfigs={[]}
                     onFilterChange={handleFilterChange}
                     onResetFilters={handleResetFilters}
                   />
@@ -467,6 +499,13 @@ export default function ViewProductsPage() {
         title="Delete Product"
         itemName={deleteModal.product?.name}
       />
+      <DeleteConfirmation
+        isOpen={isBulkDeleteModalOpen}
+        onClose={() => setIsBulkDeleteModalOpen(false)}
+        onConfirm={handleBulkDelete}
+        title="Delete Products"
+        itemName={`${selectedItems.length} selected products`}
+      />
 
       <ExportPopup
         isOpen={isExportModalOpen}
@@ -476,6 +515,7 @@ export default function ViewProductsPage() {
         title="Products"
         filename="products_Details"
       />
+      <ImportFileModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onImport={fetchProducts} />
     </div>
   );
 }

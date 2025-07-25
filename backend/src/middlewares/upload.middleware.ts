@@ -62,3 +62,27 @@ export const uploadCategoryMedia = multer({
   { name: 'image', maxCount: 1 },
   { name: 'icon', maxCount: 1 }
 ]);
+
+export const uploadCSV = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (
+      (file.fieldname === 'csv' && (
+        file.mimetype === 'text/csv' ||
+        file.originalname.endsWith('.csv') ||
+        file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || // .xlsx
+        file.mimetype === 'application/vnd.ms-excel' || // .xls
+        file.originalname.endsWith('.xlsx') ||
+        file.originalname.endsWith('.xls')
+      )) ||
+      (file.fieldname === 'images' && file.mimetype.startsWith('image/'))
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV, Excel files, and images are allowed.'));
+    }
+  },
+}).fields([
+  { name: 'csv', maxCount: 1 },
+  { name: 'images', maxCount: 10 },
+]);
