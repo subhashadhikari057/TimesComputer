@@ -131,11 +131,11 @@ function FeaturedProductsSection() {
             </>
           )}
 
-          <CarouselContent className="-ml-1">
+          <CarouselContent className="-ml-1 min-h-[320px] sm:min-h-[350px]">
             {products.map((product) => (
               <CarouselItem
                 key={product.id}
-                className="pl-1 basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+                className="pl-1 basis-1/2 sm:basis-1/3 lg:basis-1/4 xl:basis-1/5 h-full"
               >
                 <div className="p-1 h-full">
                   <ProductCard product={product} />

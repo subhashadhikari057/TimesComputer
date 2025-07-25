@@ -1,0 +1,12 @@
+case 'hot deal':
+      return 'bg-red-500';
+    case 'trending':
+      return 'bg-purple-500';
+    case 'bestseller':
+      return 'bg-yellow-500';
+    case 'new arrival':
+      return 'bg-green-500';
+    case 'limited offer':
+      return 'bg-orange-500';
+    default:
+      return 'bg-blue-500';

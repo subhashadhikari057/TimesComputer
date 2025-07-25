@@ -170,13 +170,15 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
                             }}
                             className="w-full"
                         >
-                            <CarouselContent className="-ml-2 md:-ml-4">
+                            <CarouselContent className="-ml-2 md:-ml-4 min-h-[320px] sm:min-h-[350px]">
                                 {recommended.map((product) => (
                                     <CarouselItem
                                         key={product.id}
-                                        className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4"
+                                        className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 h-full"
                                     >
-                                        <ProductCard product={product} />
+                                        <div className="h-full">
+                                            <ProductCard product={product} />
+                                        </div>
                                     </CarouselItem>
                                 ))}
                             </CarouselContent>
@@ -184,9 +186,11 @@ export default function RecommendedProducts({ currentSlug, category }: Recommend
                     </div>
 
                     {/* Mobile Grid */}
-                    <div className="sm:hidden grid grid-cols-2 gap-4">
+                    <div className="sm:hidden grid grid-cols-2 gap-4 min-h-[280px]">
                         {recommended.slice(0, 4).map((product) => (
-                            <ProductCard key={product.id} product={product} compact />
+                            <div key={product.id} className="h-full flex">
+                                <ProductCard product={product} compact />
+                            </div>
                         ))}
                     </div>
 

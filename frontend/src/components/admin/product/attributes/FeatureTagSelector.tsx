@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { getAllFeatureTags } from "@/api/featureTag";
 import { MultiSelectDropdown } from "@/components/form/form-elements/DefaultDropdown";
+import FeatureTagPopup from "@/app/admin/(dashboard)/attributes/feature-tag/featureTagPopup";
 
 interface FeatureTag {
   id: number;
@@ -20,9 +20,9 @@ export default function FeatureTagSelector({
   selectedFeatureTagIds,
   onFeatureTagsChange,
 }: FeatureTagSelectorProps) {
-  const router = useRouter();
   const [featureTags, setFeatureTags] = useState<FeatureTag[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showFeatureTagModal, setShowFeatureTagModal] = useState(false);
 
   useEffect(() => {
     loadFeatureTags();
@@ -46,47 +46,69 @@ export default function FeatureTagSelector({
     onFeatureTagsChange(numberIds);
   };
 
+  const handleAddFeatureTagClick = () => {
+    setShowFeatureTagModal(true);
+  };
+
+  const handleFeatureTagModalClose = () => {
+    setShowFeatureTagModal(false);
+  };
+
+  const handleFeatureTagCreated = () => {
+    loadFeatureTags(); // Refresh the feature tags list
+    setShowFeatureTagModal(false);
+  };
+
   const featureTagOptions = featureTags.map((tag) => ({
     value: tag.id,
     label: tag.name,
   }));
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Feature Tags
-        </label>
-        <button
-          type="button"
-          onClick={() => router.push("/admin/attributes/tag")}
+    <>
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Feature Tags
+          </label>
+          <button
+            type="button"
+            onClick={handleAddFeatureTagClick}
+            disabled={loading}
+            className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-500 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Plus size={14} className="mr-1" />
+            Add Feature Tag
+          </button>
+        </div>
+
+        <MultiSelectDropdown
+          id="featureTags"
+          name="featureTags"
+          value={selectedFeatureTagIds}
+          onChange={handleTagsChange}
+          options={featureTagOptions}
+          placeholder="Select feature tags"
           disabled={loading}
-          className="cursor-pointer inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-500 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Plus size={14} className="mr-1" />
-          Add Feature Tag
-        </button>
+          size="md"
+        />
+
+        {/* Selection count */}
+        {selectedFeatureTagIds.length > 0 && (
+          <div className="mt-2">
+            <p className="text-xs text-gray-500">
+              {selectedFeatureTagIds.length} feature tag{selectedFeatureTagIds.length !== 1 ? 's' : ''} selected
+            </p>
+          </div>
+        )}
       </div>
 
-      <MultiSelectDropdown
-        id="featureTags"
-        name="featureTags"
-        value={selectedFeatureTagIds}
-        onChange={handleTagsChange}
-        options={featureTagOptions}
-        placeholder="Select feature tags"
-        disabled={loading}
-        size="md"
+      {/* Feature Tag Modal */}
+      <FeatureTagPopup
+        isOpen={showFeatureTagModal}
+        onClose={handleFeatureTagModalClose}
+        onSuccess={handleFeatureTagCreated}
       />
-
-      {/* Selection count */}
-      {selectedFeatureTagIds.length > 0 && (
-        <div className="mt-2">
-          <p className="text-xs text-gray-500">
-            {selectedFeatureTagIds.length} feature tag{selectedFeatureTagIds.length !== 1 ? 's' : ''} selected
-          </p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

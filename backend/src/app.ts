@@ -36,7 +36,6 @@ if (!origin) {
 // ✅ Security Middlewares
 app.use(helmet());
 app.use(cookieParser());
-
 app.use(credentials);
 app.use(
     cors({

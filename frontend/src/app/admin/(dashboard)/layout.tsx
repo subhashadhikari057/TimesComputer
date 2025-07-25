@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: LayoutProps) {
         {/* Main Content Area */}
         <main className="flex-1 overflow-hidden bg-gray-50 min-w-0 w-full">
           <div className="h-full overflow-y-auto overflow-x-hidden w-full min-w-0">
-            <div className="w-full min-w-0 max-w-none px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+            <div className="w-full min-w-0 max-w-none py-6">{children}</div>
           </div>
         </main>
       </div>

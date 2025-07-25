@@ -1,6 +1,6 @@
 "use client";
 import { Mail, Lock, LoaderCircleIcon, Eye, EyeOff } from "lucide-react";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/axiosInstance";
@@ -28,6 +28,34 @@ export default function AdminLogin() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkExistingAuth = async () => {
+      try {
+        // First check localStorage for user data
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) {
+          setCheckingAuth(false);
+          return;
+        }
+
+        // Verify token with backend
+        await apiRequest("GET", "/auth/verify");
+        
+        // If we reach here, user is authenticated
+        toast.info("You are already logged in. Redirecting to dashboard...");
+        router.push("/admin/dashboard");
+      } catch {
+        // Token is invalid or expired, clear localStorage and allow login
+        localStorage.removeItem('user');
+        setCheckingAuth(false);
+      }
+    };
+
+    checkExistingAuth();
+  }, [router]);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     setErr({});
@@ -76,6 +104,23 @@ async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     setIsLoading(false);
   }
 }
+
+  // Show loading spinner while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="h-screen w-screen inset-0 z-50 absolute bg-[url('/background/login_bg.png')] bg-cover bg-center">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md m-10">
+            <div className="text-center">
+              <LoaderCircleIcon className="mx-auto mb-4 animate-spin text-blue-600" size={40} />
+              <h2 className="text-xl font-semibold text-gray-800">Checking authentication...</h2>
+              <p className="text-gray-600 mt-2">Please wait while we verify your session.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-screen inset-0 z-50 absolute bg-[url('/background/login_bg.png')] bg-cover bg-center ">

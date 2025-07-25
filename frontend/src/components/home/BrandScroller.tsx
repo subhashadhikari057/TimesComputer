@@ -35,7 +35,7 @@ export default function BrandCarousel({
   const pausedTimeRef = useRef<number>(0);
   const SCROLL_SPEED = 35;
 
-  // Fetch brands from backend
+  // Fetch brands from backend and remove duplicates
   useEffect(() => {
     const fetchBrands = async () => {
       try {
@@ -43,7 +43,13 @@ export default function BrandCarousel({
         setError(null);
         const response = await getAllBrands();
         const brandsData = response.data || [];
-        setBrands(brandsData);
+        
+        // Remove duplicate brands based on name and id
+        const uniqueBrands = brandsData.filter((brand: Brand, index: number, self: Brand[]) => 
+          index === self.findIndex((b) => b.id === brand.id && b.name === brand.name)
+        );
+        
+        setBrands(uniqueBrands);
       } catch (err) {
         console.error("Failed to fetch brands:", err);
         setError("Failed to load brands");
@@ -58,7 +64,7 @@ export default function BrandCarousel({
 
   useEffect(() => {
     if (cardRef.current && brands.length > 0) {
-      const width = cardRef.current.offsetWidth + 24; // gap-6 = 24px
+      const width = cardRef.current.offsetWidth + 32; // gap-8 = 32px
       setBrandWidth(width);
     }
   }, [brands]);
@@ -66,7 +72,7 @@ export default function BrandCarousel({
   const TOTAL_WIDTH = brands.length * brandWidth;
 
   useEffect(() => {
-    if (!isPaused) {
+    if (!isPaused && brands.length > 0) {
       const animate = (currentTime: number) => {
         if (!startTimeRef.current) {
           startTimeRef.current = currentTime - pausedTimeRef.current;
@@ -100,7 +106,7 @@ export default function BrandCarousel({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [isPaused, translateX, TOTAL_WIDTH]);
+  }, [isPaused, translateX, TOTAL_WIDTH, brands.length]);
 
   const handleMouseEnter = () => setIsPaused(true);
   const handleMouseLeave = () => setIsPaused(false);
@@ -111,7 +117,7 @@ export default function BrandCarousel({
       <h2 className={`text-2xl font-semibold text-gray-900 mb-8 ${titleClassName}`}>
         {title}
       </h2>
-      <div className="flex gap-6 overflow-hidden">
+      <div className="flex gap-8 overflow-hidden">
         {[...Array(10)].map((_, i) => (
           <SkeletonLoader key={i} type="brand" />
         ))}
@@ -155,15 +161,15 @@ export default function BrandCarousel({
       <div className="relative overflow-hidden">
         <div
           ref={containerRef}
-          className="flex gap-6 transition-transform duration-100 ease-out"
+          className="flex gap-8 transition-transform duration-100 ease-out"
           style={{
             transform: `translateX(-${translateX}px)`,
-            width: `${brandWidth * brands.length * 2}px`,
+            width: `${brandWidth * brands.length}px`,
           }}
         >
-          {[...brands, ...brands].map((brand, index) => (
+          {brands.map((brand, index) => (
             <Link
-              key={`${brand.name}-${index}`}
+              key={`${brand.id}-${brand.name}`}
               href={`/brand/${brand.name.toLowerCase()}`}
               ref={index === 0 ? cardRef : null}
               className="relative flex-shrink-0 group"
@@ -171,21 +177,15 @@ export default function BrandCarousel({
               onMouseLeave={handleMouseLeave}
               aria-label={`Shop by brand ${brand.name}`}
             >
-              <div className="w-40 h-24 sm:w-48 sm:h-28 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:scale-105 transition-all duration-300 p-4 flex items-center justify-center">
+              <div className="w-36 h-24 sm:w-40 sm:h-28 bg-transparent rounded-2xl overflow-hidden hover:scale-105 transition-all duration-300 p-2 flex items-center justify-center">
                 <div className="relative w-full h-full">
-                  {brand.image ? (
-                    <Image
-                      src={getImageUrl(brand.image)}
-                      alt={brand.name}
-                      fill
-                      className="object-contain filter brightness-75 group-hover:brightness-100 transition-all duration-300"
-                      sizes="(max-width: 640px) 160px, 192px"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                      No Image
-                    </div>
-                  )}
+                  <Image
+                    src={getImageUrl(brand.image)}
+                    alt={brand.name}
+                    fill
+                    className="object-contain transition-all duration-300 group-hover:opacity-80"
+                    sizes="(max-width: 640px) 160px, 192px"
+                  />
                 </div>
               </div>
             </Link>

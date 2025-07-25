@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { PiWhatsappLogoThin } from "react-icons/pi";
 import { useParams } from "next/navigation";
-import { Plus, Check } from "lucide-react";
+import { Plus, Check, ExternalLink } from "lucide-react";
 import { useCompare } from "@/contexts/CompareContext";
 
 import { getProductBySlug, incrementProductView } from "@/api/product";
@@ -214,7 +214,7 @@ export default function ProductDetails() {
           {/* Key Features */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Key Features</h3>
-            <div>
+            <div className="space-y-2">
               {Object.entries(productData?.specs ?? {})
                 .slice(0, 5)
                 .map(([key, value], index) => (
@@ -225,6 +225,24 @@ export default function ProductDetails() {
                     <span className="text-gray-600 ml-2">{value}</span>
                   </div>
                 ))}
+              
+              {/* Brochure Link */}
+              {productData?.brochure && (
+                <div className="flex items-center pt-2 border-t border-gray-100 mt-4">
+                  <span className="font-medium text-gray-700 min-w-24">
+                    Brochure:
+                  </span>
+                  <a 
+                    href={productData.brochure}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  >
+                    <span>View PDF</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -278,6 +296,26 @@ export default function ProductDetails() {
                             </td>
                           </tr>
                         )
+                      )}
+                      
+                      {/* Add brochure as a specification row if it exists */}
+                      {productData?.brochure && (
+                        <tr className={Object.keys(productData?.specs ?? {}).length % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                          <td className="px-6 py-4 font-medium text-gray-900 w-1/4 align-top">
+                            Product Brochure
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">
+                            <a 
+                              href={productData.brochure}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                            >
+                              <span>Download Product Brochure</span>
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          </td>
+                        </tr>
                       )}
                     </tbody>
                   </table>

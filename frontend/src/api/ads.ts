@@ -1,40 +1,30 @@
 import axios from "@/lib/axiosInstance";
+import { apiRequest } from "@/lib/axiosInstance";
 
-// GET /ads → fetch all ads
+// GET /ads → fetch all ads (no auth)
 export async function getAllAds(placement?: string) {
   const params = placement ? { placement } : {};
   const response = await axios.get("/ads", { params });
   return response.data;
 }
 
-// GET /ads/:id → fetch a single ad
+// GET /ads/:id → fetch a single ad (no auth)
 export async function getAdById(id: number) {
-    const response = await axios.get(`/ads/${id}`);
-    return response.data;
+  const response = await axios.get(`/ads/${id}`);
+  return response.data;
 }
 
-// POST /ads → create a new ad (with image via FormData)
+// POST /ads → create a new ad (auth)
 export async function createAd(formData: FormData) {
-    const response = await axios.post("/ads", formData, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-    });
-    return response.data;
+  return await apiRequest("POST", "/ads", formData);
 }
 
-// PATCH /ads/:id → update an ad (with image via FormData)
+// PATCH /ads/:id → update an ad (auth)
 export async function updateAd(id: number, formData: FormData) {
-    const response = await axios.patch(`/ads/${id}`, formData, {
-        headers: {
-            "Content-Type": "multipart/form-data",
-        },
-    });
-    return response.data;
+  return await apiRequest("PATCH", `/ads/${id}`, formData);
 }
 
-// DELETE /ads/:id → delete an ad
+// DELETE /ads/:id → delete an ad (auth)
 export async function deleteAd(id: number) {
-    const response = await axios.delete(`/ads/${id}`);
-    return response.data;
-} 
+  return await apiRequest("DELETE", `/ads/${id}`);
+}
